@@ -108,13 +108,13 @@
         }
 
         let info = {
-            "title": "",
+            "title": getTitleText(),
             "fanhao": "",
             "info_filename": "",
             "date": "",
             "time": "",
-            "sehuatangType":"",
-            "sehuatangLink": "",
+            "sehuatangType": "",
+            "sehuatangLink": getPageLink(),
             "sehuatangText": sehuatangTextArray,
             "sehuatangImg": [
                 {
@@ -124,11 +124,13 @@
                 }
             ],
             "magnet": ["", ""],
-            "sehuatangBTInfo": [{
-                "isExist": false,
-                "filename": "",
-                "href": ""
-            }]
+            "sehuatangBTInfo": [
+                {
+                    "isExist": false,
+                    "filename": "",
+                    "href": ""
+                }
+            ]
         }
         try {
             var isFileSaverSupported = !!new Blob;
