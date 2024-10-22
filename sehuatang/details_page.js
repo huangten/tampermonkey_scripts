@@ -13,12 +13,11 @@
 // @grant        unsafeWindow
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     var cssId = 'myCss'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(cssId))
-    {
+    if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
         var link = document.createElement('link');
         link.id = cssId;
@@ -31,18 +30,18 @@
     /*global $,layui,layer,saveAs,util*/
 
 
-    function copyContext(str){
+    function copyContext(str) {
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            layer.msg('复制成功', {icon: 1});
-        },() => {
+            layer.msg('复制成功', { icon: 1 });
+        }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
         });
     }
 
-    layui.use(function(){
+    layui.use(function () {
         var util = layui.util;
         // 自定义固定条
         util.fixbar({
@@ -50,7 +49,7 @@
                 type: 'getInfo',
                 content: '获取信息',
                 style: 'background-color: #FF5722;font-size: 14px;width:160px;'
-            },{
+            }, {
                 type: 'copyTitleAndDownload',
                 content: '复制标题和下载种子',
                 style: 'background-color: #FF5722;font-size: 14px;width:160px;'
@@ -60,22 +59,22 @@
                 style: 'background-color: #FF5722;font-size: 14px;width:160px;'
             }],
             default: true,
-            css: {bottom: "15%"},
-            margin : 0,
+            css: { bottom: "15%" },
+            margin: 0,
             on: {
-                mouseenter: function(type){
+                mouseenter: function (type) {
                     console.log(this.innerText)
                     layer.tips(type, this, {
                         tips: 4,
                         fixed: true
                     });
                 },
-                mouseleave: function(type){
+                mouseleave: function (type) {
                     layer.closeAll('tips');
                 }
             },
             // 点击事件
-            click: function(type){
+            click: function (type) {
                 console.log(this, type);
                 // layer.msg(type);
                 if (type === "getInfo") {
@@ -93,7 +92,7 @@
             }
         });
     });
-    function getInfo(){
+    function getInfo() {
         let el = document
         let sehuatangType = el.getElementsByClassName("bm cl")[0].getElementsByTagName("a")[3].innerText
         console.log(sehuatangType)
@@ -102,31 +101,31 @@
             return item !== null && typeof item !== "undefined" && item !== "";
         });
         let replaceArr = ["播放", "复制代码", 'undefined', "立即免费观看"];
-        for(let index = 0; index < sehuatangTextArray.length; index++){
-            for(let j = 0; j < replaceArr.length; j++){
+        for (let index = 0; index < sehuatangTextArray.length; index++) {
+            for (let j = 0; j < replaceArr.length; j++) {
                 sehuatangTextArray[index] = sehuatangTextArray[index].replace(replaceArr[j], '').trim();
             }
         }
 
         let info = {
-            "title":"",
-            "fanhao":"",
-            "info_filename":"",
-            "date":"",
-            "sehuatangLink":"",
-            "sehuatangText":sehuatangTextArray,
-            "sehuatangImg":[
+            "title": "",
+            "fanhao": "",
+            "info_filename": "",
+            "date": "",
+            "sehuatangLink": "",
+            "sehuatangText": sehuatangTextArray,
+            "sehuatangImg": [
                 {
-                    "isExist":false,
-                    "filename":"",
-                    "href":""
+                    "isExist": false,
+                    "filename": "",
+                    "href": ""
                 }
             ],
-            "magnet":["",""],
-            "sehuatangBTInfo":[{
-                "isExist":false,
-                "filename":"",
-                "href":""
+            "magnet": ["", ""],
+            "sehuatangBTInfo": [{
+                "isExist": false,
+                "filename": "",
+                "href": ""
             }]
         }
         try {
@@ -153,15 +152,15 @@
 
     }
 
-    function getDownloadBtTags(el){
+    function getDownloadBtTags(el) {
         let attnms = el.getElementsByClassName("attnm");
         let res = [];
         if (attnms !== null && attnms.length === 0) {
             res = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
         } else {
-            for(let index = 0; index < attnms.length; index++) {
+            for (let index = 0; index < attnms.length; index++) {
                 let as = attnms[index].getElementsByTagName('a')
-                for(let j = 0; j < as.length; j++){
+                for (let j = 0; j < as.length; j++) {
                     res.push(as[j]);
                 }
             }
@@ -170,7 +169,7 @@
         return res
     }
 
-    function getBtNames(el){
+    function getBtNames(el) {
         let attnms = getDownloadBtTags(el);
         let btNames = [];
         for (let index = 0; index < attnms.length; index++) {
@@ -195,24 +194,24 @@
         }
     }
 
-    function copyTitleAndBlockcode(){
+    function copyTitleAndBlockcode() {
         let info = getTitleText() + "\n";
         info += getPageLink() + "\n";
-        var blockcode = document.getElementsByClassName("blockcode") ;
+        var blockcode = document.getElementsByClassName("blockcode");
         for (let index = 0; index < blockcode.length; index++) {
             info += blockcode[index].getElementsByTagName("li")[0].innerText + "\n";
         }
         copyContext(info);
     }
 
-    function getTitle(){
+    function getTitle() {
         return document.getElementById("thread_subject");
     }
-    function getTitleText(){
+    function getTitleText() {
         return getTitle().innerText;
     }
 
-    function getPageLink(){
+    function getPageLink() {
         return document.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
     }
 })();

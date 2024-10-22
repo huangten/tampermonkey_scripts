@@ -12,12 +12,11 @@
 // @grant        unsafeWindow
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     var cssId = 'myCss'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(cssId))
-    {
+    if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
         var link = document.createElement('link');
         link.id = cssId;
@@ -29,25 +28,25 @@
     }
     /*global $,layui,layer,util,saveAs*/
 
-    function copyContext(str){
+    function copyContext(str) {
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            layer.msg('复制成功', {icon: 1});
-        },() => {
+            layer.msg('复制成功', { icon: 1 });
+        }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
         });
     }
 
-    unsafeWindow.onload = function(){
+    unsafeWindow.onload = function () {
 
         // 标题内容
         var titleBox = document.getElementsByClassName("head_title_box")[0].getElementsByTagName("h2")[0].innerText;
         // 行内容
         var lines = document.getElementsByClassName("line");
         var texts = new Array();
-        for (var i = 0; i < lines.length; i++ ){
+        for (var i = 0; i < lines.length; i++) {
             if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
                 continue;
             }
@@ -58,11 +57,11 @@
         // 找到指定的 div 元素
         const targetDiv = document.querySelector('body div.title_box')
 
-        layui.use(function(){
+        layui.use(function () {
             var util = layui.util;
             // 自定义固定条
             util.fixbar({
-                bars: [ {
+                bars: [{
                     type: 'titleText',
                     content: '获取标题文本',
                     style: 'background-color: #FF5722;font-size: 12px;width:120px;'
@@ -96,22 +95,22 @@
                     style: 'background-color: #FF5722;font-size: 12px;width:120px;'
                 }],
                 default: true,
-                css: {bottom: "15%"},
-                margin : 0,
+                css: { bottom: "15%" },
+                margin: 0,
                 on: {
-                    mouseenter: function(type){
+                    mouseenter: function (type) {
                         console.log(this.innerText)
                         layer.tips(type, this, {
                             tips: 4,
                             fixed: true
                         });
                     },
-                    mouseleave: function(type){
+                    mouseleave: function (type) {
                         layer.closeAll('tips');
                     }
                 },
                 // 点击事件
-                click: function(type){
+                click: function (type) {
                     console.log(this, type);
                     // layer.msg(type);
                     if (type === "titleText") {
@@ -151,7 +150,7 @@
         });
 
 
-        function toBottom(){
+        function toBottom() {
             var windowHeight = parseInt($("body").css("height"));//jq
             $("html,body").animate({ "scrollTop": windowHeight }, 200);
         }
@@ -161,8 +160,8 @@
         var bottomBoxFirstElementChild = document.getElementsByClassName("chapter_box")[0].getElementsByClassName("bottom_box")[0].firstElementChild
 
         var prevChapter = bottomBoxFirstElementChild.tagName == 'A' ? document.createElement('a') : document.createElement('button');
-        prevChapter.textContent = prevChapter.tagName == 'A' ? "上一章": "已是第一章";
-        if(prevChapter.tagName == 'A') {
+        prevChapter.textContent = prevChapter.tagName == 'A' ? "上一章" : "已是第一章";
+        if (prevChapter.tagName == 'A') {
             console.log(bottomBoxFirstElementChild.href)
             prevChapter.href = bottomBoxFirstElementChild.href;
         }
@@ -180,9 +179,9 @@
 
         var bottomBoxThirdElementChild = bottomBoxFirstElementChild.nextElementSibling.nextElementSibling;
         var nextChapter = bottomBoxThirdElementChild.tagName == 'A' ? document.createElement('a') : document.createElement('button');
-        nextChapter.textContent = bottomBoxThirdElementChild.tagName == 'A' ? "下一章": "已是最后一章";
+        nextChapter.textContent = bottomBoxThirdElementChild.tagName == 'A' ? "下一章" : "已是最后一章";
 
-        if(nextChapter.tagName == 'A') {
+        if (nextChapter.tagName == 'A') {
             console.log(bottomBoxThirdElementChild.getAttribute("href"))
             nextChapter.href = bottomBoxThirdElementChild.getAttribute("href");
         }
@@ -198,35 +197,35 @@
             copyContext(titleBox)
         }
 
-        function titleHtml(){
-            copyContext("<h2>"+titleBox+"</h2>")
+        function titleHtml() {
+            copyContext("<h2>" + titleBox + "</h2>")
         }
-        function contentText(){
+        function contentText() {
             var str = "";
-            for (var i = 0; i < lines.length; i++ ){
-                str += "　　"+ lines[i] + "\n";
+            for (var i = 0; i < lines.length; i++) {
+                str += "　　" + lines[i] + "\n";
             }
             copyContext(str)
         }
         function contentHtml() {
             var str = "";
-            for (var i = 0; i < lines.length; i++ ){
+            for (var i = 0; i < lines.length; i++) {
                 str += "<p>" + lines[i] + "</p>\n";
             }
             copyContext(str)
         }
 
-        function titleAndContentText(){
+        function titleAndContentText() {
             var str = titleBox + "\n\n";
-            for (var i = 0; i < lines.length; i++ ){
+            for (var i = 0; i < lines.length; i++) {
                 str += "　　" + lines[i] + "\n";
             }
             copyContext(str)
         }
 
-        function titleAndContentHtml(){
-            var str = "<h2>"+titleBox + "</h2>\n\n";
-            for (var i = 0; i < lines.length; i++ ){
+        function titleAndContentHtml() {
+            var str = "<h2>" + titleBox + "</h2>\n\n";
+            for (var i = 0; i < lines.length; i++) {
                 str += "<p>" + lines[i] + "</p>\n";
             }
             copyContext(str)
@@ -237,27 +236,27 @@
             let text = "";
             let html = "";
 
-            for (let i = 0; i < lines.length; i++ ){
-                text += "　　" +lines[i] + "\n";
+            for (let i = 0; i < lines.length; i++) {
+                text += "　　" + lines[i] + "\n";
             }
 
-            for (let i = 0; i < lines.length; i++ ){
+            for (let i = 0; i < lines.length; i++) {
                 html += "<p>" + lines[i] + "</p>\n";
             }
             let separator = "\n\n=============================================\n";
             let content = "book name:\n" + getBookName()
-            + separator +
+                + separator +
                 "author:\n" + getAuthorInfo()
-            + separator +
+                + separator +
                 "title:\n" + title
-            + separator +
+                + separator +
                 "text:\n" + text
-            + separator +
+                + separator +
                 "html:\n" + html;
             try {
                 var isFileSaverSupported = !!new Blob;
                 var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-                saveAs(blob, getBookName()+" " + getAuthorInfo() + " " + title+".txt");
+                saveAs(blob, getBookName() + " " + getAuthorInfo() + " " + title + ".txt");
             } catch (e) {
                 console.log(e);
             }
@@ -266,20 +265,20 @@
 
         if (unsafeWindow.top.location != unsafeWindow.self.location) {
             setTimeout(function () {
-                var id = unsafeWindow.setInterval(function() {}, 0);
+                var id = unsafeWindow.setInterval(function () { }, 0);
                 while (id--) unsafeWindow.clearInterval(id);
                 // saveContentToLocal();
                 // unsafeWindow.parent.postMessage('lhd_close');
-            },1000)
+            }, 1000)
         }
 
-        function getBookName(){
+        function getBookName() {
             let htmlTitle = document.getElementsByTagName("title")[0].innerText;
             let bookName = htmlTitle.split(" | ")[0].split(" - ").pop();
             bookName = bookName.replaceAll("/", "_");
             return bookName;
         }
-        function getAuthorInfo(){
+        function getAuthorInfo() {
             return document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText;
         }
         function buttonAddBody(e) {

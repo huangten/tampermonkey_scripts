@@ -11,12 +11,11 @@
 // @grant        unsafeWindow
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     var cssId = 'layui_css_id'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(cssId))
-    {
+    if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
         var link = document.createElement('link');
         link.id = cssId;
@@ -27,8 +26,7 @@
         head.appendChild(link);
     }
     var scriptId = 'layui_script_id'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(scriptId))
-    {
+    if (!document.getElementById(scriptId)) {
         var body = document.getElementsByTagName('body')[0];
         var script = document.createElement('script');
         script.id = cssId;
@@ -39,11 +37,11 @@
     /*global $,layui,layer,saveAs,util*/
 
     var downloadArray = new Array();
-    window.onload = function(){
+    window.onload = function () {
 
         var timer = 0;
-        const ListenMessage= (e)=> {
-            if(e.data==='lhd_close'){
+        const ListenMessage = (e) => {
+            if (e.data === 'lhd_close') {
                 // unsafeWindow.removeEventListener('message', ListenMessage)
 
                 layui.layer.closeAll('iframe');
@@ -52,7 +50,7 @@
                 }
                 if (downloadArray.length === 0) {
                     // layer.msg('下载完毕', {icon: 1});
-                    layui.layer.alert('下载完毕', {icon: 1,shadeClose:true}, function(index){
+                    layui.layer.alert('下载完毕', { icon: 1, shadeClose: true }, function (index) {
                         layer.close(index);
                     });
                     return;
@@ -65,11 +63,11 @@
 
         unsafeWindow.addEventListener('message', ListenMessage);
 
-        layui.use(function(){
+        layui.use(function () {
             var util = layui.util;
             // 自定义固定条
             util.fixbar({
-                bars: [ {
+                bars: [{
                     type: 'downloadAll',
                     content: '下载全部',
                     style: 'background-color: #FF5722;font-size: 12px;width:80px;'
@@ -84,22 +82,22 @@
                 }],
 
                 default: true,
-                css: {bottom: "15%"},
-                margin : 0,
+                css: { bottom: "15%" },
+                margin: 0,
                 on: {
-                    mouseenter: function(type){
+                    mouseenter: function (type) {
                         console.log(this.innerText)
                         layer.tips(type, this, {
                             tips: 4,
                             fixed: true
                         });
                     },
-                    mouseleave: function(type){
+                    mouseleave: function (type) {
                         layer.closeAll('tips');
                     }
                 },
                 // 点击事件
-                click: function(type){
+                click: function (type) {
                     console.log(this, type);
                     // layer.msg(type);
                     if (type === "downloadAll") {
@@ -108,7 +106,7 @@
                                 tips: 4,
                                 fixed: true
                             });
-                        }else{
+                        } else {
                             downloadAll();
                         }
                         return;
@@ -128,7 +126,7 @@
             downloadArray = getMenuArray(getTree())
             doDownload()
         }
-        function doDownload(){
+        function doDownload() {
             console.log(downloadArray.length)
             if (downloadArray.length === 0) {
                 clearTimeout(timer);
@@ -147,7 +145,7 @@
                 maxmin: true, //开启最大化最小化按钮
                 area: ['70%', '80%'],
                 content: menu.href,
-                success: function(layero, index, that){
+                success: function (layero, index, that) {
                     console.log(layero, index);
 
                     let iframeDocument = layer.getChildFrame('html', index);
@@ -176,7 +174,7 @@
             <button type='button' id='getCheckedNodeData' class='layui-btn layui-btn-sm' lay-on='getChecked'>获取选中节点数据</button>
             <button type='button' class='layui-btn layui-btn-sm' lay-on='reload'>重载实例</button>
             <div id='openPage'></div></div>`,
-                success: function(layero, index, that){
+                success: function (layero, index, that) {
                     // console.log(layero, index,that)
                     var util = layui.util;
                     var tree = layui.tree;
@@ -194,9 +192,9 @@
                             }],
                         default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                         bgcolor: '#16baaa', // bar 的默认背景色
-                        css: {bottom: "20%"},
+                        css: { bottom: "20%" },
                         target: layero, // 插入 fixbar 节点的目标元素选择器
-                        click: function(type){
+                        click: function (type) {
                             // console.log(this, type);
                             // layer.msg(type);
                             if (type === "getCheckedNodeData") {
@@ -219,9 +217,9 @@
                         onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
                         id: 'titleList',
                         isJump: false, // 是否允许点击节点时弹出新窗口跳转
-                        click: function(obj){
+                        click: function (obj) {
                             var data = obj.data; //获取当前点击的节点数据
-                            if(downloadArray.length !== 0) {
+                            if (downloadArray.length !== 0) {
                                 layer.msg("正在下载中，请等待下载完后再继续");
                                 return;
                             }
@@ -232,7 +230,7 @@
                     });
                     // 按钮事件
                     layui.util.event('lay-on', {
-                        getChecked: function(othis){
+                        getChecked: function (othis) {
                             console.log(othis)
                             var checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
 
@@ -240,14 +238,14 @@
                             if (checkedData.length === 0) {
                                 return;
                             }
-                            if(downloadArray.length !== 0) {
+                            if (downloadArray.length !== 0) {
                                 layer.msg("正在下载中，请等待下载完后再继续");
                                 return;
                             }
                             downloadArray = getMenuArray(checkedData)
                             doDownload()
                         },
-                        reload: function(){
+                        reload: function () {
                             tree.reload('titleList', { // options
                                 data: getTree()
                             }); // 重载实例
@@ -259,35 +257,35 @@
         }
 
 
-        function getTree(){
+        function getTree() {
             let indexMap = new Map();
             let index = 0;
             let tree = new Array();
             let allLines = getAllLines();
-            for(let i = 0; i < allLines.length; i++) {
-                if(!indexMap.hasOwnProperty(allLines[i].date)) {
+            for (let i = 0; i < allLines.length; i++) {
+                if (!indexMap.hasOwnProperty(allLines[i].date)) {
                     indexMap[allLines[i].date] = {
-                        "id":i,
-                        "sehuatang_type":allLines[index].sehuatang_type,
-                        "title":allLines[i].date,
+                        "id": i,
+                        "sehuatang_type": allLines[index].sehuatang_type,
+                        "title": allLines[i].date,
                         "href": "",
-                        "children":[],
-                        "spread":true,
-                        "field":""
+                        "children": [],
+                        "spread": true,
+                        "field": ""
                     }
                 }
                 indexMap[allLines[i].date].children.push({
                     'id': allLines[i].id,
-                    "sehuatang_type":allLines[index].sehuatang_type,
-                    "title":allLines[i].title,
+                    "sehuatang_type": allLines[index].sehuatang_type,
+                    "title": allLines[i].title,
                     "href": allLines[i].href,
                     "date": allLines[i].date,
                     "children": [],
-                    "spread":true,
-                    "field":"",
+                    "spread": true,
+                    "field": "",
                 });
             }
-            for(let key in indexMap){
+            for (let key in indexMap) {
                 tree.push(indexMap[key]);
             }
             return tree;
@@ -306,19 +304,19 @@
             let nav = document.getElementById("pt").getElementsByTagName("a")
             let sehuatang_type = nav[nav.length - 1].innerText;
             let tbodys = document.getElementsByTagName("tbody");
-            for(let index = 0; index < tbodys.length; index++) {
+            for (let index = 0; index < tbodys.length; index++) {
                 // console.log(tbodys[index])
-                if(tbodys[index].getAttribute("id") !== null && tbodys[index].getAttribute("id").indexOf("normalthread") > -1) {
+                if (tbodys[index].getAttribute("id") !== null && tbodys[index].getAttribute("id").indexOf("normalthread") > -1) {
                     let id = tbodys[index].getAttribute("id").split('_')[1];
                     console.log(id)
                     let eldate = tbodys[index].getElementsByTagName("td")[1].getElementsByTagName('span')
-                    let date = eldate[1] === undefined ? eldate[0].innerText :eldate[1].getAttribute("title")
+                    let date = eldate[1] === undefined ? eldate[0].innerText : eldate[1].getAttribute("title")
                     console.log(date)
                     console.log(sehuatang_type)
                     let titleBox = tbodys[index].getElementsByTagName("th")[0].getElementsByTagName("a")
-                    let href = '';let title='';
-                    for(let i = 0; i < titleBox.length; i++) {
-                        if(titleBox[i].getAttribute("class") !== null && titleBox[i].getAttribute("class") == 's xst') {
+                    let href = ''; let title = '';
+                    for (let i = 0; i < titleBox.length; i++) {
+                        if (titleBox[i].getAttribute("class") !== null && titleBox[i].getAttribute("class") == 's xst') {
                             href = titleBox[i].href
                             title = titleBox[i].innerText
                             break;
@@ -329,35 +327,35 @@
                     console.log(href)
                     lines.push({
                         "id": id,
-                        "sehuatang_type":sehuatang_type,
-                        "title":title,
+                        "sehuatang_type": sehuatang_type,
+                        "title": title,
                         "href": href,
-                        "date":date
+                        "date": date
                     });
 
                 }
             }
             return lines;
         }
-        function getMenuArray(trees){
+        function getMenuArray(trees) {
             let menus = new Array();
-            for(let index = 0; index < trees.length; index++) {
-                if(trees[index].children.length === 0) {
+            for (let index = 0; index < trees.length; index++) {
+                if (trees[index].children.length === 0) {
                     menus.push({
-                        'id':trees[index].id,
-                        "sehuatang_type":trees[index].sehuatang_type,
+                        'id': trees[index].id,
+                        "sehuatang_type": trees[index].sehuatang_type,
                         "title": trees[index].title,
-                        "href":trees[index].href,
-                        "date":trees[index].date
+                        "href": trees[index].href,
+                        "date": trees[index].date
                     });
                 } else {
-                    for(let j= 0; j < trees[index].children.length; j++) {
+                    for (let j = 0; j < trees[index].children.length; j++) {
                         menus.push({
                             'id': trees[index].children[j].id,
-                            "sehuatang_type":trees[index].sehuatang_type,
-                            "title":trees[index].children[j].title,
+                            "sehuatang_type": trees[index].sehuatang_type,
+                            "title": trees[index].children[j].title,
                             "href": trees[index].children[j].href,
-                            "date":trees[index].date
+                            "date": trees[index].date
                         });
                     }
 
@@ -389,24 +387,24 @@
         }
     }
 
-    function copyTitleAndBlockcode(el){
+    function copyTitleAndBlockcode(el) {
         let info = getTitleText(el) + "\n";
         info += getPageLink(el) + "\n";
-        var blockcode = el.getElementsByClassName("blockcode") ;
+        var blockcode = el.getElementsByClassName("blockcode");
         for (let index = 0; index < blockcode.length; index++) {
             info += blockcode[index].getElementsByTagName("li")[0].innerText + "\n";
         }
         console.log(info);
     }
 
-    function getTitle(el){
+    function getTitle(el) {
         return el.getElementById("thread_subject");
     }
-    function getTitleText(el){
+    function getTitleText(el) {
         return getTitle(el).innerText;
     }
 
-    function getPageLink(el){
+    function getPageLink(el) {
         return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
     }
 })();
