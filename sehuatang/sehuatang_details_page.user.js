@@ -16,10 +16,10 @@
 (function () {
     'use strict';
 
-    var cssId = 'myCss'; // you could encode the css path itself to generate id..
+    const cssId = 'myCss'; // you could encode the css path itself to generate id..
     if (!document.getElementById(cssId)) {
-        var head = document.getElementsByTagName('head')[0];
-        var link = document.createElement('link');
+        const head = document.getElementsByTagName('head')[0];
+        const link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
         link.type = 'text/css';
@@ -28,14 +28,14 @@
         head.appendChild(link);
     }
 
-    var script = document.createElement('script');
-    script.id = cssId;
-    script.src = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js';
-    document.getElementsByTagName('body')[0].appendChild(script);
-    var script = document.createElement('script');
-    script.id = cssId;
-    script.src = 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js';
-    document.getElementsByTagName('body')[0].appendChild(script);
+    const body = document.getElementsByTagName('body')[0]
+    const layuiScript = document.createElement('script');
+    layuiScript.src = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js';
+    body.appendChild(script);
+
+    const fileSaverScript = document.createElement('script');
+    fileSaverScript.src = 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js';
+    body.appendChild(script);
     /*global $,layui,layer,saveAs,FileSaver,util*/
 
     window.onload = function () {
