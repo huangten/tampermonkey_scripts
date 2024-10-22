@@ -31,11 +31,11 @@
     const body = document.getElementsByTagName('body')[0]
     const layuiScript = document.createElement('script');
     layuiScript.src = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js';
-    body.appendChild(script);
+    body.appendChild(layuiScript);
 
     const fileSaverScript = document.createElement('script');
     fileSaverScript.src = 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js';
-    body.appendChild(script);
+    body.appendChild(fileSaverScript);
     /*global $,layui,layer,saveAs,FileSaver,util*/
 
     window.onload = function () {

@@ -30,7 +30,7 @@
 
     const layuiScript = document.createElement('script');
     layuiScript.src = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js';
-    layuiScript.appendChild(script);
+    layuiScript.appendChild(layuiScript);
 
 
     const fileSaverScript = document.createElement('script');
