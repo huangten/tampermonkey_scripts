@@ -112,6 +112,8 @@
             "fanhao": "",
             "info_filename": "",
             "date": "",
+            "time": "",
+            "sehuatangType":"",
             "sehuatangLink": "",
             "sehuatangText": sehuatangTextArray,
             "sehuatangImg": [
