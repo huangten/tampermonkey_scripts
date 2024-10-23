@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var cssId = 'myCss'; // you could encode the css path itself to generate id..
+    const cssId = 'layui_css'; // you could encode the css path itself to generate id..
     if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
         var link = document.createElement('link');
@@ -26,18 +26,22 @@
         link.media = 'all';
         head.appendChild(link);
     }
-    // var scriptLayUI = document.createElement('script');
-    // scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    // document.body.appendChild(scriptLayUI);
+    
+    var scriptJQ = document.createElement('script');
+    scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
+    document.body.appendChild(scriptJQ);
+
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
+
+    var scriptFilesever = document.createElement('script');
+    scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
+    document.body.appendChild(scriptFilesever);
 
     /*global $,layui,layer,util,saveAs*/
 
     unsafeWindow.onload = () => {
-
-
-
-
-
         var downloadArray = new Array();
 
         layui.use(function () {
@@ -147,7 +151,9 @@
                                     $("#getCheckedNodeData").click();
                                 }
                                 if (type === "clear") {
-                                    layui.tree.reload('title', {}); // 重载实例
+                                    layer.tree.reload('title', {
+                                        data: getMenuTree()
+                                    }); // 重载实例
                                     downloadArray = new Array();
                                 }
                             }
@@ -159,12 +165,9 @@
                         var layer = layui.layer;
                         var util = layui.util;
 
-                        // 模拟数据
-                        var data = getMenuTree();
-                        // console.log(data);
                         tree.render({
                             elem: '#openPage',
-                            data: data,
+                            data: getMenuTree(),
                             showCheckbox: true,
                             onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
                             id: 'title',
@@ -203,7 +206,9 @@
                                 doDownload()
                             },
                             reload: function () {
-                                tree.reload('title', {}); // 重载实例
+                                tree.reload('title', {
+                                    data: getMenuTree()
+                                }); // 重载实例
                             }
                         });
 
@@ -263,7 +268,7 @@
                     el.contentWindow.close();
                     var p = el.parentNode;
                     p.removeChild(el);
-                }   
+                }
             } catch (e) {
                 // setTimeout(cycleClear(el), 100);
             }

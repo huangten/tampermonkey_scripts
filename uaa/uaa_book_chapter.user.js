@@ -26,6 +26,20 @@
         link.media = 'all';
         head.appendChild(link);
     }
+
+    var scriptJQ = document.createElement('script');
+    scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
+    document.body.appendChild(scriptJQ);
+
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
+
+    var scriptFilesever = document.createElement('script');
+    scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
+    document.body.appendChild(scriptFilesever);
+
+
     /*global $,layui,layer,util,saveAs*/
 
     function copyContext(str) {
