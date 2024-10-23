@@ -26,7 +26,7 @@
         link.media = 'all';
         head.appendChild(link);
     }
-    
+
     var scriptJQ = document.createElement('script');
     scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
     document.body.appendChild(scriptJQ);
@@ -222,8 +222,6 @@
         var timer = 0;
         const ListenMessage = (e) => {
             if (e.data.handle === 'lhd_close') {
-
-
                 layui.layer.closeAll('iframe', () => {
                     let iframeDocument = layer.getChildFrame('iframe', e.data.layer_index);
                     // console.log(iframeDocument)
@@ -242,7 +240,6 @@
                         }
                     }
                 });
-
 
                 if (timer !== 0) {
                     clearTimeout(timer);

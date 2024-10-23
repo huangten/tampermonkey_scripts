@@ -47,10 +47,27 @@
 
         var timer = 0;
         const ListenMessage = (e) => {
-            if (e.data === 'lhd_close') {
-                // unsafeWindow.removeEventListener('message', ListenMessage)
+            if (e.data.handle === 'lhd_close') {
 
-                layui.layer.closeAll('iframe');
+                layui.layer.closeAll('iframe', () => {
+                    let iframeDocument = layer.getChildFrame('iframe', e.data.layer_index);
+                    // console.log(iframeDocument)
+                    iframeDocument.attr('src', 'about:blank');
+                    iframeDocument.remove();
+                    iframeDocument.prevObject.attr('src', 'about:blank');
+                    iframeDocument.prevObject.remove();
+                    iframeDocument = null;
+                    // return
+                    let iframes = document.getElementsByTagName("iframe");
+                    for (let index = 0; index < iframes.length; index++) {
+                        const el = iframes[index];
+                        el.src = "about:blank";
+                        if (el.contentWindow) {
+                            setTimeout(cycleClear(el), 100);
+                        }
+                    }
+                });
+
                 if (timer !== 0) {
                     clearTimeout(timer);
                 }
@@ -64,6 +81,20 @@
                 timer = setTimeout(() => {
                     doDownload()
                 }, 1000 * 2);
+            }
+        }
+        function cycleClear(el) {
+            try {
+                if (el) {
+                    el.contentDocument.write("")
+                    el.contentWindow.document.write('');
+                    el.contentWindow.document.clear();
+                    el.contentWindow.close();
+                    var p = el.parentNode;
+                    p.removeChild(el);
+                }
+            } catch (e) {
+                // setTimeout(cycleClear(el), 100);
             }
         }
 
@@ -160,7 +191,11 @@
                     saveContentToLocal(idocument);
                     console.log(idocument)
 
-                    unsafeWindow.postMessage('lhd_close');
+                    let msg = {
+                        "handle": "lhd_close",
+                        "layer_index": index
+                    }
+                    unsafeWindow.postMessage(msg);
                 }
             });
         }
