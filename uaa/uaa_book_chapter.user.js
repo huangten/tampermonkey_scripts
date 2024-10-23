@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var cssId = 'myCss'; // you could encode the css path itself to generate id..
+    var cssId = 'layui_css'; // you could encode the css path itself to generate id..
     if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName('head')[0];
         var link = document.createElement('link');

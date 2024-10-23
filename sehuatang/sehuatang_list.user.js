@@ -7,6 +7,7 @@
 // @match        https://*.sehuatang.org/forum*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
+// @require https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js
 // @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        unsafeWindow
 // ==/UserScript==
@@ -14,10 +15,10 @@
 (function () {
     'use strict';
 
-    const cssId = 'layui_css_id'; // you could encode the css path itself to generate id..
+    var cssId = 'layui_css'; // you could encode the css path itself to generate id..
     if (!document.getElementById(cssId)) {
-        const head = document.getElementsByTagName('head')[0];
-        const link = document.createElement('link');
+        var head = document.getElementsByTagName('head')[0];
+        var link = document.createElement('link');
         link.id = cssId;
         link.rel = 'stylesheet';
         link.type = 'text/css';
@@ -26,16 +27,17 @@
         head.appendChild(link);
     }
 
-    const body = document.getElementsByTagName('body')[0];
+    var scriptJQ = document.createElement('script');
+    scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
+    document.body.appendChild(scriptJQ);
 
-    const layuiScript = document.createElement('script');
-    layuiScript.src = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js';
-    layuiScript.appendChild(layuiScript);
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
 
-
-    const fileSaverScript = document.createElement('script');
-    fileSaverScript.src = 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js';
-    body.appendChild(fileSaverScript);
+    var scriptFilesever = document.createElement('script');
+    scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
+    document.body.appendChild(scriptFilesever);
 
 
     /*global $,layui,layer,saveAs,util*/
