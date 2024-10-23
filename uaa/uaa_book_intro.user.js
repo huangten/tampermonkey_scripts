@@ -221,7 +221,7 @@
 
                 layui.layer.closeAll('iframe', () => {
                     let iframeDocument = layer.getChildFrame('iframe', e.data.layer_index);
-                    console.log(iframeDocument)
+                    // console.log(iframeDocument)
                     iframeDocument.attr('src', 'about:blank');
                     iframeDocument.remove();
                     iframeDocument.prevObject.attr('src', 'about:blank');
@@ -233,15 +233,7 @@
                         const el = iframes[index];
                         el.src = "about:blank";
                         if (el.contentWindow) {
-                            try {
-                                el.contentWindow.close()
-                            } catch (e) {
-                                console.log(e)
-                            }
-                        }
-                        const p = el.parentNode;
-                        if (p) {
-                            p.removeChild(el);
+                            setTimeout(cycleClear(el), 100);
                         }
                     }
                 });
@@ -260,6 +252,20 @@
                 timer = setTimeout(() => {
                     doDownload()
                 }, 1000 * 3);
+            }
+        }
+        function cycleClear(el) {
+            try {
+                if (el) {
+                    el.contentDocument.write("")
+                    el.contentWindow.document.write('');
+                    el.contentWindow.document.clear();
+                    el.contentWindow.close();
+                    var p = el.parentNode;
+                    p.removeChild(el);
+                }   
+            } catch (e) {
+                // setTimeout(cycleClear(el), 100);
             }
         }
 
@@ -352,10 +358,10 @@
                 area: ['70%', '80%'],
                 content: menu.href,
                 success: function (layero, index, that) {
-                    console.log(layero, index);
+                    // console.log(layero, index);
 
                     let iframeDocument = layer.getChildFrame('html', index);
-                    console.log(iframeDocument)
+                    // console.log(iframeDocument)
                     let idocument = iframeDocument[0];
                     saveContentToLocal(idocument);
                     let msg = {
