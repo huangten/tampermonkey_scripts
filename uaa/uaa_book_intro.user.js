@@ -32,6 +32,11 @@
 
     /*global $,layui,layer,util,saveAs*/
 
+    window.onload = () => {
+
+
+
+    }
 
     var downloadArray = new Array();
 
@@ -211,10 +216,20 @@
 
     var timer = 0;
     const ListenMessage = (e) => {
-        if (e.data === 'lhd_close') {
+        if (e.data.handle === 'lhd_close') {
             // unsafeWindow.removeEventListener('message', ListenMessage)
+            // let iframeDocument = layer.getChildFrame('iframe', e.data.layer_index);
+            // console.log(iframeDocument)
 
-            layui.layer.closeAll('iframe');
+            layui.layer.closeAll('iframe', () => {
+                let iframeDocument = layer.getChildFrame('iframe', e.data.layer_index);
+                console.log(iframeDocument)
+                iframeDocument.attr('src', 'about:blank');
+                iframeDocument.remove();
+                iframeDocument.prevObject = undefined;
+                iframeDocument=undefined;
+            });
+
             if (timer !== 0) {
                 clearTimeout(timer);
             }
@@ -326,7 +341,11 @@
                 console.log(iframeDocument)
                 let idocument = iframeDocument[0];
                 saveContentToLocal(idocument);
-                unsafeWindow.postMessage('lhd_close');
+                let msg = {
+                    "handle":"lhd_close",
+                    "layer_index": index
+                }
+                unsafeWindow.postMessage(msg);
             }
 
         });
