@@ -199,6 +199,10 @@
                         // saveContentToLocal(idocument);
                         console.log(idocument)
                         getInfo(idocument)
+                    }, 500)
+
+                    setTimeout(() => {
+                        
                         let msg = {
                             "handle": "lhd_close",
                             "layer_index": index
