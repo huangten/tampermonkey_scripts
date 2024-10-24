@@ -7,7 +7,6 @@
 // @match        https://*.uaa.com/novel/intro*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js
 // @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        unsafeWindow
 // ==/UserScript==
