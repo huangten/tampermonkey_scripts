@@ -79,7 +79,7 @@
                 }
                 timer = setTimeout(() => {
                     doDownload()
-                }, 1000 * 2);
+                }, 1000 * 3);
             }
         }
         function cycleClear(el) {
