@@ -608,10 +608,17 @@
 
         function getMagnets(el) {
             const magnets = [];
-            var blockcode = document.getElementsByClassName("blockcode");
+            var blockcode = el.getElementsByClassName("blockcode");
             for (let index = 0; index < blockcode.length; index++) {
                 magnets.push(blockcode[index].getElementsByTagName("li")[0].innerText);
             }
+            let replaceArr = ["播放", "复制代码", 'undefined', "立即免费观看"];
+            for (let index = 0; index < magnets.length; index++) {
+                for (let j = 0; j < replaceArr.length; j++) {
+                    magnets[index] = magnets[index].replace(replaceArr[j], '').trim();
+                }
+            }
+            console.log(magnets)
             return magnets;
         }
 
