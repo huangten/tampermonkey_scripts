@@ -43,7 +43,7 @@
     /*global $,layui,layer,saveAs,util*/
 
     var downloadArray = new Array();
-    window.onload = function () {
+    unsafeWindow.onload = function () {
 
         var timer = 0;
         const ListenMessage = (e) => {
@@ -170,7 +170,7 @@
                 return;
             }
             let menu = downloadArray.shift();
-            return
+            // return
             layui.layer.open({
                 type: 2,
                 title: menu.sehuatang_type + " " + menu.title,
@@ -184,18 +184,29 @@
                 content: menu.href,
                 success: function (layero, index, that) {
                     console.log(layero, index);
-
-                    let iframeDocument = layer.getChildFrame('html', index);
-                    let idocument = iframeDocument.prevObject[0];
-
-                    saveContentToLocal(idocument);
-                    console.log(idocument)
-
-                    let msg = {
-                        "handle": "lhd_close",
-                        "layer_index": index
+                    let iframes = document.getElementsByTagName('iframe');
+                    console.log(iframes)
+                    for (let index = 0; index < iframes.length; index++) {
+                        iframes[index].contentWindow.scrollTo({
+                            top: 4000,
+                            left: 0,
+                            behavior: "smooth",
+                        });
                     }
-                    unsafeWindow.postMessage(msg);
+
+                    setTimeout(() => {
+                        let iframeDocument = layer.getChildFrame('html', index);
+                        let idocument = iframeDocument[0];
+                        // saveContentToLocal(idocument);
+                        console.log(idocument)
+                        getInfo(idocument)
+                        let msg = {
+                            "handle": "lhd_close",
+                            "layer_index": index
+                        }
+                        unsafeWindow.postMessage(msg);
+                    }, 1000);
+
                 }
             });
         }
@@ -406,46 +417,213 @@
         }
 
 
+        function getInfo(el) {
+            setTimeout(() => {
 
-    }
-    function saveContentToLocal(el) {
-        let title = getTitleText(el);
-        console.log(title)
-        DownloadBT(el)
-        try {
-            var isFileSaverSupported = !!new Blob;
-            var blob = new Blob([title], { type: "text/plain;charset=utf-8" });
-            saveAs(blob, title + ".txt");
-        } catch (e) {
-            console.log(e);
+                const type = getType(el);
+
+                const imageLinks = getImages(el);
+                console.log(imageLinks);
+                const imgs = [];
+
+                for (let index = 0; index < imageLinks.length; index++) {
+                    let paths = imageLinks[index].split('/')
+                    let file = paths[paths.length - 1].split('.');
+                    let ext = file[file.length - 1];
+                    let name = getSelfFilename(el) + "_" + index + "." + ext
+                    imgs.push(
+                        {
+                            'isExist': false,
+                            "hasDownload": false,
+                            "filename": name,
+                            "href": imageLinks[index]
+                        }
+                    );
+                }
+
+                const magnets = getMagnets(el);
+                const btNames = getBtNames(el);
+
+                const time = getTime(el);
+
+                const selfFilename = getFileName(getSelfFilename(el), 'txt');
+                const sehuatangTexts = getsehuatangTexts(el);
+                let info = {
+                    "title": getTitleText(el),
+                    "avNumber": getAvNumber(el),
+                    "selfFilename": selfFilename,
+                    "year": time.split(' ')[0].split('-')[0],
+                    "month": time.split(' ')[0].split('-')[1],
+                    'day': time.split(' ')[0].split('-')[2],
+                    "date": time.split(' ')[0],
+                    "time": time,
+                    "sehuatangInfo": {
+                        "type": type,
+                        "link": getPageLink(el),
+                        "infos": sehuatangTexts,
+                        "imgs": imgs,
+                        "magnets": magnets,
+                        "bts": btNames
+                    }
+                }
+
+                try {
+                    var isFileSaverSupported = !!new Blob;
+                    var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
+                    saveAs(blob, selfFilename);
+                } catch (e) {
+                    console.log(e);
+                }
+                doBtDownload(el)
+            }, 10)
+
         }
 
-    }
-    function DownloadBT(el) {
-        var attnms = el.getElementsByClassName("attnm");
-        for (let index = 0; index < attnms.length; index++) {
-            attnms[index].getElementsByTagName("a")[0].click();
+        function saveImage(imageLink, name) {
+            let res = false;
+            fetch(imageLink)
+                // 获取 blob 对象
+                .then(res => res.blob())
+                .then(blob => {
+                    let blob1 = new Blob(blob, { type: "image/jpeg;" });
+                    saveAs(blob1, name);
+                });
+            try {
+
+                res = true;
+            } catch (e) {
+                res = false;
+            }
+            return res;
         }
-    }
 
-    function copyTitleAndBlockcode(el) {
-        let info = getTitleText(el) + "\n";
-        info += getPageLink(el) + "\n";
-        var blockcode = el.getElementsByClassName("blockcode");
-        for (let index = 0; index < blockcode.length; index++) {
-            info += blockcode[index].getElementsByTagName("li")[0].innerText + "\n";
+        function getAvNumber(el) {
+            const sehuatangTexts = getsehuatangTexts(el);
+            let avNumber = '';
+            for (let index = 0; index < sehuatangTexts.length; index++) {
+                const element = sehuatangTexts[index];
+                if (element.indexOf("品番：") > -1) {
+                    avNumber = element.replace("品番：", "").trim();
+                    return avNumber
+                }
+            }
+            const title = getTitleText(el);
+            const type = getType(el);
+            if (type.localeCompare("高清中文字幕") === 0 || type.localeCompare('4K原版') === 0) {
+                return title.split(' ')[0];
+            }
+            return title;
         }
-        console.log(info);
-    }
 
-    function getTitle(el) {
-        return el.getElementById("thread_subject");
-    }
-    function getTitleText(el) {
-        return getTitle(el).innerText;
-    }
+        function getTime(el) {
+            let time = '';
+            try {
+                time = el.getElementsByClassName("authi")[1].getElementsByTagName("em")[0].getElementsByTagName('span')[0].getAttribute("title")
+            } catch (e) {
+                time = el.getElementsByClassName("authi")[1].getElementsByTagName('em')[0].innerText.replace("发表于", '').trim()
+            }
+            return time
+        }
 
-    function getPageLink(el) {
-        return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
+        function getType(el) {
+            return el.getElementsByClassName("bm cl")[0].getElementsByTagName("a")[3].innerText.trim();
+        }
+
+        function getImages(el) {
+            const imgs = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('img');
+            let res = [];
+            for (let index = 0; index < imgs.length; index++) {
+                const element = imgs[index];
+                if (element.getAttribute("id") !== null && element.getAttribute("id").indexOf('aimg') > -1) {
+                    res.push(element.src);
+                }
+            }
+            return res;
+        }
+
+        function getsehuatangTexts(el) {
+            let sehuatangTextArray = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].innerText.split("\n").filter((item) => {
+                return item !== null && typeof item !== "undefined" && item !== "";
+            });
+            let replaceArr = ["播放", "复制代码", 'undefined', "立即免费观看"];
+            for (let index = 0; index < sehuatangTextArray.length; index++) {
+                for (let j = 0; j < replaceArr.length; j++) {
+                    sehuatangTextArray[index] = sehuatangTextArray[index].replace(replaceArr[j], '').trim();
+                }
+            }
+            return sehuatangTextArray;
+        }
+
+        function getSelfFilename(el) {
+            let title = getTitleText(el);
+            let replaceList = '/?*:|\<>'.split('');
+            let equalList = ["con", "aux", "nul", "prn", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
+                "com8", "com9", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"];
+
+            for (let i = 0; i < replaceList.length; i++) {
+                title = title.replaceAll(replaceList[i], "_");
+            }
+            return title;
+        }
+        function getFileName(name, ext) {
+            return name + '.' + ext;
+        }
+
+        function getDownloadBtTags(el) {
+            let attnms = el.getElementsByClassName("attnm");
+            let res = [];
+            if (attnms !== null && attnms.length === 0) {
+                res = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
+            } else {
+                for (let index = 0; index < attnms.length; index++) {
+                    let as = attnms[index].getElementsByTagName('a')
+                    for (let j = 0; j < as.length; j++) {
+                        res.push(as[j]);
+                    }
+                }
+            }
+            // console.log(res);
+            return res
+        }
+
+        function getBtNames(el) {
+            let attnms = getDownloadBtTags(el);
+            let btNames = [];
+            for (let index = 0; index < attnms.length; index++) {
+                btNames.push(attnms[index].innerText.trim());
+            }
+            return btNames;
+        }
+
+        function doBtDownload(el) {
+            let attnms = getDownloadBtTags(el);
+            console.log(attnms)
+            for (let index = 0; index < attnms.length; index++) {
+                attnms[index].click();
+            }
+        }
+
+        function getMagnets(el) {
+            const magnets = [];
+            var blockcode = document.getElementsByClassName("blockcode");
+            for (let index = 0; index < blockcode.length; index++) {
+                magnets.push(blockcode[index].getElementsByTagName("li")[0].innerText);
+            }
+            return magnets;
+        }
+
+        function getTitle(el) {
+            return el.querySelector("#thread_subject");
+        }
+        function getTitleText(el) {
+            return getTitle(el).innerText;
+        }
+
+        function getPageLink(el) {
+            return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
+        }
+
+
+
     }
 })();

@@ -10,6 +10,9 @@
 // @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 // @require https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/layui.min.js
 // @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
+// @grant        GM_xmlhttpRequest
+// @connect      *
+// @grant        GM_download
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -41,7 +44,8 @@
     document.body.appendChild(scriptFilesever);
     /*global $,layui,layer,saveAs,FileSaver,util*/
 
-    window.onload = function () {
+
+    unsafeWindow.onload = function () {
         function copyContext(str) {
             navigator.clipboard.writeText(str).then(() => {
                 console.log('Content copied to clipboard');
@@ -52,7 +56,6 @@
                 /* Rejected - 文本未被复制到剪贴板 */
             });
         }
-
         layui.use(function () {
             var util = layui.util;
             // 自定义固定条
@@ -90,25 +93,150 @@
                     console.log(this, type);
                     // layer.msg(type);
                     if (type === "getInfo") {
-                        getInfo();
+                        getInfo(document);
                         return;
                     }
                     if (type === "copyTitleAndDownload") {
-                        copyTitleAndDownload();
+                        copyTitleAndDownload(document);
                         return;
                     }
                     if (type === "copyTitleAndBlockcode") {
-                        copyTitleAndBlockcode();
+                        copyTitleAndBlockcode(document);
                         return;
                     }
                 }
             });
         });
-        function getInfo() {
-            let el = document
-            let sehuatangType = el.getElementsByClassName("bm cl")[0].getElementsByTagName("a")[3].innerText
-            console.log(sehuatangType)
+        function getInfo(el) {
+            unsafeWindow.scrollTo({
+                top: 4000,
+                left: 0,
+                behavior: "smooth",
+            });
+            setTimeout(() => {
 
+                const type = getType(el);
+
+                const imageLinks = getImages(el);
+                console.log(imageLinks);
+                const imgs = [];
+
+                for (let index = 0; index < imageLinks.length; index++) {
+                    let paths = imageLinks[index].split('/')
+                    let file = paths[paths.length - 1].split('.');
+                    let ext = file[file.length - 1];
+                    let name = getSelfFilename(el) + "_" + index + "." + ext
+                    imgs.push(
+                        {
+                            'isExist': false,
+                            "hasDownload": false,
+                            "filename": name,
+                            "href": imageLinks[index]
+                        }
+                    );
+                }
+
+                const magnets = getMagnets(el);
+                const btNames = getBtNames(el);
+
+                const time = getTime(el);
+
+                const selfFilename = getFileName(getSelfFilename(el), 'txt');
+                const sehuatangTexts = getsehuatangTexts(el);
+                let info = {
+                    "title": getTitleText(el),
+                    "avNumber": getAvNumber(el),
+                    "selfFilename": selfFilename,
+                    "year": time.split(' ')[0].split('-')[0],
+                    "month": time.split(' ')[0].split('-')[1],
+                    'day': time.split(' ')[0].split('-')[2],
+                    "date": time.split(' ')[0],
+                    "time": time,
+                    "sehuatangInfo": {
+                        "type": type,
+                        "link": getPageLink(el),
+                        "infos": sehuatangTexts,
+                        "imgs": imgs,
+                        "magnets": magnets,
+                        "bts": btNames
+                    }
+                }
+
+                try {
+                    var isFileSaverSupported = !!new Blob;
+                    var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
+                    saveAs(blob, selfFilename);
+                } catch (e) {
+                    console.log(e);
+                }
+                doBtDownload(el)
+            }, 500)
+
+        }
+
+        function saveImage(imageLink, name) {
+            let res = false;
+            fetch(imageLink)
+                // 获取 blob 对象
+                .then(res => res.blob())
+                .then(blob => {
+                    let blob1 = new Blob(blob, { type: "image/jpeg;" });
+                    saveAs(blob1, name);
+                });
+            try {
+
+                res = true;
+            } catch (e) {
+                res = false;
+            }
+            return res;
+        }
+
+        function getAvNumber(el) {
+            const sehuatangTexts = getsehuatangTexts(el);
+            let avNumber = '';
+            for (let index = 0; index < sehuatangTexts.length; index++) {
+                const element = sehuatangTexts[index];
+                if (element.indexOf("品番：") > -1) {
+                    avNumber = element.replace("品番：", "").trim();
+                    return avNumber
+                }
+            }
+            const title = getTitleText(el);
+            const type = getType(el);
+            if (type.localeCompare("高清中文字幕") === 0 || type.localeCompare('4K原版') === 0) {
+                return title.split(' ')[0];
+            }
+            return title;
+        }
+
+        function getTime(el) {
+            let time = '';
+            try {
+                time = el.getElementsByClassName("authi")[1].getElementsByTagName("em")[0].getElementsByTagName('span')[0].getAttribute("title")
+            } catch (e) {
+                time = el.getElementsByClassName("authi")[1].getElementsByTagName('em')[0].innerText.replace("发表于", '').trim()
+            }
+            return time
+        }
+
+        function getType(el) {
+            return el.getElementsByClassName("bm cl")[0].getElementsByTagName("a")[3].innerText.trim();
+        }
+
+        function getImages(el) {
+            const imgs = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('img');
+            let res = [];
+            for (let index = 0; index < imgs.length; index++) {
+                const element = imgs[index];
+                if (element.getAttribute("id") !== null && element.getAttribute("id").indexOf('aimg') > -1) {
+                    res.push(element.src);
+                }
+            }
+            return res;
+        }
+
+        function getsehuatangTexts(el) {
             let sehuatangTextArray = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].innerText.split("\n").filter((item) => {
                 return item !== null && typeof item !== "undefined" && item !== "";
             });
@@ -118,42 +246,22 @@
                     sehuatangTextArray[index] = sehuatangTextArray[index].replace(replaceArr[j], '').trim();
                 }
             }
+            return sehuatangTextArray;
+        }
 
-            let info = {
-                "title": getTitleText(),
-                "fanhao": "",
-                "info_filename": "",
-                "date": "",
-                "time": "",
-                "sehuatangType": "",
-                "sehuatangLink": getPageLink(),
-                "sehuatangText": sehuatangTextArray,
-                "sehuatangImg": [
-                    {
-                        "isExist": false,
-                        "filename": "",
-                        "href": ""
-                    }
-                ],
-                "magnet": ["", ""],
-                "sehuatangBTInfo": [
-                    {
-                        "isExist": false,
-                        "filename": "",
-                        "href": ""
-                    }
-                ]
+        function getSelfFilename(el) {
+            let title = getTitleText(el);
+            let replaceList = '/?*:|\<>'.split('');
+            let equalList = ["con", "aux", "nul", "prn", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
+                "com8", "com9", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"];
+
+            for (let i = 0; i < replaceList.length; i++) {
+                title = title.replaceAll(replaceList[i], "_");
             }
-            try {
-                var isFileSaverSupported = !!new Blob;
-                var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
-                saveAs(blob, "test.txt");
-            } catch (e) {
-                console.log(e);
-            }
-            console.log(sehuatangTextArray)
-            doBtDownload(el)
-            console.log(getBtNames(el))
+            return title;
+        }
+        function getFileName(name, ext) {
+            return name + '.' + ext;
         }
 
         function saveContentToLocal(el) {
@@ -161,7 +269,7 @@
             try {
                 var isFileSaverSupported = !!new Blob;
                 var blob = new Blob([title], { type: "text/plain;charset=utf-8" });
-                saveAs(blob, "test.txt");
+                saveAs(blob, getTitleText(el) + ".json");
             } catch (e) {
                 console.log(e);
             }
@@ -202,33 +310,40 @@
             }
         }
 
-        function copyTitleAndDownload() {
-            copyContext(getTitleText() + "\n")
-            var attnms = document.getElementsByClassName("attnm");
-            for (let index = 0; index < attnms.length; index++) {
-                attnms[index].getElementsByTagName("a")[0].click();
-            }
+        function copyTitleAndDownload(el) {
+            copyContext(getTitleText(el) + "\n")
+            doBtDownload(el)
         }
 
-        function copyTitleAndBlockcode() {
-            let info = getTitleText() + "\n";
-            info += getPageLink() + "\n";
+
+        function getMagnets(el) {
+            const magnets = [];
             var blockcode = document.getElementsByClassName("blockcode");
             for (let index = 0; index < blockcode.length; index++) {
-                info += blockcode[index].getElementsByTagName("li")[0].innerText + "\n";
+                magnets.push(blockcode[index].getElementsByTagName("li")[0].innerText);
+            }
+            return magnets;
+        }
+
+        function copyTitleAndBlockcode(el) {
+            let info = getTitleText(el) + "\n";
+            info += getPageLink(el) + "\n";
+            var blockcode = getMagnets(el);
+            for (let index = 0; index < blockcode.length; index++) {
+                info += blockcode[index] + "\n";
             }
             copyContext(info);
         }
 
-        function getTitle() {
-            return document.getElementById("thread_subject");
+        function getTitle(el) {
+            return el.getElementById("thread_subject");
         }
-        function getTitleText() {
-            return getTitle().innerText;
+        function getTitleText(el) {
+            return getTitle(el).innerText;
         }
 
-        function getPageLink() {
-            return document.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
+        function getPageLink(el) {
+            return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
         }
     }
 })();
