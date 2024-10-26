@@ -26,9 +26,10 @@
         head.appendChild(link);
     }
 
-    var scriptJQ = document.createElement('script');
-    scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
-    document.body.appendChild(scriptJQ);
+    // 本站导入jq有冲突
+    // var scriptJQ = document.createElement('script');
+    // scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
+    // document.body.appendChild(scriptJQ);
 
     var scriptLayUI = document.createElement('script');
     scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
@@ -253,7 +254,7 @@
                             // console.log(this, type);
                             // layer.msg(type);
                             if (type === "getCheckedNodeData") {
-                                $("#getCheckedNodeData").click();
+                                document.getElementById('getCheckedNodeData').click();
                             }
                             if (type === "clear") {
                                 tree.reload('titleList', { // options
