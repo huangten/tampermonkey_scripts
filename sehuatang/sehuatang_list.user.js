@@ -575,14 +575,14 @@
 
         function getDownloadBtTags(el) {
             let attnms = el.getElementsByClassName("attnm");
-            let as = [];
+            let aTags = [];
             if (attnms !== null && attnms.length === 0) {
-                as = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
+                aTags = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
             } else {
                 for (let index = 0; index < attnms.length; index++) {
                     let as = attnms[index].getElementsByTagName('a')
                     for (let j = 0; j < as.length; j++) {
-                        as.push(as[j]);
+                        aTags.push(as[j]);
                     }
                 }
             }
