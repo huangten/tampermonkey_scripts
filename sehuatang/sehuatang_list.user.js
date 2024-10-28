@@ -587,9 +587,9 @@
                 }
             }
             let res = [];
-            for (let index = 0; index < res.length; index++) {
-                if (res[index].innerText.trim().indexOf('torrent') > -1) {
-                    res.push(res[index])
+            for (let index = 0; index < aTags.length; index++) {
+                if (aTags[index].innerText.trim().indexOf('torrent') > -1) {
+                    res.push(aTags[index])
                 }
             }
             // console.log(res);
