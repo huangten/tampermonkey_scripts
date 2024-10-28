@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-24
+// @version      2024-10-28
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -575,15 +575,21 @@
 
         function getDownloadBtTags(el) {
             let attnms = el.getElementsByClassName("attnm");
-            let res = [];
+            let as = [];
             if (attnms !== null && attnms.length === 0) {
-                res = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
+                as = el.getElementsByClassName("t_fsz")[0].getElementsByTagName("table")[0].getElementsByTagName('tr')[0].getElementsByTagName('a')
             } else {
                 for (let index = 0; index < attnms.length; index++) {
                     let as = attnms[index].getElementsByTagName('a')
                     for (let j = 0; j < as.length; j++) {
-                        res.push(as[j]);
+                        as.push(as[j]);
                     }
+                }
+            }
+            let res = [];
+            for (let index = 0; index < res.length; index++) {
+                if (res[index].innerText.trim().indexOf('torrent') > -1) {
+                    res.push(res[index])
                 }
             }
             // console.log(res);
