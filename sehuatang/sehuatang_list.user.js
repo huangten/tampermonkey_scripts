@@ -326,7 +326,8 @@
                         "title": allLines[i].date,
                         "href": "",
                         "children": [],
-                        "spread": true,
+                        "spread": false,
+                        "checked":true,
                         "field": ""
                     }
                 }
@@ -337,7 +338,8 @@
                     "href": allLines[i].href,
                     "date": allLines[i].date,
                     "children": [],
-                    "spread": true,
+                    "checked":true,
+                    "spread": false,
                     "field": "",
                 });
             }
