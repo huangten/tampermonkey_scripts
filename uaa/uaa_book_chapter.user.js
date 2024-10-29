@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-21
+// @version      2024-10-29.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -69,7 +69,7 @@
 
         // 找到指定的 div 元素
         const targetDiv = document.querySelector('body div.title_box')
-
+        const fixbarStyle = "background-color: #ff5555;font-size: 14px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
             var util = layui.util;
             // 自定义固定条
@@ -77,35 +77,52 @@
                 bars: [{
                     type: 'titleText',
                     content: '获取标题文本',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'titleHtml',
                     content: '获取标题HTML',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'contentText',
                     content: '获取内容文本',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'contentHtml',
                     content: '获取内容HTML',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'titleAndContentText',
                     content: '获取标题和内容文本',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'titleAndContentHtml',
                     content: '获取标题和内容HTML',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }, {
                     type: 'saveContentToLocal',
                     content: '保存内容到本地',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
-                }, {
+                    style: fixbarStyle
+                }
+                    , {
+                    type: 'prev',
+                    content: '上一章',
+                    style: fixbarStyle
+                }
+                    , {
+                    type: 'self',
+                    content: '本书',
+                    style: fixbarStyle
+                }
+                    , {
+                    type: 'next',
+                    content: '下一章',
+                    style: fixbarStyle
+                }
+
+                    , {
                     type: 'toBottom',
                     content: '底部',
-                    style: 'background-color: #FF5722;font-size: 12px;width:120px;'
+                    style: fixbarStyle
                 }],
                 default: true,
                 css: { bottom: "15%" },
@@ -154,6 +171,29 @@
                         saveContentToLocal();
                         return;
                     }
+
+                    if (type === "prev") {
+                        let prev = document.getElementsByClassName("bottom_box")[0].firstElementChild
+                        if (prev.nodeName.indexOf("A") > -1) {
+                            prev.click();
+                            return
+                        }
+                        return;
+                    }
+                    if (type === "self") {
+                        let s = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling
+                        s.click();
+                        return;
+                    }
+                    if (type === "next") {
+                        let next = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling.nextElementSibling
+                        if (next.nodeName.indexOf("A") > -1) {
+                            next.click();
+                            return
+                        }
+                        return;
+                    }
+
                     if (type === "toBottom") {
                         toBottom();
                         return;

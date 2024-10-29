@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29
+// @version      2024-10-29.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -53,7 +53,7 @@
 
     unsafeWindow.onload = () => {
         var downloadArray = new Array();
-
+        const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
             var util = layui.util;
             // 自定义固定条
@@ -62,21 +62,23 @@
                     {
                         type: 'copyBookName',
                         content: '复制书名',
-                        style: 'background-color: #FF5722;font-size: 12px;width:80px;'
+                        style: fixbarStyle
                     },
                     {
-                    type: 'downloadAll',
-                    content: '下载全部',
-                    style: 'background-color: #FF5722;font-size: 12px;width:80px;'
-                }, {
-                    type: 'clearDownloadList',
-                    content: '清除待下载',
-                    style: 'background-color: #FF5722;font-size: 12px;width:80px;'
-                }, {
-                    type: 'menuList',
-                    content: '章节列表',
-                    style: 'font-size: 12px;width:80px;'
-                }],
+                        type: 'downloadAll',
+                        content: '下载全部',
+                        style: fixbarStyle
+                    },
+                    {
+                        type: 'clearDownloadList',
+                        content: '清除待下载',
+                        style: fixbarStyle
+                    },
+                    {
+                        type: 'menuList',
+                        content: '章节列表',
+                        style: fixbarStyle
+                    }],
 
                 default: true,
                 css: { bottom: "15%" },
