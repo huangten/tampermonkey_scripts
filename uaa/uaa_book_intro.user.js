@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-21
+// @version      2024-10-29
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -40,6 +40,17 @@
 
     /*global $,layui,layer,util,saveAs*/
 
+    function copyContext(str) {
+        navigator.clipboard.writeText(str).then(() => {
+            console.log('Content copied to clipboard');
+            /* Resolved - 文本被成功复制到剪贴板 */
+            layer.msg('复制成功', { icon: 1 });
+        }, () => {
+            console.error('Failed to copy');
+            /* Rejected - 文本未被复制到剪贴板 */
+        });
+    }
+
     unsafeWindow.onload = () => {
         var downloadArray = new Array();
 
@@ -47,7 +58,13 @@
             var util = layui.util;
             // 自定义固定条
             util.fixbar({
-                bars: [{
+                bars: [
+                    {
+                        type: 'copyBookName',
+                        content: '复制书名',
+                        style: 'background-color: #FF5722;font-size: 12px;width:80px;'
+                    },
+                    {
                     type: 'downloadAll',
                     content: '下载全部',
                     style: 'background-color: #FF5722;font-size: 12px;width:80px;'
@@ -91,6 +108,13 @@
                         }
                         return;
                     }
+
+                    if (type === "copyBookName") {
+                        let bookName = document.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText
+                        copyContext(bookName)
+                        return;
+                    }
+
                     if (type === "clearDownloadList") {
                         downloadArray = new Array();
                         return;
