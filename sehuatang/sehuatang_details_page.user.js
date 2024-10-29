@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-28
+// @version      2024-10-29
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -58,23 +58,25 @@
         }
         layui.use(function () {
             var util = layui.util;
+            const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
             // 自定义固定条
             util.fixbar({
                 bars: [{
                     type: 'getInfo',
                     content: '获取信息',
-                    style: 'background-color: #FF5722;font-size: 14px;width:160px;'
+                    style: fixbarStyle
                 }, {
                     type: 'copyTitleAndDownload',
                     content: '复制标题和下载种子',
-                    style: 'background-color: #FF5722;font-size: 14px;width:160px;'
+                    style: fixbarStyle
                 }, {
                     type: 'copyTitleAndBlockcode',
                     content: '复制标题和磁力信息',
-                    style: 'background-color: #FF5722;font-size: 14px;width:160px;'
+                    style: fixbarStyle
                 }],
-                default: true,
-                css: { bottom: "15%" },
+                default: false,
+                css: { bottom: "21%" },
+                bgcolor: '#ba350f', // bar 的默认背景色
                 margin: 0,
                 on: {
                     mouseenter: function (type) {

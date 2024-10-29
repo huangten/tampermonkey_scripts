@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29.1
+// @version      2024-10-29.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -208,43 +208,6 @@
             $("html,body").animate({ "scrollTop": windowHeight }, 200);
         }
 
-        const br = document.createElement('br');
-
-        var bottomBoxFirstElementChild = document.getElementsByClassName("chapter_box")[0].getElementsByClassName("bottom_box")[0].firstElementChild
-
-        var prevChapter = bottomBoxFirstElementChild.tagName == 'A' ? document.createElement('a') : document.createElement('button');
-        prevChapter.textContent = prevChapter.tagName == 'A' ? "上一章" : "已是第一章";
-        if (prevChapter.tagName == 'A') {
-            console.log(bottomBoxFirstElementChild.href)
-            prevChapter.href = bottomBoxFirstElementChild.href;
-        }
-        prevChapter.style.position = "fixed"
-        prevChapter.style.top = "250px"
-        prevChapter.style.right = "20px"
-
-
-        var book = document.createElement('a');
-        book.textContent = "书籍"
-        book.href = bottomBoxFirstElementChild.nextElementSibling.href
-        book.style.position = "fixed"
-        book.style.top = "300px"
-        book.style.right = "20px"
-
-        var bottomBoxThirdElementChild = bottomBoxFirstElementChild.nextElementSibling.nextElementSibling;
-        var nextChapter = bottomBoxThirdElementChild.tagName == 'A' ? document.createElement('a') : document.createElement('button');
-        nextChapter.textContent = bottomBoxThirdElementChild.tagName == 'A' ? "下一章" : "已是最后一章";
-
-        if (nextChapter.tagName == 'A') {
-            console.log(bottomBoxThirdElementChild.getAttribute("href"))
-            nextChapter.href = bottomBoxThirdElementChild.getAttribute("href");
-        }
-
-        nextChapter.style.position = "fixed"
-        nextChapter.style.top = "350px"
-        nextChapter.style.right = "20px"
-
-
-
         // 添加按钮的点击事件
         function titleText() {
             copyContext(titleBox)
@@ -340,10 +303,5 @@
             // 将按钮添加到指定的 div 元素中
             targetDiv.appendChild(e)
         }
-
-        //         buttonAddBody(br);
-        //         buttonAddBody(prevChapter);
-        //         buttonAddBody(book);
-        //         buttonAddBody(nextChapter);
     }
 })();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29.1
+// @version      2024-10-29.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -143,7 +143,7 @@
                 offset: 'r',
                 shade: 0,
                 anim: 'slideLeft', // 从右往左
-                area: ['25%', '80%'],
+                area: ['20%', '80%'],
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
                 content: `<div class='layui-btn-container'>
@@ -167,7 +167,7 @@
                                 }],
                             default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                             bgcolor: '#16baaa', // bar 的默认背景色
-                            css: { bottom: "20%" },
+                            css: { bottom: "15%", right:30 },
                             target: layero, // 插入 fixbar 节点的目标元素选择器
                             click: function (type) {
                                 // console.log(this, type);
@@ -382,7 +382,7 @@
                 anim: 'slideRight',
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
-                area: ['70%', '80%'],
+                area: ['75%', '80%'],
                 content: menu.href,
                 success: function (layero, index, that) {
                     // console.log(layero, index);

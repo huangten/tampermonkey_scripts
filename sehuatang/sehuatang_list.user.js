@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-28
+// @version      2024-10-29
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -99,7 +99,7 @@
         }
 
         unsafeWindow.addEventListener('message', ListenMessage);
-
+        const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
             var util = layui.util;
             // 自定义固定条
@@ -107,19 +107,19 @@
                 bars: [{
                     type: 'downloadAll',
                     content: '下载全部',
-                    style: 'background-color: #FF5722;font-size: 12px;width:80px;'
+                    style: fixbarStyle
                 }, {
                     type: 'clearDownloadList',
                     content: '清除待下载',
-                    style: 'background-color: #FF5722;font-size: 12px;width:80px;'
+                    style: fixbarStyle
                 }, {
                     type: 'menuList',
                     content: '章节列表',
-                    style: 'font-size: 12px;width:80px;'
+                    style: fixbarStyle
                 }],
-
-                default: true,
-                css: { bottom: "15%" },
+                bgcolor: '#ba350f', // bar 的默认背景色
+                default: false,
+                css: { bottom: "18%" },
                 margin: 0,
                 on: {
                     mouseenter: function (type) {
@@ -180,7 +180,7 @@
                 anim: 'slideRight',
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
-                area: ['70%', '80%'],
+                area: ['75%', '80%'],
                 content: menu.href,
                 success: function (layero, index, that) {
                     console.log(layero, index);
@@ -203,7 +203,7 @@
                     }, 500)
 
                     setTimeout(() => {
-                        
+
                         let msg = {
                             "handle": "lhd_close",
                             "layer_index": index
@@ -248,7 +248,7 @@
                             }],
                         default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                         bgcolor: '#16baaa', // bar 的默认背景色
-                        css: { bottom: "20%" },
+                        css: { bottom: "10%" ,right:30 },
                         target: layero, // 插入 fixbar 节点的目标元素选择器
                         click: function (type) {
                             // console.log(this, type);
@@ -327,7 +327,7 @@
                         "href": "",
                         "children": [],
                         "spread": false,
-                        "checked":true,
+                        "checked": true,
                         "field": ""
                     }
                 }
@@ -338,7 +338,7 @@
                     "href": allLines[i].href,
                     "date": allLines[i].date,
                     "children": [],
-                    "checked":true,
+                    "checked": true,
                     "spread": false,
                     "field": "",
                 });
