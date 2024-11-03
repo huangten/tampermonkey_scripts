@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29
+// @version      2024-11-03
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -562,7 +562,7 @@
 
         function getSelfFilename(el) {
             let title = getTitleText(el);
-            let replaceList = '/?*:|\<>"'.split('');
+            let replaceList = '/?*:|\\<>"'.split('');
             let equalList = ["con", "aux", "nul", "prn", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
                 "com8", "com9", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"];
 
