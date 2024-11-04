@@ -1,13 +1,11 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-03
+// @version      2024-11-04
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
-// @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -26,11 +24,6 @@
         head.appendChild(link);
     }
 
-    // 本站导入jq有冲突
-    // var scriptJQ = document.createElement('script');
-    // scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
-    // document.body.appendChild(scriptJQ);
-
     var scriptLayUI = document.createElement('script');
     scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
     document.body.appendChild(scriptLayUI);
@@ -39,8 +32,22 @@
     scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
     document.body.appendChild(scriptFilesever);
 
+    /*global $ layui layer saveAs util*/
 
-    /*global $,layui,layer,saveAs,util*/
+    class DownloadManager {
+        downloadStatus = {
+            // 未开始
+            // 下载中
+            // 等待中
+            // 暂停中
+            // 下载完成
+        };
+        constructor() {
+            this.allList = [];
+            this.currentIndex = 0;
+            this.status = 0;
+        }
+    }
 
     var downloadArray = new Array();
     unsafeWindow.onload = function () {
@@ -183,10 +190,11 @@
                 area: ['75%', '80%'],
                 content: menu.href,
                 success: function (layero, index, that) {
-                    console.log(layero, index);
+                    // console.log(layero, index);
                     let iframes = document.getElementsByTagName('iframe');
-                    console.log(iframes)
+                    // console.log(iframes)
                     for (let index = 0; index < iframes.length; index++) {
+                        iframes[index].focus()
                         iframes[index].contentWindow.scrollTo({
                             top: 4000,
                             left: 0,
@@ -198,7 +206,7 @@
                         let iframeDocument = layer.getChildFrame('html', index);
                         let idocument = iframeDocument[0];
                         // saveContentToLocal(idocument);
-                        console.log(idocument)
+                        // console.log(idocument)
                         getInfo(idocument)
                     }, 500)
 
@@ -248,7 +256,7 @@
                             }],
                         default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                         bgcolor: '#16baaa', // bar 的默认背景色
-                        css: { bottom: "10%" ,right:30 },
+                        css: { bottom: "10%", right: 30 },
                         target: layero, // 插入 fixbar 节点的目标元素选择器
                         click: function (type) {
                             // console.log(this, type);
@@ -284,6 +292,8 @@
                             doDownload()
                         }
                     });
+
+
                     // 按钮事件
                     layui.util.event('lay-on', {
                         getChecked: function (othis) {
