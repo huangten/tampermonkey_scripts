@@ -1,13 +1,11 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29.2
+// @version      2024-11-04
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=uaa.com
-// @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        unsafeWindow
 // ==/UserScript==
 

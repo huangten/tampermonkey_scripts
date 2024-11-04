@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-03
+// @version      2024-11-04
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -29,11 +29,6 @@
         link.media = 'all';
         head.appendChild(link);
     }
-
-    // 本站导入jq有冲突
-    // var scriptJQ = document.createElement('script');
-    // scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
-    // document.body.appendChild(scriptJQ);
 
     var scriptLayUI = document.createElement('script');
     scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";

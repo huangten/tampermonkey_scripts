@@ -1,13 +1,11 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-29.2
+// @version      2024-11-04
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=uaa.com
-// @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -146,97 +144,83 @@
                 area: ['20%', '80%'],
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
-                content: `<div class='layui-btn-container'>
-            <button type='button' id='getCheckedNodeData' class='layui-btn layui-btn-sm' lay-on='getChecked'>获取选中节点数据</button>
-            <button type='button' class='layui-btn layui-btn-sm' lay-on='reload'>重载实例</button>
-            <div id='openPage'></div></div>`,
+                content: `<div id='openPage'></div>`,
                 success: function (layero, index, that) {
                     // console.log(layero, index,that)
-                    layui.use(function () {
-                        var util = layui.util;
-                        // 自定义固定条
-                        util.fixbar({
-                            bars: [
-                                {
-                                    type: 'getCheckedNodeData',
-                                    content: '选',
-                                },
-                                {
-                                    type: 'clear',
-                                    icon: 'layui-icon-refresh',
-                                }],
-                            default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
-                            bgcolor: '#16baaa', // bar 的默认背景色
-                            css: { bottom: "15%", right:30 },
-                            target: layero, // 插入 fixbar 节点的目标元素选择器
-                            click: function (type) {
-                                // console.log(this, type);
-                                // layer.msg(type);
-                                if (type === "getCheckedNodeData") {
-                                    $("#getCheckedNodeData").click();
-                                }
-                                if (type === "clear") {
-                                    layer.tree.reload('title', {
-                                        data: getMenuTree()
-                                    }); // 重载实例
-                                    downloadArray = new Array();
-                                }
+
+                    var tree = layui.tree;
+                    var layer = layui.layer;
+                    var util = layui.util;
+
+                    // 自定义固定条
+                    util.fixbar({
+                        bars: [
+                            {
+                                type: 'getCheckedNodeData',
+                                content: '选',
+                            },
+                            {
+                                type: 'clear',
+                                icon: 'layui-icon-refresh',
+                            }],
+                        default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
+                        bgcolor: '#16baaa', // bar 的默认背景色
+                        css: { bottom: "15%", right: 30 },
+                        target: layero, // 插入 fixbar 节点的目标元素选择器
+                        click: function (type) {
+                            // console.log(this, type);
+                            // layer.msg(type);
+                            if (type === "getCheckedNodeData") {
+                                treeCheckedDownload()
                             }
-                        });
+                            if (type === "clear") {
+                                reloadTree()
+                            }
+                        }
                     });
 
-                    layui.use(function () {
-                        var tree = layui.tree;
-                        var layer = layui.layer;
-                        var util = layui.util;
+                    function treeCheckedDownload() {
+                        let checkedData = tree.getChecked('title'); // 获取选中节点的数据
 
-                        tree.render({
-                            elem: '#openPage',
-                            data: getMenuTree(),
-                            showCheckbox: true,
-                            onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
-                            id: 'title',
-                            isJump: false, // 是否允许点击节点时弹出新窗口跳转
-                            click: function (obj) {
-                                var data = obj.data; //获取当前点击的节点数据
-                                if (downloadArray.length !== 0) {
-                                    layer.tips("正在下载中，请等待下载完后再继续", obj, {
-                                        tips: 4,
-                                        fixed: true
-                                    });
-                                    return;
-                                }
-                                downloadArray = getMenuArray([data])
-                                doDownload()
+                        console.log(checkedData[0]);
+                        if (checkedData.length === 0) {
+                            layer.msg("未选中任何数据");
+                            return;
+                        }
+                        if (downloadArray.length !== 0) {
+                            layer.msg("正在下载中，请等待下载完后再继续");
+                            return;
+                        }
+                        downloadArray = getMenuArray(checkedData)
+                        doDownload()
+                    }
+                    function reloadTree(){
+                        tree.reload('title', { // options
+                            data: getMenuTree()
+                        }); // 重载实例
+                        downloadArray = new Array();
+                    }
+
+
+                    tree.render({
+                        elem: '#openPage',
+                        data: getMenuTree(),
+                        showCheckbox: true,
+                        onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
+                        id: 'title',
+                        isJump: false, // 是否允许点击节点时弹出新窗口跳转
+                        click: function (obj) {
+                            var data = obj.data; //获取当前点击的节点数据
+                            if (downloadArray.length !== 0) {
+                                layer.tips("正在下载中，请等待下载完后再继续", obj, {
+                                    tips: 4,
+                                    fixed: true
+                                });
+                                return;
                             }
-                        });
-                        // 按钮事件
-                        util.event('lay-on', {
-                            getChecked: function (othis) {
-                                console.log(othis)
-                                var checkedData = tree.getChecked('title'); // 获取选中节点的数据
-
-                                console.log(checkedData);
-                                if (checkedData.length === 0) {
-                                    return;
-                                }
-                                if (downloadArray.length !== 0) {
-                                    layer.tips("正在下载中，请等待下载完后再继续", othis, {
-                                        tips: 4,
-                                        fixed: true
-                                    });
-                                    return;
-                                }
-                                downloadArray = getMenuArray(checkedData)
-                                doDownload()
-                            },
-                            reload: function () {
-                                tree.reload('title', {
-                                    data: getMenuTree()
-                                }); // 重载实例
-                            }
-                        });
-
+                            downloadArray = getMenuArray([data])
+                            doDownload()
+                        }
                     });
                 }
             });

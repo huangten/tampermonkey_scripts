@@ -234,12 +234,9 @@
                 area: ['25%', '90%'],
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
-                content: `<div class='layui-btn-container'>
-            <button type='button' id='getCheckedNodeData' class='layui-btn layui-btn-sm' lay-on='getChecked'>获取选中节点数据</button>
-            <button type='button' class='layui-btn layui-btn-sm' lay-on='reload'>重载实例</button>
-            <div id='openPage'></div></div>`,
+                content: `<div id='openPage'></div>`,
                 success: function (layero, index, that) {
-                    // console.log(layero, index,that)
+                    console.log(layero, index,that)
                     var util = layui.util;
                     var tree = layui.tree;
                     var layer = layui.layer;
@@ -262,17 +259,13 @@
                             // console.log(this, type);
                             // layer.msg(type);
                             if (type === "getCheckedNodeData") {
-                                document.getElementById('getCheckedNodeData').click();
+                                treeCheckedDownload()
                             }
                             if (type === "clear") {
-                                tree.reload('titleList', { // options
-                                    data: getTree()
-                                }); // 重载实例
-                                downloadArray = new Array();
+                                reloadTree()
                             }
                         }
                     });
-
 
                     tree.render({
                         elem: '#openPage',
@@ -293,31 +286,27 @@
                         }
                     });
 
+                    
+                    function treeCheckedDownload() {
+                        let checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
 
-                    // 按钮事件
-                    layui.util.event('lay-on', {
-                        getChecked: function (othis) {
-                            console.log(othis)
-                            var checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
-
-                            console.log(checkedData[0]);
-                            if (checkedData.length === 0) {
-                                return;
-                            }
-                            if (downloadArray.length !== 0) {
-                                layer.msg("正在下载中，请等待下载完后再继续");
-                                return;
-                            }
-                            downloadArray = getMenuArray(checkedData)
-                            doDownload()
-                        },
-                        reload: function () {
-                            tree.reload('titleList', { // options
-                                data: getTree()
-                            }); // 重载实例
-                            downloadArray = new Array();
+                        console.log(checkedData[0]);
+                        if (checkedData.length === 0) {
+                            return;
                         }
-                    });
+                        if (downloadArray.length !== 0) {
+                            layer.msg("正在下载中，请等待下载完后再继续");
+                            return;
+                        }
+                        downloadArray = getMenuArray(checkedData)
+                        doDownload()
+                    }
+                    function reloadTree(){
+                        tree.reload('titleList', { // options
+                            data: getTree()
+                        }); // 重载实例
+                        downloadArray = new Array();
+                    }
                 }
             });
         }
