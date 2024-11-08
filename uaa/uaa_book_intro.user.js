@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-08
+// @version      2024-11-08.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -12,30 +12,44 @@
 (function () {
     'use strict';
 
-    const cssId = 'layui_css'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(cssId)) {
-        var head = document.getElementsByTagName('head')[0];
-        var link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css';
-        link.media = 'all';
-        head.appendChild(link);
+    function addCss(id, src) {
+        return new Promise((resolve, reject) => {
+            if (!document.getElementById(id)) {
+                var head = document.getElementsByTagName('head')[0];
+                var link = document.createElement('link');
+                link.id = id;
+                link.rel = 'stylesheet';
+                link.type = 'text/css';
+                link.href = src;
+                link.media = 'all';
+                link.onload = () => { resolve(); };
+                link.onerror = () => { reject(); };
+                head.appendChild(link);
+            }
+        });
     }
 
-    var scriptJQ = document.createElement('script');
-    scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
-    document.body.appendChild(scriptJQ);
+    function addScript(id, src) {
+        return new Promise((resolve, reject) => {
+            if (!document.getElementById(id)) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.id = id;
+                script.onload = () => { resolve(); };
+                script.onerror = () => { reject(); };
+                document.body.appendChild(script);
+            }
+        });
+    }
 
-
-    var scriptFilesever = document.createElement('script');
-    scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
-    document.body.appendChild(scriptFilesever);
-
-    var scriptLayUI = document.createElement('script');
-    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    document.body.appendChild(scriptLayUI);
+    Promise.all([
+        addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
+        addScript("jq_id", "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"),
+        addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
+        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
+    ]).then(() => {
+        run();
+    });
 
     /*global $,layui,layer,util,saveAs*/
 
@@ -50,7 +64,7 @@
         });
     }
 
-    scriptLayUI.onload = () => {
+    function run() {
         var downloadArray = new Array();
         const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
@@ -195,7 +209,7 @@
                         downloadArray = getMenuArray(checkedData)
                         doDownload()
                     }
-                    function reloadTree(){
+                    function reloadTree() {
                         tree.reload('title', { // options
                             data: getMenuTree()
                         }); // 重载实例

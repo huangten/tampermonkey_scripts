@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-08
+// @version      2024-11-08.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -12,25 +12,43 @@
 (function () {
     'use strict';
 
-    var cssId = 'layui_css'; // you could encode the css path itself to generate id..
-    if (!document.getElementById(cssId)) {
-        var head = document.getElementsByTagName('head')[0];
-        var link = document.createElement('link');
-        link.id = cssId;
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css';
-        link.media = 'all';
-        head.appendChild(link);
+    function addCss(id, src) {
+        return new Promise((resolve, reject) => {
+            if (!document.getElementById(id)) {
+                var head = document.getElementsByTagName('head')[0];
+                var link = document.createElement('link');
+                link.id = id;
+                link.rel = 'stylesheet';
+                link.type = 'text/css';
+                link.href = src;
+                link.media = 'all';
+                link.onload = () => { resolve(); };
+                link.onerror = () => { reject(); };
+                head.appendChild(link);
+            }
+        });
     }
 
-    var scriptFilesever = document.createElement('script');
-    scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
-    document.body.appendChild(scriptFilesever);
+    function addScript(id, src) {
+        return new Promise((resolve, reject) => {
+            if (!document.getElementById(id)) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.id = id;
+                script.onload = () => { resolve(); };
+                script.onerror = () => { reject(); };
+                document.body.appendChild(script);
+            }
+        });
+    }
 
-    var scriptLayUI = document.createElement('script');
-    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    document.body.appendChild(scriptLayUI);
+    Promise.all([
+        addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
+        addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
+        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
+    ]).then(() => {
+        run();
+    });
 
     /*global $ layui layer saveAs util*/
 
@@ -50,7 +68,7 @@
     }
 
     var downloadArray = new Array();
-    scriptLayUI.onload = function () {
+    function run() {
 
         var timer = 0;
         const ListenMessage = (e) => {
