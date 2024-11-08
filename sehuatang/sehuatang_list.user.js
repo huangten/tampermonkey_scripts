@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-04
+// @version      2024-11-08
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -24,13 +24,13 @@
         head.appendChild(link);
     }
 
-    var scriptLayUI = document.createElement('script');
-    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    document.body.appendChild(scriptLayUI);
-
     var scriptFilesever = document.createElement('script');
     scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
     document.body.appendChild(scriptFilesever);
+
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
 
     /*global $ layui layer saveAs util*/
 
@@ -50,7 +50,7 @@
     }
 
     var downloadArray = new Array();
-    unsafeWindow.onload = function () {
+    scriptLayUI.onload = function () {
 
         var timer = 0;
         const ListenMessage = (e) => {

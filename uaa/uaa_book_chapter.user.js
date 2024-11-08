@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-04
+// @version      2024-11-08
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -28,14 +28,13 @@
     scriptJQ.src = "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js";
     document.body.appendChild(scriptJQ);
 
-    var scriptLayUI = document.createElement('script');
-    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    document.body.appendChild(scriptLayUI);
-
     var scriptFilesever = document.createElement('script');
     scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
     document.body.appendChild(scriptFilesever);
 
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
 
     /*global $,layui,layer,util,saveAs*/
 
@@ -50,7 +49,7 @@
         });
     }
 
-    unsafeWindow.onload = function () {
+    scriptLayUI.onload = function () {
 
         // 标题内容
         var titleBox = document.getElementsByClassName("head_title_box")[0].getElementsByTagName("h2")[0].innerText;

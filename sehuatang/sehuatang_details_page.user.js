@@ -1,14 +1,12 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-04
+// @version      2024-11-08
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
 // @match        https://www.sehuatang.org/forum.php?mod=viewthread&tid=*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
-// @require https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant        GM_xmlhttpRequest
 // @connect      *
 // @grant        GM_download
@@ -30,17 +28,17 @@
         head.appendChild(link);
     }
 
-    var scriptLayUI = document.createElement('script');
-    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
-    document.body.appendChild(scriptLayUI);
-
     var scriptFilesever = document.createElement('script');
     scriptFilesever.src = "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js";
     document.body.appendChild(scriptFilesever);
+
+    var scriptLayUI = document.createElement('script');
+    scriptLayUI.src = "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js";
+    document.body.appendChild(scriptLayUI);
     /*global $,layui,layer,saveAs,FileSaver,util*/
 
 
-    unsafeWindow.onload = function () {
+    scriptLayUI.onload = function () {
         function copyContext(str) {
             navigator.clipboard.writeText(str).then(() => {
                 console.log('Content copied to clipboard');
