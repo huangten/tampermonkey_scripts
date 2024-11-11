@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-08.1
+// @version      2024-11-11
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -321,7 +321,7 @@
                     let alist = lis[index].getElementsByTagName("a");
                     for (let j = 0; j < alist.length; j++) {
                         children.push({
-                            'id': (index + 1) * 100000000 + j,
+                            'id': (index + 1) * 100000000 + j + 1,
                             "title": alist[j].innerText.replace("new", "").trim(),
                             "href": alist[j].href,
                             "children": [],
