@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-08.1
+// @version      2024-11-11
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -105,7 +105,7 @@
                 }
                 timer = setTimeout(() => {
                     doDownload()
-                }, 1000 * 3);
+                }, 1000 * 1);
             }
         }
         function cycleClear(el) {
@@ -226,16 +226,15 @@
                         // saveContentToLocal(idocument);
                         // console.log(idocument)
                         getInfo(idocument)
+                        setTimeout(() => {
+                            let msg = {
+                                "handle": "lhd_close",
+                                "layer_index": index
+                            }
+                            unsafeWindow.postMessage(msg);
+                        }, 500);
                     }, 500)
 
-                    setTimeout(() => {
-
-                        let msg = {
-                            "handle": "lhd_close",
-                            "layer_index": index
-                        }
-                        unsafeWindow.postMessage(msg);
-                    }, 1000);
 
                 }
             });
@@ -254,7 +253,7 @@
                 maxmin: true, //开启最大化最小化按钮
                 content: `<div id='openPage'></div>`,
                 success: function (layero, index, that) {
-                    console.log(layero, index,that)
+                    console.log(layero, index, that)
                     var util = layui.util;
                     var tree = layui.tree;
                     var layer = layui.layer;
@@ -304,7 +303,7 @@
                         }
                     });
 
-                    
+
                     function treeCheckedDownload() {
                         let checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
 
@@ -319,7 +318,7 @@
                         downloadArray = getMenuArray(checkedData)
                         doDownload()
                     }
-                    function reloadTree(){
+                    function reloadTree() {
                         tree.reload('titleList', { // options
                             data: getTree()
                         }); // 重载实例
