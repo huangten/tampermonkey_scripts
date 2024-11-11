@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-11
+// @version      2024-11-11.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -105,7 +105,7 @@
                 }
                 timer = setTimeout(() => {
                     doDownload()
-                }, 1000 * 1);
+                }, 500);
             }
         }
         function cycleClear(el) {
