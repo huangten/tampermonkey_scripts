@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-08.1
+// @version      2024-11-13
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -75,19 +75,28 @@
             const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
             // 自定义固定条
             util.fixbar({
-                bars: [{
-                    type: 'getInfo',
-                    content: '获取信息',
-                    style: fixbarStyle
-                }, {
-                    type: 'copyTitleAndDownload',
-                    content: '复制标题和下载种子',
-                    style: fixbarStyle
-                }, {
-                    type: 'copyTitleAndBlockcode',
-                    content: '复制标题和磁力信息',
-                    style: fixbarStyle
-                }],
+                bars: [
+                    {
+                        type: 'getInfo',
+                        content: '下载信息和种子',
+                        style: fixbarStyle
+                    },
+                    {
+                        type: 'onlyCopyTitle',
+                        content: '仅复制标题',
+                        style: fixbarStyle
+                    },
+                    {
+                        type: 'copyTitleAndDownload',
+                        content: '复制标题和下载种子',
+                        style: fixbarStyle
+                    },
+                    {
+                        type: 'copyTitleAndBlockcode',
+                        content: '复制标题和磁力信息',
+                        style: fixbarStyle
+                    }
+                ],
                 default: false,
                 css: { bottom: "21%" },
                 bgcolor: '#ba350f', // bar 的默认背景色
@@ -108,8 +117,13 @@
                 click: function (type) {
                     console.log(this, type);
                     // layer.msg(type);
+
                     if (type === "getInfo") {
                         getInfo(document);
+                        return;
+                    }
+                    if (type === "onlyCopyTitle") {
+                        copyContext(getTitleText(document).trim())
                         return;
                     }
                     if (type === "copyTitleAndDownload") {
