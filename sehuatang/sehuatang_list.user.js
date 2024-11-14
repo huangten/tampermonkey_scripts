@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-13
+// @version      2024-11-14
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -69,6 +69,20 @@
 
     var downloadArray = new Array();
     function run() {
+
+        setTimeout(() => {
+            if (document.getElementsByTagName("head")[0].getElementsByTagName('title')[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
+                let enterBtns = document.getElementsByClassName("enter-btn")
+                console.log(enterBtns)
+                for (let index = 0; index < enterBtns.length; index++) {
+                    console.log(enterBtns[index].innerText.trim())
+                    if (enterBtns[index].innerText.trim().indexOf("满18岁，请点此进入") > -1) {
+                        enterBtns[index].click();
+                        break;
+                    }
+                }
+            }
+        }, 100);
 
         var timer = 0;
         const ListenMessage = (e) => {

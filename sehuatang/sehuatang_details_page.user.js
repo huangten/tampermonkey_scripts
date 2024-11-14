@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-13
+// @version      2024-11-14
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -70,6 +70,22 @@
                 /* Rejected - 文本未被复制到剪贴板 */
             });
         }
+
+
+        setTimeout(() => {
+            if (document.getElementsByTagName("head")[0].getElementsByTagName('title')[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
+                let enterBtns = document.getElementsByClassName("enter-btn")
+                console.log(enterBtns)
+                for (let index = 0; index < enterBtns.length; index++) {
+                    console.log(enterBtns[index].innerText.trim())
+                    if (enterBtns[index].innerText.trim().indexOf("满18岁，请点此进入") > -1) {
+                        enterBtns[index].click();
+                        break;
+                    }
+                }
+            }
+        }, 100);
+
         layui.use(function () {
             var util = layui.util;
             const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
