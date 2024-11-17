@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-14
+// @version      2024-11-17
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -84,7 +84,7 @@
                     }
                 }
             }
-        }, 100);
+        }, 500);
 
         layui.use(function () {
             var util = layui.util;
