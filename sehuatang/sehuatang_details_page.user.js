@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-17
+// @version      2024-11-24
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.sehuatang.org/thread*
@@ -58,6 +58,19 @@
 
     /*global $,layui,layer,saveAs,FileSaver,util*/
 
+    function check18R() {
+        if (document.getElementsByTagName("head")[0].getElementsByTagName('title')[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
+            let enterBtns = document.getElementsByClassName("enter-btn")
+            console.log(enterBtns)
+            for (let index = 0; index < enterBtns.length; index++) {
+                console.log(enterBtns[index].innerText.trim())
+                if (enterBtns[index].innerText.trim().indexOf("满18岁，请点此进入") > -1) {
+                    enterBtns[index].click();
+                    break;
+                }
+            }
+        }
+    }
 
     function run() {
         function copyContext(str) {
@@ -71,19 +84,14 @@
             });
         }
 
+        document.onvisibilitychange = () => {
+            if (document.visibilityState == 'visible' && document.readyState == 'complete') {
+                check18R();
+            }
+        }
 
         setTimeout(() => {
-            if (document.getElementsByTagName("head")[0].getElementsByTagName('title')[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
-                let enterBtns = document.getElementsByClassName("enter-btn")
-                console.log(enterBtns)
-                for (let index = 0; index < enterBtns.length; index++) {
-                    console.log(enterBtns[index].innerText.trim())
-                    if (enterBtns[index].innerText.trim().indexOf("满18岁，请点此进入") > -1) {
-                        enterBtns[index].click();
-                        break;
-                    }
-                }
-            }
+            check18R();
         }, 500);
 
         layui.use(function () {
