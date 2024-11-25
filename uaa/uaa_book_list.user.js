@@ -66,24 +66,24 @@
 
     function run() {
         var downloadArray = new Array();
-        const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
+        const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:120px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
             var util = layui.util;
             // 自定义固定条
             util.fixbar({
                 bars: [
                     {
-                        type: 'downloadAll',
+                        type: 'downloadAllPageList',
                         content: '下载全部列表',
                         style: fixbarStyle
                     },
                     {
-                        type: 'downloadCurrentPage',
+                        type: 'downloadCurrentPageList',
                         content: '下载本页列表',
                         style: fixbarStyle
                     },
                     {
-                        type: 'downloadScopePage',
+                        type: 'downloadScopePageList',
                         content: '下载范围页列表',
                         style: fixbarStyle
                     },
@@ -133,17 +133,23 @@
                 click: function (type) {
                     console.log(this, type);
                     // layer.msg(type);
-                    if (type === "downloadAll") {
+                    if (type === "downloadAllPageList") {
                         if (downloadArray.length !== 0) {
                             layer.tips("正在下载中，请等待下载完后再继续", this, {
                                 tips: 4,
                                 fixed: true
                             });
                         } else {
-                            downloadAll();
+                            // downloadAll();
                         }
                         return;
                     }
+
+                    if (type === "downloadCurrentPageList") {
+                        downloadCurrentPageList()
+                        return;
+                    }
+
 
                     if (type === "copyBookName") {
                         let bookName = document.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText
@@ -163,10 +169,26 @@
             });
         });
 
-        function downloadPageList(page, size) {
-            fetch("https://www.uaa.com/api/novel/app/novel/search?page="+ page +"&size=" + size)
-            .then((response) => response.json())
-            .then((data) => console.log(data));
+        function downloadCurrentPageList() {
+            let page = document.getElementsByClassName("pagination_box")[0].getElementsByClassName("active")[0].innerText.trim()
+            // page = parseInt(page)
+            downloadPageList(page, 48)
+        }
+
+        function downloadPageList(page = 1, size = 48) {
+            fetch("https://www.uaa.com/api/novel/app/novel/search?page=" + page + "&size=" + size)
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log(data.model.data)
+
+                    try {
+                        var isFileSaverSupported = !!new Blob;
+                        var blob = new Blob([JSON.stringify(data.model.data, null, 4)], { type: "text/plain;charset=utf-8" });
+                        saveAs(blob, "list_page_" + page + ".txt");
+                    } catch (e) {
+                        console.log(e);
+                    }
+                });
         }
 
         function downloadAll() {
