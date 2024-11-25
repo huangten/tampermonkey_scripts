@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-13
+// @version      2024-11-25
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*

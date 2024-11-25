@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-17
+// @version      2024-11-25
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -163,6 +163,11 @@
             });
         });
 
+        function downloadPageList(page, size) {
+            fetch("https://www.uaa.com/api/novel/app/novel/search?page="+ page +"&size=" + size)
+            .then((response) => response.json())
+            .then((data) => console.log(data));
+        }
 
         function downloadAll() {
             downloadArray = getMenuArray(getMenuTree())
