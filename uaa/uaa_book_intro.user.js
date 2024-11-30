@@ -451,7 +451,7 @@
         }
 
         function getBookName2(el) {
-            return e.getElementsByClassName('chapter_box')[0]
+            return el.getElementsByClassName('chapter_box')[0]
             .getElementsByClassName("title_box")[0]
             .getElementsByTagName('a')[0].innerText.trim()
         }
