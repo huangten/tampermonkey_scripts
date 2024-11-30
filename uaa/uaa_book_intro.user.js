@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-30.1
+// @version      2024-12-01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -415,7 +415,7 @@
                 html += "<p>" + lines[i] + "</p>\n";
             }
             let separator = "\n\n=============================================\n";
-            let content = "book name:\n" + getBookName(el)
+            let content = "book name:\n" + getBookName2(el)
                 + separator +
                 "author:\n" + getAuthorInfo(el)
                 + separator +
@@ -427,7 +427,7 @@
             try {
                 var isFileSaverSupported = !!new Blob;
                 var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-                saveAs(blob, getBookName(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
+                saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
             } catch (e) {
                 console.log(e);
             }
@@ -448,6 +448,12 @@
                 texts.push(lines[i].innerText);
             }
             return texts;
+        }
+
+        function getBookName2(el) {
+            return e.getElementsByClassName('chapter_box')[0]
+            .getElementsByClassName("title_box")[0]
+            .getElementsByTagName('a')[0].innerText.trim()
         }
 
         function getBookName(el) {
