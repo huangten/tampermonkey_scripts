@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2024-11-24
+// @version      2025-01-02
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -234,6 +234,7 @@
                     // console.log(layero, index);
                     let iframes = document.getElementsByTagName('iframe');
                     // console.log(iframes)
+                    /*
                     for (let index = 0; index < iframes.length; index++) {
                         iframes[index].focus()
                         iframes[index].contentWindow.scrollTo({
@@ -242,8 +243,9 @@
                             behavior: "smooth",
                         });
                     }
+                    */
 
-                    setTimeout(() => {
+                    // setTimeout(() => {
                         let iframeDocument = layer.getChildFrame('html', index);
                         let idocument = iframeDocument[0];
                         // saveContentToLocal(idocument);
@@ -256,7 +258,7 @@
                             }
                             unsafeWindow.postMessage(msg);
                         }, 500);
-                    }, 500)
+                    // }, 500)
 
 
                 }
@@ -463,7 +465,7 @@
 
 
         function getInfo(el) {
-            setTimeout(() => {
+            // setTimeout(() => {
 
                 const type = getType(el);
 
@@ -520,7 +522,7 @@
                     console.log(e);
                 }
                 doBtDownload(el)
-            }, 10)
+            // }, 10)
 
         }
 
@@ -580,7 +582,7 @@
             for (let index = 0; index < imgs.length; index++) {
                 const element = imgs[index];
                 if (element.getAttribute("id") !== null && element.getAttribute("id").indexOf('aimg') > -1) {
-                    res.push(element.src);
+                    res.push(element.getAttribute("file"));
                 }
             }
             return res;
