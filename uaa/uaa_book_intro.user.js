@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-04-02
+// @version      2025-06-14
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*

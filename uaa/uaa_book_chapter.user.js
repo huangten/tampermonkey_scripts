@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2024-12-01
+// @version      2025-06-14
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -49,8 +49,8 @@
         addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
     ]).then(() => {
         run();
-    }).catch(() => {
-
+    }).catch((e) => {
+        console.log(e);
     });
 
     /*global $,layui,layer,util,saveAs*/
@@ -304,8 +304,8 @@
 
         function getBookName2() {
             return document.getElementsByClassName('chapter_box')[0]
-            .getElementsByClassName("title_box")[0]
-            .getElementsByTagName('a')[0].innerText.trim()
+                .getElementsByClassName("title_box")[0]
+                .getElementsByTagName('a')[0].innerText.trim()
         }
 
         function getBookName() {
