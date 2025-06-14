@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-06-14
+// @version      2025-06-14.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -49,6 +49,8 @@
         addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
     ]).then(() => {
         run();
+    }).catch((e) => {
+        console.log(e);
     });
 
     /*global $,layui,layer,util,saveAs*/
