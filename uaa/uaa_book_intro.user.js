@@ -435,7 +435,7 @@
         }
 
         function getTitle(el) {
-            return el.getElementsByClassName("head_title_box")[0].getElementsByTagName("h2")[0].innerText;
+            return el.getElementsByClassName("head_title_box")[0].getElementsByTagName("h1")[0].innerText;
         }
 
         function getLines(el) {

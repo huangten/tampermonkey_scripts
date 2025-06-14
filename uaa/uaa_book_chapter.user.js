@@ -69,7 +69,7 @@
     function run() {
 
         // 标题内容
-        var titleBox = document.getElementsByClassName("head_title_box")[0].getElementsByTagName("h2")[0].innerText;
+        var titleBox = document.getElementsByClassName("head_title_box")[0].getElementsByTagName("h1")[0].innerText;
         // 行内容
         var lines = document.getElementsByClassName("line");
         var texts = new Array();
