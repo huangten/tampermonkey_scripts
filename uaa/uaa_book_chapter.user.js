@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2025-06-14
+// @version      2025-06-15
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -69,7 +69,9 @@
     function run() {
 
         // 标题内容
-        var titleBox = document.getElementsByClassName("head_title_box")[0].getElementsByTagName("h1")[0].innerText;
+        let level = document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] != undefined ? 
+        document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " :"";
+        var titleBox = level + document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText;
         // 行内容
         var lines = document.getElementsByClassName("line");
         var texts = new Array();

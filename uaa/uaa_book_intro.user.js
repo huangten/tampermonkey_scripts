@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-06-14.1
+// @version      2025-06-15
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -437,7 +437,9 @@
         }
 
         function getTitle(el) {
-            return el.getElementsByClassName("head_title_box")[0].getElementsByTagName("h1")[0].innerText;
+            let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] != undefined ?
+                el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
+            return level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText;
         }
 
         function getLines(el) {
@@ -454,8 +456,8 @@
 
         function getBookName2(el) {
             return el.getElementsByClassName('chapter_box')[0]
-            .getElementsByClassName("title_box")[0]
-            .getElementsByTagName('a')[0].innerText.trim()
+                .getElementsByClassName("title_box")[0]
+                .getElementsByTagName('a')[0].innerText.trim()
         }
 
         function getBookName(el) {
