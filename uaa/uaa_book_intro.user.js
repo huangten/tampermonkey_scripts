@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-07-11
+// @version      2025-07-23.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -279,7 +279,7 @@
                 }
                 timer = setTimeout(() => {
                     doDownload()
-                }, 1000 * 3);
+                }, 1000 * 2);
             }
         }
         function cycleClear(el) {
