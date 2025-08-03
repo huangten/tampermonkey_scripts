@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取禁忌书屋书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-08-03
+// @version      2025-08-03.1
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*
@@ -49,7 +49,7 @@
 
     Promise.all([
         addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
-        addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
+        // addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
         addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
     ]).then(() => {
         run();
