@@ -127,7 +127,7 @@
             return uw.document.getElementsByTagName('pre')[0].innerText;
         }
         function getPreTagContentHtml(uw) {
-            return uw.document.getElementsByTagName('pre')[0].innerHtml;
+            return uw.document.getElementsByTagName('pre')[0].innerHTML;
         }
     }
 })();
