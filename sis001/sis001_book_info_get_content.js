@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取sis001书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-10-29.05
+// @version      2025-10-29.06
 // @description  try to take over the world!
 // @author       You
 // @match        *://*.sis001.com/forum/thread-*-1-1.html
@@ -135,12 +135,15 @@
             // 2. 遍历所有后代元素
             allDescendants.forEach(element => {
                 // 3. 判断元素的直接父元素是否就是目标父元素
-                if (element.parentElement === fieldset) {
+                if (element === fieldset) {
                     // 4. 如果不是，则它是非直接子元素（孙子、曾孙等），执行移除
                     element.remove();
                 }
-                if (element.parentElement === table) {
+                if (element === table) {
                     // 4. 如果不是，则它是非直接子元素（孙子、曾孙等），执行移除
+                    element.remove();
+                }
+                if (element.tagName == "A") {
                     element.remove();
                 }
             });
