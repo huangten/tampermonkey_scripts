@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取sis001书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-10-29.04
+// @version      2025-10-29.05
 // @description  try to take over the world!
 // @author       You
 // @match        *://*.sis001.com/forum/thread-*-1-1.html
@@ -122,12 +122,15 @@
 
         function getElement(uw) {
             let e = uw.document.getElementsByClassName('postcontent')[0].getElementsByClassName("postmessage")[0];
-            let fieldset = e.getElementsByTagName("fieldset")[0];
-            let table = e.getElementsByTagName("table")[0];
+
+            let e1 = e.cloneNode(true);
+
+            let fieldset = e1.getElementsByTagName("fieldset")[0];
+            let table = e1.getElementsByTagName("table")[0];
 
 
             // 1. 选中所有后代元素（包括直接子元素和非直接子元素）
-            const allDescendants = e.querySelectorAll('*');
+            const allDescendants = e1.querySelectorAll('*');
 
             // 2. 遍历所有后代元素
             allDescendants.forEach(element => {
@@ -142,7 +145,7 @@
                 }
             });
             
-            return e;
+            return e1;
         }
 
         function getPreTagContent(uw) {
