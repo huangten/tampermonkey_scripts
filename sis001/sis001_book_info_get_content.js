@@ -120,16 +120,16 @@
             });
         });
 
-        function getElement(uw){
-            return uw.document.getElementsByClassName('postcontent')[0];
+        function getElement(uw) {
+            return uw.document.getElementsByClassName('postcontent')[0].getElementsByClassName("postmessage")[0];
         }
 
         function getPreTagContent(uw) {
-            
-            return uw.document.getElementsByTagName('pre')[0].innerText;
+
+            return getElement(uw).innerText;
         }
         function getPreTagContentHtml(uw) {
-            return uw.document.getElementsByTagName('pre')[0].innerHTML;
+            return getElement(uw).innerHTML;
         }
     }
 })();
