@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取sis001书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-10-29.01
+// @version      2025-10-29.02
 // @description  try to take over the world!
 // @author       You
 // @match        *://*.sis001.com/forum/thread-*-1-1.html
@@ -121,7 +121,27 @@
         });
 
         function getElement(uw) {
-            return uw.document.getElementsByClassName('postcontent')[0].getElementsByClassName("postmessage")[0];
+            let e = uw.document.getElementsByClassName('postcontent')[0].getElementsByClassName("postmessage")[0];
+            let fieldset = e.getElementsByTagName("fieldset")[0];
+            let table = e.getElementsByTagName("table")[0];
+
+
+            // 1. 选中所有后代元素（包括直接子元素和非直接子元素）
+            const allDescendants = e.querySelectorAll('*');
+
+            // 2. 遍历所有后代元素
+            allDescendants.forEach(element => {
+                // 3. 判断元素的直接父元素是否就是目标父元素
+                if (element.parentElement === fieldset) {
+                    // 4. 如果不是，则它是非直接子元素（孙子、曾孙等），执行移除
+                    element.remove();
+                }
+                if (element.parentElement === table) {
+                    // 4. 如果不是，则它是非直接子元素（孙子、曾孙等），执行移除
+                    element.remove();
+                }
+            });
+            return allDescendants;
         }
 
         function getPreTagContent(uw) {
