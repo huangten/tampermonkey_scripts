@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取sis001书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-10-29.02
+// @version      2025-10-29.03
 // @description  try to take over the world!
 // @author       You
 // @match        *://*.sis001.com/forum/thread-*-1-1.html
@@ -141,7 +141,8 @@
                     element.remove();
                 }
             });
-            return allDescendants;
+            console.log(allDescendants);
+            return e;
         }
 
         function getPreTagContent(uw) {
