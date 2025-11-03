@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2025-01-02
+// @version      2025-11-03
 // @description  try to take over the world!
 // @author       You
-// @match        https://www.sehuatang.org/thread*
-// @match        https://www.sehuatang.org/forum.php?mod=viewthread&tid=*
+// @match        https://*.sehuatang.org/thread*
+// @match        https://*.sehuatang.org/forum.php?mod=viewthread&tid=*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @grant        GM_xmlhttpRequest
 // @connect      *
