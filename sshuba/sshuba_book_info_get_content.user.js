@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         获取sshuba书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-10-29.1
+// @version      2025-11-05
 // @description  try to take over the world!
 // @author       You
 // @match        *://sshuba.com/books/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @connect      *
 // @grant        unsafeWindow
+// @noframes
 // ==/UserScript==
 
 (function () {

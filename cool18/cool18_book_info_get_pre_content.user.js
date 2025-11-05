@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         获取禁忌书屋书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-08-03.5
+// @version      2025-11-05
 // @description  try to take over the world!
 // @author       You
 // @match        *://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @connect      *
 // @grant        unsafeWindow
+// @noframes
 // ==/UserScript==
 
 (function () {

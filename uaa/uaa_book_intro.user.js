@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-07-23.01
+// @version      2025-11-05
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @grant        unsafeWindow
+// @noframes
 // ==/UserScript==
 
 (function () {
