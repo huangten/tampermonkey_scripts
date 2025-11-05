@@ -11,6 +11,7 @@
 // @connect      *
 // @grant        GM_download
 // @grant        unsafeWindow
+// @noframes
 // ==/UserScript==
 
 (function () {
