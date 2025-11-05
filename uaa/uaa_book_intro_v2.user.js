@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页V2版
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05
+// @version      2025-11-05.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -415,6 +415,7 @@
                         "children": [],
                         "spread": true,
                         "field": "",
+                        "checked": alist[j].innerText.indexOf("new") > 0 ? true : false,
                     });
                 }
             }
@@ -430,6 +431,7 @@
                         "children": [],
                         "spread": true,
                         "field": "",
+                        "checked": alist[j].innerText.indexOf("new") > 0 ? true : false,
                     });
                 }
                 menus.push({
