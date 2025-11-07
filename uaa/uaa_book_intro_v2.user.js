@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页V2版
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05.01
+// @version      2025-11-07.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -70,7 +70,7 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function waitForElement(doc, selector, timeout = 5000) {
+    function waitForElement(doc, selector, timeout = 10000) {
         return new Promise(resolve => {
             const interval = 100;
             let elapsed = 0;
@@ -177,10 +177,10 @@
 
         // 等待页面加载
         await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error("页面加载超时")), 8000);
+            const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
             iframe.onload = async () => {
                 try {
-                    await waitForElement(iframe.contentDocument, '.line', 5000);
+                    await waitForElement(iframe.contentDocument, '.line', 1000 * 25 * 60);
                     clearTimeout(timeout);
                     resolve();
                 } catch (err) {
