@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-09.02
+// @version      2025-12-09.03
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -23,8 +23,12 @@
                 link.type = 'text/css';
                 link.href = src;
                 link.media = 'all';
-                link.onload = () => { resolve(); };
-                link.onerror = () => { reject(); };
+                link.onload = () => {
+                    resolve();
+                };
+                link.onerror = () => {
+                    reject();
+                };
                 head.appendChild(link);
             }
         });
@@ -36,8 +40,12 @@
                 var script = document.createElement('script');
                 script.src = src;
                 script.id = id;
-                script.onload = () => { resolve(); };
-                script.onerror = () => { reject(); };
+                script.onload = () => {
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject();
+                };
                 document.body.appendChild(script);
             }
         });
@@ -61,6 +69,7 @@
             // 暂停中
             // 下载完成
         };
+
         constructor() {
             this.allList = [];
             this.currentIndex = 0;
@@ -83,8 +92,9 @@
     }
 
     var downloadArray = new Array();
+
     function run() {
-        
+
         document.onvisibilitychange = () => {
             if (document.visibilityState == 'visible' && document.readyState == 'complete') {
                 check18R();
@@ -122,7 +132,7 @@
                 }
                 if (downloadArray.length === 0) {
                     // layer.msg('下载完毕', {icon: 1});
-                    layui.layer.alert('下载完毕', { icon: 1, shadeClose: true }, function (index) {
+                    layui.layer.alert('下载完毕', {icon: 1, shadeClose: true}, function (index) {
                         layer.close(index);
                     });
                     return;
@@ -132,6 +142,7 @@
                 }, 200);
             }
         }
+
         function cycleClear(el) {
             try {
                 if (el) {
@@ -168,7 +179,7 @@
                 }],
                 bgcolor: '#ba350f', // bar 的默认背景色
                 default: false,
-                css: { bottom: "18%" },
+                css: {bottom: "18%"},
                 margin: 0,
                 on: {
                     mouseenter: function (type) {
@@ -208,10 +219,12 @@
                 }
             });
         });
+
         function downloadAll() {
             downloadArray = getMenuArray(getTree())
             doDownload()
         }
+
         function doDownload() {
             console.log(downloadArray.length)
             if (downloadArray.length === 0) {
@@ -247,18 +260,18 @@
                     */
 
                     // setTimeout(() => {
-                        let iframeDocument = layer.getChildFrame('html', index);
-                        let idocument = iframeDocument[0];
-                        // saveContentToLocal(idocument);
-                        // console.log(idocument)
-                        getInfo(idocument)
-                        setTimeout(() => {
-                            let msg = {
-                                "handle": "lhd_close",
-                                "layer_index": index
-                            }
-                            unsafeWindow.postMessage(msg);
-                        }, 500);
+                    let iframeDocument = layer.getChildFrame('html', index);
+                    let idocument = iframeDocument[0];
+                    // saveContentToLocal(idocument);
+                    // console.log(idocument)
+                    getInfo(idocument)
+                    setTimeout(() => {
+                        let msg = {
+                            "handle": "lhd_close",
+                            "layer_index": index
+                        }
+                        unsafeWindow.postMessage(msg);
+                    }, 500);
                     // }, 500)
 
 
@@ -296,7 +309,7 @@
                             }],
                         default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                         bgcolor: '#16baaa', // bar 的默认背景色
-                        css: { bottom: "10%", right: 30 },
+                        css: {bottom: "10%", right: 30},
                         target: layero, // 插入 fixbar 节点的目标元素选择器
                         click: function (type) {
                             // console.log(this, type);
@@ -344,6 +357,7 @@
                         downloadArray = getMenuArray(checkedData)
                         doDownload()
                     }
+
                     function reloadTree() {
                         tree.reload('titleList', { // options
                             data: getTree()
@@ -414,7 +428,8 @@
                     console.log(date)
                     console.log(sehuatang_type)
                     let titleBox = tbodys[index].getElementsByTagName("th")[0].getElementsByTagName("a")
-                    let href = ''; let title = '';
+                    let href = '';
+                    let title = '';
                     for (let i = 0; i < titleBox.length; i++) {
                         if (titleBox[i].getAttribute("class") !== null && titleBox[i].getAttribute("class") == 's xst') {
                             href = titleBox[i].href
@@ -437,6 +452,7 @@
             }
             return lines;
         }
+
         function getMenuArray(trees) {
             let menus = new Array();
             for (let index = 0; index < trees.length; index++) {
@@ -468,62 +484,64 @@
         function getInfo(el) {
             // setTimeout(() => {
 
-                const type = getType(el);
+            const type = getType(el);
 
-                const imageLinks = getImages(el);
-                console.log(imageLinks);
-                const imgs = [];
+            const imageLinks = getImages(el);
+            console.log(imageLinks);
+            const imgs = [];
 
-                for (let index = 0; index < imageLinks.length; index++) {
-                    let paths = imageLinks[index].split('/')
-                    let file = paths[paths.length - 1].split('.');
-                    let ext = file[file.length - 1];
-                    let name = getSelfFilename(el) + "_" + index + "." + ext
-                    imgs.push(
-                        {
-                            'isExist': false,
-                            "hasDownload": false,
-                            "filename": name,
-                            "href": imageLinks[index]
-                        }
-                    );
-                }
-
-                const magnets = getMagnets(el);
-                const btNames = getBtNames(el);
-
-                const time = getTime(el);
-
-                const selfFilename = getFileName(getSelfFilename(el), 'txt');
-                const sehuatangTexts = getsehuatangTexts(el);
-                let info = {
-                    "title": getTitleText(el),
-                    "avNumber": getAvNumber(el),
-                    "selfFilename": selfFilename,
-                    "year": time.split(' ')[0].split('-')[0],
-                    "month": time.split(' ')[0].split('-')[1],
-                    'day': time.split(' ')[0].split('-')[2],
-                    "date": time.split(' ')[0],
-                    "time": time,
-                    "sehuatangInfo": {
-                        "type": type,
-                        "link": getPageLink(el),
-                        "infos": sehuatangTexts,
-                        "imgs": imgs,
-                        "magnets": magnets,
-                        "bts": btNames
+            for (let index = 0; index < imageLinks.length; index++) {
+                let paths = imageLinks[index].split('/')
+                let file = paths[paths.length - 1].split('.');
+                let ext = file[file.length - 1];
+                let name = getSelfFilename(el) + "_" + index + "." + ext
+                imgs.push(
+                    {
+                        'isExist': false,
+                        "hasDownload": false,
+                        "filename": name,
+                        "href": imageLinks[index]
                     }
-                }
-                console.log(info)
+                );
+            }
 
-                try {
-                    var isFileSaverSupported = !!new Blob;
-                    var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
-                    saveAs(blob, selfFilename);
-                } catch (e) {
-                    console.log(e);
+            const magnets = getMagnets(el);
+            const btNames = getBtNames(el);
+
+            const time = getTime(el);
+
+            const selfFilename = getFileName(getSelfFilename(el), 'txt');
+            const sehuatangTexts = getsehuatangTexts(el);
+            let info = {
+                "title": getTitleText(el),
+                "avNumber": getAvNumber(el),
+                "selfFilename": selfFilename,
+                "year": time.split(' ')[0].split('-')[0],
+                "month": time.split(' ')[0].split('-')[1],
+                'day': time.split(' ')[0].split('-')[2],
+                "date": time.split(' ')[0],
+                "time": time,
+                "sehuatangInfo": {
+                    "type": type,
+                    "link": getPageLink(el),
+                    "infos": sehuatangTexts,
+                    "imgs": imgs,
+                    "magnets": magnets,
+                    "bts": btNames
                 }
-                doBtDownload(el)
+            }
+            if (sehuatangTexts.toString().includes("本帖是钓鱼帖，所有编辑回复用户，也是全永久封号")) {
+                return
+            }
+
+            try {
+                var isFileSaverSupported = !!new Blob;
+                var blob = new Blob([JSON.stringify(info, null, 4)], {type: "text/plain;charset=utf-8"});
+                saveAs(blob, selfFilename);
+            } catch (e) {
+                console.log(e);
+            }
+            doBtDownload(el)
             // }, 10)
 
         }
@@ -534,7 +552,7 @@
                 // 获取 blob 对象
                 .then(res => res.blob())
                 .then(blob => {
-                    let blob1 = new Blob(blob, { type: "image/jpeg;" });
+                    let blob1 = new Blob(blob, {type: "image/jpeg;"});
                     saveAs(blob1, name);
                 });
             try {
@@ -614,6 +632,7 @@
             }
             return title;
         }
+
         function getFileName(name, ext) {
             return name + '.' + ext;
         }
@@ -677,6 +696,7 @@
         function getTitle(el) {
             return el.querySelector("#thread_subject");
         }
+
         function getTitleText(el) {
             return getTitle(el).innerText;
         }
@@ -684,7 +704,6 @@
         function getPageLink(el) {
             return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
         }
-
 
 
     }
