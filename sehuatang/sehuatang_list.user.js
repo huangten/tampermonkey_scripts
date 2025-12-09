@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-09.01
+// @version      2025-12-09.02
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -82,7 +82,7 @@
         }
     }
 
-    var downloadArray = [];
+    var downloadArray = new Array();
     function run() {
         
         document.onvisibilitychange = () => {
@@ -348,7 +348,7 @@
                         tree.reload('titleList', { // options
                             data: getTree()
                         }); // 重载实例
-                        downloadArray = [];
+                        downloadArray = new Array();
                     }
                 }
             });
@@ -358,7 +358,7 @@
         function getTree() {
             let indexMap = new Map();
             let index = 0;
-            let tree = [];
+            let tree = new Array();
             let allLines = getAllLines();
             for (let i = 0; i < allLines.length; i++) {
                 if (!indexMap.hasOwnProperty(allLines[i].date)) {
@@ -392,7 +392,7 @@
         }
 
         function getAllLines() {
-            let lines = [];
+            let lines = new Array();
             /*
             {
             "id":"",
@@ -438,7 +438,7 @@
             return lines;
         }
         function getMenuArray(trees) {
-            let menus = [];
+            let menus = new Array();
             for (let index = 0; index < trees.length; index++) {
                 if (trees[index].children.length === 0) {
                     menus.push({
@@ -514,17 +514,11 @@
                         "bts": btNames
                     }
                 }
-                if (typeof sehuatangTexts ===  "object") {
-                    for (let i = 0; i < sehuatangTexts.length; i++) {
-                        if (sehuatangTexts[i].indexOf("钓鱼帖")){
-                            return;
-                        }
-                    }
-                }
+                console.log(info)
 
                 try {
-                    const isFileSaverSupported = !!new Blob;
-                    const blob = new Blob([JSON.stringify(info, null, 4)], {type: "text/plain;charset=utf-8"});
+                    var isFileSaverSupported = !!new Blob;
+                    var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
                     saveAs(blob, selfFilename);
                 } catch (e) {
                     console.log(e);
