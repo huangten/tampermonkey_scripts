@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-25.02
+// @version      2025-12-25.03
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -131,8 +131,8 @@
     }
 
     const scheduler = new BackgroundTabScheduler({
-        interval: 1000,
-        jitter: 800
+        interval: 100,
+        jitter: 100
     });
 
     function run() {
