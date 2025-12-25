@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页V2版
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-07.01
+// @version      2025-12-25.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -22,8 +22,12 @@
                 link.type = 'text/css';
                 link.href = src;
                 link.media = 'all';
-                link.onload = () => { resolve(); };
-                link.onerror = () => { reject(); };
+                link.onload = () => {
+                    resolve();
+                };
+                link.onerror = () => {
+                    reject();
+                };
                 head.appendChild(link);
             }
         });
@@ -35,8 +39,12 @@
                 var script = document.createElement('script');
                 script.src = src;
                 script.id = id;
-                script.onload = () => { resolve(); };
-                script.onerror = () => { reject(); };
+                script.onload = () => {
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject();
+                };
                 document.body.appendChild(script);
             }
         });
@@ -59,7 +67,7 @@
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            layer.msg('复制成功', { icon: 1 });
+            layer.msg('复制成功', {icon: 1});
         }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
@@ -96,8 +104,10 @@
             this.failed = [];                 // 下载失败
             this.config = {
                 interval: 2000,               // 任务间间隔 ms
-                onTaskComplete: () => { },     // 单任务完成回调
-                onFinish: () => { },           // 全部任务完成回调
+                onTaskComplete: () => {
+                },     // 单任务完成回调
+                onFinish: () => {
+                },           // 全部任务完成回调
                 downloadHandler: null         // 下载逻辑回调
             };
 
@@ -111,7 +121,7 @@
 
         // 更新配置
         setConfig(options = {}) {
-            this.config = { ...this.config, ...options };
+            this.config = {...this.config, ...options};
         }
 
         // 添加任务
@@ -166,7 +176,8 @@
     }
 
     async function downloadChapter(task) {
-        const iframe = ensureIframe();
+        let iframeId = "__uaa_iframe__" + crypto.randomUUID();
+        const iframe = ensureIframe(iframeId);
         updateIframeHeader(task.title);
         iframe.src = task.href;
         slideInIframe();
@@ -195,7 +206,7 @@
         const success = saveContentToLocal(el);
 
         // 动画滑出 + 清空 iframe
-        slideOutIframe();
+        slideOutIframe(iframeId);
         return success;
     }
 
@@ -212,7 +223,7 @@
             console.log("已下载:", downloaded.map(t => t));
             console.log("未下载:", failed.map(t => t));
             // ✅ 全部完成 — 销毁 iframe
-            layer.alert('下载完毕', { icon: 1, shadeClose: true });
+            layer.alert('下载完毕', {icon: 1, shadeClose: true});
         }
     });
 
@@ -245,7 +256,7 @@
                     }],
 
                 default: true,
-                css: { bottom: "15%" },
+                css: {bottom: "15%"},
                 margin: 0,
                 on: {
                     mouseenter: function (type) {
@@ -333,7 +344,7 @@
                         }],
                     default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                     bgcolor: '#16baaa', // bar 的默认背景色
-                    css: { bottom: "15%", right: 30 },
+                    css: {bottom: "15%", right: 30},
                     target: layero, // 插入 fixbar 节点的目标元素选择器
                     click: function (type) {
                         // console.log(this, type);
@@ -368,6 +379,7 @@
 
                     return
                 }
+
                 function reloadTree() {
                     tree.reload('title', { // options
                         data: getMenuTree()
@@ -471,12 +483,13 @@
         return menus;
     }
 
-    function ensureIframe() {
-        let container = document.getElementById("__uaa_iframe_container__");
+    function ensureIframe(iframeId) {
+        let containerId = "__uaa_iframe_container__";
+        let container = document.getElementById(containerId);
         if (!container) {
             // 创建容器
             container = document.createElement("div");
-            container.id = "__uaa_iframe_container__";
+            container.id = containerId;
             container.style.position = "fixed";
             container.style.top = "10%";
             container.style.left = "0";
@@ -502,23 +515,23 @@
             header.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
             header.innerText = "加载中...";
             container.appendChild(header);
-
-            // 创建 iframe
-            const iframe = document.createElement("iframe");
-            iframe.id = "__uaa_iframe__";
-            iframe.src = "about:blank";
-            iframe.style.width = "100%";
-            iframe.style.height = "calc(100% - 35px)";
-            iframe.style.position = "fixed";
-            iframe.style.zIndex = "999999";
-            iframe.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-            iframe.style.border = " 2px solid #ff5555";
-            iframe.style.background = "#fff";
-            iframe.style.border = "none";
-            container.appendChild(iframe);
         }
 
-        return document.getElementById("__uaa_iframe__");
+        // 创建 iframe
+        const iframe = document.createElement("iframe");
+        iframe.id = iframeId;
+        iframe.src = "about:blank";
+        iframe.style.width = "100%";
+        iframe.style.height = "calc(100% - 35px)";
+        iframe.style.position = "fixed";
+        iframe.style.zIndex = "999999";
+        iframe.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
+        iframe.style.border = " 2px solid #ff5555";
+        iframe.style.background = "#fff";
+        iframe.style.border = "none";
+        container.appendChild(iframe);
+
+        return document.getElementById(iframeId);
     }
 
     function slideInIframe() {
@@ -526,16 +539,17 @@
         iframe.style.transform = "translateX(0)";
     }
 
-    function slideOutIframe() {
+    function slideOutIframe(iframeId) {
         const container = document.getElementById("__uaa_iframe_container__");
-        const iframe = document.getElementById("__uaa_iframe__");
+        const iframe = document.getElementById(iframeId);
         if (!container || !iframe) return;
 
         // 滑出动画
         container.style.transform = "translateX(-100%)";
 
+
+        destroyIframe(iframeId);
         // 动画结束后清空 iframe
-        iframe.onload = null; // 移除 onload 防止干扰
         setTimeout(() => {
             try {
                 if (iframe) {
@@ -557,16 +571,25 @@
         }
     }
 
-    function destroyIframe() {
-        const iframe = document.getElementById("__uaa_iframe__");
+    function destroyIframe(iframeId) {
+        let iframe = document.getElementById(iframeId);
         if (iframe) {
-            try {
-                iframe.contentDocument.write("");
-                iframe.contentDocument.close();
-                iframe.src = "about:blank";
-            } catch (e) { }
-            iframe.remove();
-            console.log("✅ iframe 已完全清理并销毁");
+            setTimeout(async () => {
+                try {
+                    iframe.onload = null;
+                    iframe.onerror = null;
+                    iframe.contentDocument.write("");
+                    iframe.contentDocument.close();
+                    iframe.src = "about:blank";
+                    await new Promise(r => setTimeout(r, 0))
+                    iframe.remove();
+                    iframe = null;
+                } catch (e) {
+                    console.error("清空 iframe 失败", e);
+                }
+
+                console.log("✅ iframe 已完全清理并销毁");
+            }, 100); // 等待动画完成 0.5s
         }
     }
 
@@ -596,7 +619,7 @@
                 "html:\n" + html;
             try {
                 var isFileSaverSupported = !!new Blob;
-                var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+                var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
                 saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
             } catch (e) {
                 console.log(e);
@@ -640,6 +663,7 @@
         bookName = bookName.replaceAll("/", "_");
         return bookName;
     }
+
     function getAuthorInfo(el) {
         return el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText;
     }
