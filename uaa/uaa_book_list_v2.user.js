@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-25.01
+// @version      2025-12-25.02
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -351,7 +351,7 @@
                 case "1-12": {
                     for (let i = 0; i < all.length; i++) {
                         if (i >= 0 && i < 12) {
-                            all[i].checked = true;
+                            all[i].checked = !all[i].checked;
                         }
                     }
                 }
@@ -359,7 +359,7 @@
                 case "13-24": {
                     for (let i = 0; i < all.length; i++) {
                         if (i >= 12 && i < 24) {
-                            all[i].checked = true;
+                            all[i].checked = !all[i].checked;
                         }
                     }
                 }
@@ -367,7 +367,7 @@
                 case "25-36": {
                     for (let i = 0; i < all.length; i++) {
                         if (i >= 24 && i < 36) {
-                            all[i].checked = true;
+                            all[i].checked = !all[i].checked;
                         }
                     }
                 }
@@ -375,7 +375,7 @@
                 case "37-49": {
                     for (let i = 0; i < all.length; i++) {
                         if (i >= 36 && i <= 48) {
-                            all[i].checked = true;
+                            all[i].checked = !all[i].checked;
                         }
                     }
                 }
