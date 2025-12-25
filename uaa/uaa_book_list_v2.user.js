@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-25.03
+// @version      2025-12-25.04
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -203,7 +203,7 @@
                 offset: 'r',
                 shade: 0,
                 anim: 'slideLeft', // 从右往左
-                area: ['30%', '80%'],
+                area: ['25%', '80%'],
                 skin: 'layui-layer-rim', // 加上边框
                 maxmin: true, //开启最大化最小化按钮
                 content: `<div id='openPage'></div>`,
