@@ -182,9 +182,9 @@
         iframe.src = task.href;
         slideInIframe();
         console.log(task.href);
-        await fetch(task.href).then(content => content.text()).then((data) => {
-            console.log(data);
-        });
+        // await fetch(task.href).then(content => content.text()).then((data) => {
+        //     console.log(data);
+        // });
 
         // 等待页面加载
         await new Promise((resolve, reject) => {
