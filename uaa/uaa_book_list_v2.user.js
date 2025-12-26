@@ -378,12 +378,13 @@
                                 }
                                 exportEpub().then(r => {
                                 });
-                                exportEpubScheduler.clear();
+
                                 return;
                             }
                             if (type === "clear") {
                                 reloadTree();
                                 scheduler.clear();
+                                exportEpubScheduler.clear();
                                 return;
                             }
                             tree.reload('title', {data: setMenuTreeChecked(tree, 'title', type)}); // 重载实例
