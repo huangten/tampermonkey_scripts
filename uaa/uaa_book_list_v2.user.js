@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-26.01
+// @version      2025-12-26.02
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -363,7 +363,7 @@
                         target: layero, // 插入 fixbar 节点的目标元素选择器
                         click: function (type) {
                             if (type === "getCheckedNodeData") {
-                                if (exportEpubScheduler.running) {
+                                if (scheduler.running) {
                                     layer.msg("正在打开中，请等待打开完后再继续");
                                     return;
                                 }
