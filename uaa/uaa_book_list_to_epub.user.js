@@ -52,69 +52,76 @@
         });
     }
 
-    Promise.all([addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'), addScript("jq_id", "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"), addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"), addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js"), addScript('jszip_id', "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js")]).then(() => {
+    Promise.all([
+        addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
+        addScript("jq_id", "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"),
+        addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
+        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js"),
+        addScript('jszip_id', "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js")
+    ]).then(() => {
         run();
     });
 
     /*global $,layui,layer,util,JSZip,saveAs*/
 
 
-    class BackgroundTabScheduler {
-        constructor({
-                        interval = 1000, jitter = 600
-                    } = {}) {
-            this.queue = [];
-            this.interval = interval;
-            this.jitter = jitter;
-            this.running = false;
-        }
+    function run() {
 
-        enqueue(url) {
-            this.queue.push(url);
-        }
 
-        start() {
-            // if (!userEvent || !userEvent.isTrusted) {
-            //     console.warn('必须在用户事件中启动');
-            //     return;
-            // }
-
-            if (this.running) return;
-            this.running = true;
-
-            this._tick();
-        }
-
-        clear() {
-            if (this.running) return;
-            this.running = false;
-            this.queue = null;
-        }
-
-        async _tick() {
-            if (!this.queue.length) {
+        class BackgroundTabScheduler {
+            constructor({
+                            interval = 1000, jitter = 600
+                        } = {}) {
+                this.queue = [];
+                this.interval = interval;
+                this.jitter = jitter;
                 this.running = false;
-                return;
             }
 
-            const url = this.queue.shift();
-            this._openInBackground(url);
+            enqueue(url) {
+                this.queue.push(url);
+            }
 
-            const delay = this.interval + Math.random() * this.jitter;
+            async start() {
+                // if (!userEvent || !userEvent.isTrusted) {
+                //     console.warn('必须在用户事件中启动');
+                //     return;
+                // }
 
-            setTimeout(() => this._tick(), delay);
+                if (this.running) return;
+                this.running = true;
+
+                await this._tick();
+            }
+
+            clear() {
+                if (this.running) return;
+                this.running = false;
+                this.queue = null;
+            }
+
+            async _tick() {
+                if (!this.queue.length) {
+                    this.running = false;
+                    return;
+                }
+
+                const url = this.queue.shift();
+                await this._openInBackground(url);
+
+                const delay = this.interval + Math.random() * this.jitter;
+
+                setTimeout(() => this._tick(), delay);
+            }
+
+            async _openInBackground(url) {
+                await buildEpub(url);
+            }
         }
 
-        _openInBackground(url) {
-
-        }
-    }
-
-    const scheduler = new BackgroundTabScheduler({
-        interval: 100, jitter: 100
-    });
-
-    function run() {
+        const scheduler = new BackgroundTabScheduler({
+            interval: 100, jitter: 100
+        });
 
         const fixbarStyle = `
                     background-color: #ff5555;
@@ -238,13 +245,16 @@
                     });
 
                     async function getCheckedNodeData() {
-                        //let checkedData = tree.getChecked('title'); // 获取选中节点的数据
-                        //checkedData.reverse();
-                        await buildEpub("https://www.uaa.com/novel/intro?id=1174911250300276736");
-                        // for (let i = 0; i < checkedData.length; i++) {
-                        //     console.log(checkedData[i]);
-                        //     scheduler.enqueue(checkedData[i].href)
-                        // }
+                        let checkedData = tree.getChecked('title'); // 获取选中节点的数据
+                        checkedData.reverse();
+
+                        for (let i = 0; i < checkedData.length; i++) {
+                            console.log(checkedData[i]);
+                            scheduler.enqueue(checkedData[i].href)
+                        }
+                        await scheduler.start().then(() => {
+                            console.log("aaaaaaaaaaaaa")
+                        })
                     }
 
                     function reloadTree() {
@@ -435,14 +445,14 @@
             let bookName = doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim();
             let author = '';
             let type = ""
-            let tags = doc.getElementsByClassName('tag_box')[0].innerText.replaceAll('\n', '').replaceAll('标签：', '').trim()
-            console.log(tags);
+            let tags = doc.getElementsByClassName('tag_box')[0].innerText.replaceAll('\n', '').replaceAll('标签：', '').replaceAll(' ', '').replaceAll('#', ' #').trim()
+            //       console.log(tags);
             let rou = doc.getElementsByClassName('props_box')[0].getElementsByTagName('li')[0].innerText.trim();
             let score = "";
             let lastUpdateTime = "";
             let intro = doc.getElementsByClassName('brief_box')[0].innerText.replaceAll('小说简介：', "").replaceAll('\n', '').trim();
-console.log(intro);
-return;
+            //         console.log(intro);
+
             let infoBox = doc.getElementsByClassName('info_box')[0].getElementsByTagName("div");
 
             for (let i = 0; i < infoBox.length; i++) {
@@ -453,7 +463,7 @@ return;
                     author = infoBox[i].innerText.replace("作者：", '').trim();
                 }
                 if (infoBox[i].innerText.trim().includes("题材：")) {
-                    type = infoBox[i].innerText.replace("题材：", '').trim();
+                    type = infoBox[i].innerText.replace("题材：", '').replaceAll('\n', '').replaceAll(' ', '').trim();
                 }
                 if (infoBox[i].innerText.trim().includes("评分：")) {
                     score = infoBox[i].innerText.replace("评分：", '').trim();
@@ -477,8 +487,15 @@ return;
             cssFolder.file('fonts.css', genFontCss());
 
             const imgFolder = o.folder("Images")
-            imgFolder.file("cover.jpg", await fetchImage("https://cdn.uameta.ai/file/bucket-media/image/cover/a1a45cd58b2140858030e8ec60fffe35.jpg"));
+
+            let coverUrl = doc.getElementsByClassName("cover")[0].src;
+
+            imgFolder.file("cover.jpg", await fetchImage(coverUrl));
+
             imgFolder.file("logo.webp", await gmFetchImageBlob('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/logo.webp'));
+
+            imgFolder.file("girl.jpg", await gmFetchImageBlob('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/girl.jpg'));
+
 
             const manifest = [], spine = [], ncxNav = [];
             const textFolder = o.folder('Text');
@@ -487,14 +504,33 @@ return;
             textFolder.file(`cover.xhtml`, genCoverHtmlPage());
             manifest.push(`<item id="cover.xhtml" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>`);
             spine.push(`<itemref idref="cover.xhtml"  properties="duokan-page-fullscreen"/>`);
+            ncxNav.push(`<navPoint id="cover.xhtml" playOrder="10000">
+    <navLabel><text>封面</text></navLabel>
+    <content src="Text/cover.xhtml"/>
+</navPoint>`);
             // fy.xhtml
             textFolder.file(`fy.xhtml`, genFyHtmlPage({
                 name: bookName, author: author,
             }));
             manifest.push(`<item id="fy.xhtml" href="Text/fy.xhtml" media-type="application/xhtml+xml"/>`);
             spine.push(`<itemref idref="fy.xhtml"/>`);
+            ncxNav.push(`<navPoint id="fy.xhtml" playOrder="10001">
+    <navLabel><text>扉页</text></navLabel>
+    <content src="Text/fy.xhtml"/>
+</navPoint>`);
 
             // intro.xhtml
+
+            // console.log(genIntroHtmlPage({
+            //     bookName: bookName,
+            //     author: author,
+            //     type: type,
+            //     tags: tags,
+            //     rou: rou,
+            //     score: score,
+            //     lastUpdateTime: lastUpdateTime,
+            //     intro: intro
+            // }));
             textFolder.file(`intro.xhtml`, genIntroHtmlPage({
                 bookName: bookName,
                 author: author,
@@ -507,6 +543,10 @@ return;
             }));
             manifest.push(`<item id="intro.xhtml" href="Text/intro.xhtml" media-type="application/xhtml+xml"/>`);
             spine.push(`<itemref idref="intro.xhtml"/>`);
+            ncxNav.push(`<navPoint id="intro.xhtml" playOrder="10002">
+    <navLabel><text>内容简介</text></navLabel>
+    <content src="Text/intro.xhtml"/>
+</navPoint>`);
 
             chapters.forEach((c, i) => {
                 let volumeIndex = 0;
@@ -565,7 +605,8 @@ return;
         <item id="main.css" href="Styles/main.css" media-type="text/css"/>
         <item id="fonts.css" href="Styles/fonts.css" media-type="text/css"/>
         <item id="cover" href="Images/cover.jpg" media-type="image/jpeg"/>
-        <item id="logo" href="Images/logo.webp" media-type="image/webp"/>
+        <item id="logo.webp" href="Images/logo.webp" media-type="image/webp"/>
+        <item id="girl.jpg" href="Images/girl.jpg" media-type="image/jpeg"/>
     </manifest>
     <spine toc="ncx">
         ${spine.join('\n        ')}
@@ -662,14 +703,14 @@ ${ncxNav.join('\n')}
 <body class="speci">
 <div class="oval">
 <h2 class="ovaltitle" style="margin-bottom:2em;">内容简介</h2>
-    <p>📖  书名： ${intro.bookName}</p>
-    <p>👤  作者： ${intro.author}</p>
-    <p>🗂  分类： ${intro.type}</p>
-    <p>🔖  标签： ${intro.tags}</p>
-    <p>🗿  肉量： ${intro.rou}</p>
-    <p>✏   评分：  ${intro.score}</p>
-    <p>🕰  上次更新：  ${intro.lastUpdateTime}</span></p>
-    <p>🏷  简介： ${intro.intro}</p>
+    <p>📖 书名：${intro.bookName}</p>
+    <p>👤 作者：${intro.author}</p>
+    <p>🗂 分类：${intro.type}</p>
+    <p>🔖 标签：${intro.tags}</p>
+    <p>🗿 肉量：${intro.rou}</p>
+    <p>✏ 评分：${intro.score}</p>
+    <p>🕰 上次更新：${intro.lastUpdateTime}</p>
+    <p>🏷 简介：${intro.intro}</p>
 </div>
 </body>
 </html>
@@ -695,6 +736,8 @@ ${ncxNav.join('\n')}
   <body>
      <div class="chapter-head"><img alt="logo" class="chapter-head" src="../Images/logo.webp"/></div>
      <h2 class="chapter-title"><span>${t1}</span><br/>${t2}</h2>
+     
+     <p>null</p>
   </body>
 </html>`;
     }
