@@ -566,9 +566,9 @@
                                 return;
                             }
 
-                            const decoder = new TextDecoder('utf-8');
-                            const text = decoder.decode(res.response);
-                            resolve(text);
+                            //const decoder = new TextDecoder('utf-8');
+                            //const text = decoder.decode(res.response);
+                            resolve(res.response);
                         },
                         onerror: reject,
                     });
