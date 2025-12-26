@@ -1,0 +1,603 @@
+@charset "utf-8";
+@import url("fonts.css");
+body {
+  padding: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 10px;
+  margin-right: 10px;
+  line-height: 130%;
+  text-align: justify;
+}
+
+div {
+  margin: 0px;
+  padding: 0px;
+  line-height: 130%;
+  text-align: justify;
+}
+
+p {
+  margin: 1.2em 0;
+  text-align: justify;
+  font-size: 1em;
+  duokan-text-indent: 2em;
+  text-indent: 2em;
+  line-height: 1.5em;
+  font-family: "未来圆", serif;
+}
+
+.P_Box_Heading {
+  line-height: 130%;
+  margin-left: 2em;
+  margin-right: 2em;
+  margin-bottom: 0;
+  padding: 5px;
+  background: #999;
+  text-align: center;
+  font-family: "黑体", sans-serif;
+  text-indent: 0em;
+}
+
+.P_Box {
+  margin-left: 2em;
+  margin-right: 2em;
+  padding: 5px;
+  background: #DDD;
+  text-align: justify;
+  font-family: "楷体", serif;
+}
+
+span.talk {
+  font-family: "楷体", serif;
+  color: #89001C;
+}
+
+span.danyinhao {
+  font-family: "楷体", serif;
+  color: blue;
+}
+
+span.kuohao {
+  font-family: "行楷", serif;
+  color: red;
+}
+
+span.shuminghao {
+  font-family: "宋体", serif;
+  color: #89001C;
+}
+
+.bodycontent {
+  margin: 1em 0 0;
+/*图片说明的段间距*/
+  font-family: "仿宋";
+/*图片说明使用的字体*/
+  font-size: .8em;
+/*字体大小*/
+  text-indent: 0;
+/*首行缩进为零，当你使用单标签p来指定首行缩进为2em时，记得在需要居中的文本中清除缩进，因为样式是叠加的*/
+  text-align: center;
+/*图片说明水平居中*/
+  color: #a52a2a;
+/*字体颜色*/
+  line-height: 1.25em;
+/*行高，防止有很长的图片说明*/
+}
+
+h1 {
+  float: right;
+  text-align: right;
+  color: #FF5C30;
+  font-size: 2em;
+  line-height: 130%;
+  border-width: 0.16em;
+  border-style: none double none none;
+  border-color: #FF5C38;
+  margin: 70% 0.3em 0 0;
+  padding: 0 0.4em 0 0;
+  text-indent: 0em;
+  font-family: "cwgkf","大标宋","宋体", sans-serif;
+}
+
+span.zhu {
+  font-family: "楷体", serif;
+  font-size: 55%;
+}
+
+h2 {
+  margin-bottom: 0.5em;
+  line-height: 130%;
+  text-align: center;
+  padding: 5px 5px 5px 5px;
+  color: red;
+  border-width: 0.1em;
+  border-style: none none dotted none;
+  border-color: #FF5C00;
+  font-weight: bold;
+  font-size: 1.35em;
+  font-family: "行楷","宋体","DK-SONGTI","大标宋", sans-serif;
+  text-indent: 0em;
+}
+
+h2.chapter-title {
+  text-align: center;
+  font-size: 1.3em;
+  font-family: "隶变", "宋体","DK-SONGTI","大标宋";
+  color: red;
+  margin: -2% 0 2em 0;
+}
+
+h2.chapter-title span {
+  text-align: center;
+  font-size: 0.8em;
+  font-family:"行楷", "DK-FANGSONG","仿宋";
+  color: #E2DA9A;
+  border-width: 0.16em;
+}
+
+div.chapter-head {
+  text-align: center;
+  text-indent: 0;
+  duokan-text-indent: 0;
+  duokan-bleed: lefttopright;
+}
+
+img.chapter-head {
+  width: 100%;
+}
+
+h3 {
+  line-height: 130%;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.35em;
+  font-family: "行楷", sans-serif;
+  margin-top: 0.8em;
+  color: #2e3f9c;
+  border-width: 0.25em;
+  border-style: double double;
+  border-color: #985CFF;
+  margin-left: 5%;
+  margin-right: 5%;
+  text-indent: 0em;
+}
+
+h4 {
+  line-height: 130%;
+  text-align: center;
+  font-weight: bold;
+  font-size: 100%;
+  font-family: "行楷", sans-serif;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  text-indent: 0em;
+}
+
+/*图片*/
+div.duokan-image-single {
+  text-align: center;
+  margin: .5em auto;
+/*插图盒子上下外边距为0.5em，左右设置auto是为了水平居中这个盒子*/
+}
+
+img.picture-80 {
+  margin: 0;
+/*清除img元素的外边距*/
+  width: 80%;
+/*预览窗口的宽度*/
+  box-shadow: 3px 3px 10px #bfbfbf;
+/*给图片添加阴影效果*/
+}
+
+p.duokan-image-maintitle {
+  margin: 1em 0 0;
+/*图片说明的段间距*/
+  font-family: "楷体";
+/*图片说明使用的字体*/
+  font-size: .9em;
+/*字体大小*/
+  text-indent: 0;
+/*首行缩进为零，当你使用单标签p来指定首行缩进为2em时，记得在需要居中的文本中清除缩进，因为样式是叠加的*/
+  text-align: center;
+/*图片说明水平居中*/
+  color: #a52a2a;
+/*字体颜色*/
+  line-height: 1.25em;
+/*行高，防止有很长的图片说明*/
+}
+
+div.duokan-image-gallery-cell img {
+  margin: 0;
+/*清除画廊盒子中的图像外边距*/
+  width: 100%;
+/*设置画廊盒子中的图像以预览窗口的100%宽度显示*/
+}
+
+p.duokan-image-subtitle {
+  margin: 0 0 .5em;
+/*清除副标题的外边距*/
+  font-family: "黑体";
+/*定义副标题字体*/
+  font-size: .8em;
+/*副标题字体大小*/
+  text-indent: 0;
+/*清除缩进*/
+}
+
+div.duokan-image-gallery {
+  margin: .5em auto;
+/*定义画廊图盒子的上下外边距*/
+  width: 100%;
+/*定义画廊图盒子的宽度*/
+  text-align: center;
+/*画廊图中的元素水平居中*/
+}
+
+
+.bg_01 {
+  background: #f7fcf6 url(../Images/bg_01.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.bg_02 {
+  background: #f7fcf6 url(../Images/bg_02.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_03 {
+  background: #f7fcf6 url(../Images/bg_03.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_04 {
+  background: #f7fcf6 url(../Images/bg_04.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_05 {
+  background: #f7fcf6 url(../Images/bg_05.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_06 {
+  background: #f7fcf6 url(../Images/bg_06.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_07 {
+  background: #f7fcf6 url(../Images/bg_07.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_08 {
+  background: #f7fcf6 url(../Images/bg_08.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_09 {
+  background: #f7fcf6 url(../Images/bg_09.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_10 {
+  background: #f7fcf6 url(../Images/bg_10.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_11 {
+  background: #f7fcf6 url(../Images/bg_11.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_12 {
+  background: #f7fcf6 url(../Images/bg_12.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_13 {
+  background: #f7fcf6 url(../Images/bg_13.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_14 {
+  background: #f7fcf6 url(../Images/bg_14.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_15 {
+  background: #f7fcf6 url(../Images/bg_15.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_16 {
+  background: #f7fcf6 url(../Images/bg_16.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.bg_17 {
+  background: #f7fcf6 url(../Images/bg_17.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+
+.bg_18 {background: #f7fcf6 url(../Images/bg_18.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_19 {background: #f7fcf6 url(../Images/bg_19.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_20 {background: #f7fcf6 url(../Images/bg_20.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_21 {background: #f7fcf6 url(../Images/bg_21.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_22 {background: #f7fcf6 url(../Images/bg_22.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_23 {background: #f7fcf6 url(../Images/bg_23.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_24 {background: #f7fcf6 url(../Images/bg_24.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_25 {background: #f7fcf6 url(../Images/bg_25.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_26 {background: #f7fcf6 url(../Images/bg_26.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_27 {background: #f7fcf6 url(../Images/bg_27.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_28 {background: #f7fcf6 url(../Images/bg_28.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_29 {background: #f7fcf6 url(../Images/bg_29.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_30 {background: #f7fcf6 url(../Images/bg_30.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_31 {background: #f7fcf6 url(../Images/bg_31.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_32 {background: #f7fcf6 url(../Images/bg_32.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_33 {background: #f7fcf6 url(../Images/bg_33.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_34 {background: #f7fcf6 url(../Images/bg_34.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_35 {background: #f7fcf6 url(../Images/bg_35.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_36 {background: #f7fcf6 url(../Images/bg_36.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_37 {background: #f7fcf6 url(../Images/bg_37.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_38 {background: #f7fcf6 url(../Images/bg_38.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_39 {background: #f7fcf6 url(../Images/bg_39.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+.bg_40 {background: #f7fcf6 url(../Images/bg_40.jpg) no-repeat center;background-size: cover;background-attachment: fixed;}
+
+
+/*书籍信息*/
+.bei2 {
+  background: #f7fcf6 url(../Images/cover.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.fmhz {
+  margin: 5% 32.5% 0 32.5%;
+  padding: 2px 2px;
+  border: 1px solid #f5f5dc;
+  background-color: rgba(250, 250, 250, 0);
+  border-radius: 1px;
+}
+
+div.feng {
+  text-align: center;
+  text-indent: 0;
+}
+
+img.feng {
+  width: 100%;
+  height: auto;
+}
+
+h3.sjmc {
+  font-family: "黑体", sans-serif;
+  font-size: 115%;
+  font-weight: normal;
+  text-align: center;
+  text-indent: 0;
+  margin: 1em 0 1em 0;
+  color: #232931;
+}
+
+span.sjzz {
+  font-size: 75%;
+}
+
+.sjfl {
+  margin: 0 0;
+  padding: 0 0.15em;
+  border: 1px none #ffffff;
+  background-color: rgba(250, 250, 250, 0);
+}
+
+table.sjlb {
+  width: 100%;
+  text-align: center;
+}
+
+table.sjlb td {
+  color: #232931;
+  border: 1px none #ffffff;
+}
+
+.pai1 {
+  font-family: "楷体", serif;
+  font-size: 100%;
+  font-weight: normal;
+  text-align: center;
+  color: #ff9410;
+}
+
+.pai2 {
+  font-family: "仿宋", sans-serif;
+  font-size: 70%;
+  text-align: center;
+  text-indent: 0;
+  color: #E9967A;
+}
+
+/*制作说明页*/
+.oval {
+  margin: 2em 5% 0px 5%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000;
+  border-radius: 10px;
+  box-sizing: border-box;
+  text-align: left;
+  color: #fff;
+  padding: 1em;
+}
+
+.oval p{
+  font-family: "楷体", sans-serif;
+  font-size: 100%;
+  font-style: normal;
+  duokan-text-indent: 0em;
+  text-indent: 0em;
+  color: blue;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.ovaltitle {
+  font-family: "行楷", "黑体", sans-serif;
+  duokan-text-indent: 0em;
+  text-indent: 0em;
+  font-size: 140%;
+  color: blue;
+  font-style: normal;
+  padding-top: 15px;
+  padding-bottom: 14px;
+  margin: 3px;
+  text-align: center;
+  text-shadow: 0 1px 1px #111;
+}
+
+.ovaltxt {
+  font-family: "楷体", sans-serif;
+  font-size: 100%;
+  font-style: normal;
+  duokan-text-indent: 0em;
+  text-indent: 0em;
+  color: blue;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.ovalnote {
+  font-family: "宋体", sans-serif;
+  font-size: 90%;
+  color: black;
+  duokan-text-indent: 0em;
+  text-indent: 0em;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
+}
+
+.line {
+  border: dotted #A2906A;
+  border-width: 1px 0 0 0;
+}
+
+.speci {
+  background: #f7fcf6 url(../Images/girl.jpg) no-repeat center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+
+/********************************************/
+
+.oval1 {
+  float: right;
+  margin: 1em 5% 0px 5%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000;
+  border-radius: 10px;
+  box-sizing: border-box;
+  text-align: left;
+  color: #fff;
+  padding: 1em;
+}
+
+
+.ovaltxt1 {
+  font-family:"楷体", "黑体", sans-serif;
+  font-size: 1em;
+  font-style: normal;
+  duokan-text-indent: 0em;
+  text-indent: 0em;
+  color: blue;
+}
+
+/*正文中表情图片*/
+img.rarefont {
+  margin: 0;
+/*清除外边距*/
+  padding: 0;
+/*清除内边距*/
+  height: 1.5em;
+/*高度为一个汉字的高度*/
+  vertical-align: middle;
+/*垂直居中*/
+}
+
+/*音频*/
+div.content-speaker {
+  text-align: center;
+  margin: 1em auto;
+}
+
+audio.content-speaker {
+  width: 50%;
+}
+
+/*视频*/
+video.content-matrix {
+  text-align: center;
+  margin: 0;
+  width: 80%;
+  box-shadow: 3px 3px 10px #bfbfbf;
+}
+
+/*注释*/
+ol.duokan-footnote-content {
+  padding: 0 auto;
+  text-align: left;
+}
+
+.duokan-footnote img {
+  width: 0.85em;
+  vertical-align: middle;
+}
+
+ol.duokan-footnote-content {
+  padding: 10px auto 10px auto;
+  border: 1px dashed #366;
+  box-shadow: 0 0 0.5em #AAA;
+}
+
+li.duokan-footnote-item {
+  margin: 0.3em 0 0.3em 0;
+  padding: 5px 0;
+  line-height: 120%;
+  list-style-type: decimal;
+  font-family: "细黑体", sans-serif;
+  text-align: left;
+  font-size: 95%;
+  text-indent: 0;
+  duokan-text-indent: 0;
+}
+
+
+
+
+
+img.width100{
+  width: 100%;
+}
+
+div.roundsolid {
+  margin: 1em 0.2em;
+  padding: 0.8em 0.5em;
+  -moz-border-radius: 19px;
+  -webkit-border-radius: 19px;
+  border-radius: 19px;
+  border: #151B54 dotted 2px;
+  text-align: justify;
+  text-indent: 2em;
+  duokan-text-indent: 2em;
+  line-height: 130%;
+  font-family: "zdy3", "未来圆";
+  color: #151B54;
+  font-size: 0.85em;
+}

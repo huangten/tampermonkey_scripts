@@ -1,0 +1,345 @@
+@font-face {
+  font-family: "楷体";
+  font-weight: normal;
+  font-style: normal;
+  src: local("Caecilia"),local("楷体"),local("楷体_GB2312"),
+	local("Kaiti"),local("Kaiti SC"),local("Kaiti TC"),				/*iOS6+iBooks3*/
+	local("MKai PRC"),local("MKaiGB18030C-Medium"),local("MKaiGB18030C-Bold"),			/*Kindle Paperwihite*/
+	local("DK-KAITI"),
+	url(../Fonts/kaiti.ttf),
+	url(../Fonts/kt.ttf),
+	url(res:///opt/sony/ebook/FONT/kt.ttf),
+	url(res:///Data/FONT/kt.ttf),
+	url(res:///opt/sony/ebook/FONT/tt0011m_.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/kt.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/kt.ttf),
+	url(res:///ebook/fonts/kt.ttf),
+	url(res:///ebook/fonts/DroidSansFallback.ttf),
+	url(res:///fonts/ttf/kt.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/kt.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/kt.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/kt.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/kt.ttf),
+	url(res:///system/fonts/kt.ttf),
+	url(res:///system/media/sdcard/fonts/kt.ttf),
+	url(res:///media/fonts/kt.ttf),
+	url(res:///sdcard/fonts/kt.ttf),
+	url(res:///system/fonts/DroidSansFallback.ttf),
+	url(res:///mnt/MOVIFAT/font/kt.ttf),
+	url(res:///media/flash/fonts/kt.ttf),
+	url(res:///media/sd/fonts/kt.ttf),
+	url(res:///opt/onyx/arm/lib/fonts/AdobeHeitiStd-Regular.otf),
+	url(res:///../../fonts/kt.ttf),
+	url(res:///../fonts/kt.ttf),
+	url(../../../../../kt.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/kt.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/kt.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/kt.ttf);						 /*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "大标宋";
+  font-weight: normal;
+  font-style: normal;
+  src: local("方正大标宋_GBK"),local("方正大标宋简体"),local("方正大标宋繁体"),
+	local("Dabiaosong"),
+	url(file:///storage/emulated/0/Books/fonts/Fonts/Fonts/方正大标宋_GBK.ttf),
+	url(res:///opt/sony/ebook/FONT/方正大标宋_GBK.ttf),
+	url(res:///Data/FONT/方正大标宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正大标宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正大标宋_GBK.ttf),
+	url(res:///ebook/fonts/方正大标宋_GBK.ttf),
+	url(res:///ebook/fonts/DroidSansFallback.ttf),
+	url(res:///fonts/ttf/方正大标宋_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正大标宋_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正大标宋_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正大标宋_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正大标宋_GBK.ttf),
+	url(res:///system/fonts/方正大标宋_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正大标宋_GBK.ttf),
+	url(res:///media/fonts/方正大标宋_GBK.ttf),
+	url(res:///sdcard/fonts/方正大标宋_GBK.ttf),
+	url(res:///system/fonts/方正大标宋_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正大标宋_GBK.ttf),
+	url(res:///media/flash/fonts/方正大标宋_GBK.ttf),
+	url(res:///media/sd/fonts/方正大标宋_GBK.ttf),
+	url(res:///../../fonts/方正大标宋_GBK.ttf),
+	url(res:///../fonts/方正大标宋_GBK.ttf),
+	url(../../../../../方正大标宋_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正大标宋_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正大标宋_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正大标宋_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "仿宋";
+  font-weight: normal;
+  font-style: normal;
+  src: url(../Fonts/fangsong.ttf),
+       local("方正仿宋_GBK"),local("方正仿宋简体"),local("方正仿宋繁体"),
+	local("Fangsong"),
+	local("DK-FANGSONG"),
+	url(file:///storage/emulated/0/Books/fonts/Fonts/Fonts/Fonts/方正仿宋_GBK.ttf),
+	url(res:///opt/sony/ebook/FONT/方正仿宋_GBK.ttf),
+	url(res:///Data/FONT/方正仿宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正仿宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正仿宋_GBK.ttf),
+	url(res:///ebook/fonts/方正仿宋_GBK.ttf),
+	url(res:///fonts/ttf/方正仿宋_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正仿宋_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正仿宋_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正仿宋_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正仿宋_GBK.ttf),
+	url(res:///system/fonts/方正仿宋_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正仿宋_GBK.ttf),
+	url(res:///media/fonts/方正仿宋_GBK.ttf),
+	url(res:///sdcard/fonts/方正仿宋_GBK.ttf),
+	url(res:///system/fonts/方正仿宋_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正仿宋_GBK.ttf),
+	url(res:///media/flash/fonts/方正仿宋_GBK.ttf),
+	url(res:///media/sd/fonts/方正仿宋_GBK.ttf),
+	url(res:///../../fonts/方正仿宋_GBK.ttf),
+	url(res:///../fonts/方正仿宋_GBK.ttf),
+	url(../../../../../方正仿宋_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正仿宋_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正仿宋_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正仿宋_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "细黑体";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/Fonts/Fonts/方正细黑_GBK.ttf),
+    url(../Fonts/xihei.ttf),
+    local("方正细黑_GBK"),local("方正细黑简体"),local("方正细黑繁体"),
+	url(res:///opt/sony/ebook/FONT/方正细黑_GBK.ttf),
+	url(res:///Data/FONT/方正细黑_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正细黑_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正细黑_GBK.ttf),
+	url(res:///ebook/fonts/方正细黑_GBK.ttf),
+	url(res:///fonts/ttf/方正细黑_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正细黑_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正细黑_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正细黑_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正细黑_GBK.ttf),
+	url(res:///system/fonts/方正细黑_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正细黑_GBK.ttf),
+	url(res:///media/fonts/方正细黑_GBK.ttf),
+	url(res:///sdcard/fonts/方正细黑_GBK.ttf),
+	url(res:///system/fonts/方正细黑_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正细黑_GBK.ttf),
+	url(res:///media/flash/fonts/方正细黑_GBK.ttf),
+	url(res:///media/sd/fonts/方正细黑_GBK.ttf),
+	url(res:///../../fonts/方正细黑_GBK.ttf),
+	url(res:///../fonts/方正细黑_GBK.ttf),
+	url(../../../../../方正细黑_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正细黑_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正细黑_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正细黑_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "新书宋";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/Fonts/方正书宋_GBK.ttf),
+  url(../Fonts/xinshusong.ttf),
+    local("方正书宋_GBK"),local("方正书宋简体"),local("方正书宋繁体"),
+	url(res:///opt/sony/ebook/FONT/方正书宋_GBK.ttf),
+	url(res:///Data/FONT/方正书宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正书宋_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正书宋_GBK.ttf),
+	url(res:///ebook/fonts/方正书宋_GBK.ttf),
+	url(res:///fonts/ttf/方正书宋_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正书宋_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正书宋_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正书宋_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正书宋_GBK.ttf),
+	url(res:///system/fonts/方正书宋_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正书宋_GBK.ttf),
+	url(res:///media/fonts/方正书宋_GBK.ttf),
+	url(res:///sdcard/fonts/方正书宋_GBK.ttf),
+	url(res:///system/fonts/方正书宋_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正书宋_GBK.ttf),
+	url(res:///media/flash/fonts/方正书宋_GBK.ttf),
+	url(res:///media/sd/fonts/方正书宋_GBK.ttf),
+	url(res:///../../fonts/方正书宋_GBK.ttf),
+	url(res:///../fonts/方正书宋_GBK.ttf),
+	url(../../../../../方正书宋_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正书宋_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正书宋_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正书宋_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "未来圆";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/未来圆SC.ttf),
+  url(../Fonts/weilaiyuan.ttf),
+       local("未来圆SC"),
+	url(res:///opt/sony/ebook/FONT/未来圆SC.ttf),
+	url(res:///Data/FONT/未来圆SC.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/未来圆SC.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/未来圆SC.ttf),
+	url(res:///ebook/fonts/未来圆SC.ttf),
+	url(res:///fonts/ttf/未来圆SC.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/未来圆SC.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/未来圆SC.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/未来圆SC.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/未来圆SC.ttf),
+	url(res:///system/fonts/未来圆SC.ttf),
+	url(res:///system/media/sdcard/fonts/未来圆SC.ttf),
+	url(res:///media/fonts/未来圆SC.ttf),
+	url(res:///sdcard/fonts/未来圆SC.ttf),
+	url(res:///system/fonts/未来圆SC.ttf),
+	url(res:///mnt/MOVIFAT/font/未来圆SC.ttf),
+	url(res:///media/flash/fonts/未来圆SC.ttf),
+	url(res:///media/sd/fonts/未来圆SC.ttf),
+	url(res:///../../fonts/未来圆SC.ttf),
+	url(res:///../fonts/未来圆SC.ttf),
+	url(../../../../../未来圆SC.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/未来圆SC.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/未来圆SC.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/未来圆SC.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "隶变";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/方正隶变_GBK.ttf),
+  url(../Fonts/libian.ttf),
+    local("方正隶变_GBK"),
+	url(../Fonts/方正隶变_GBK.ttf),
+	url(res:///opt/sony/ebook/FONT/方正隶变_GBK.ttf),
+	url(res:///Data/FONT/方正隶变_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正隶变_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正隶变_GBK.ttf),
+	url(res:///ebook/fonts/方正隶变_GBK.ttf),
+	url(res:///fonts/ttf/方正隶变_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正隶变_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正隶变_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正隶变_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正隶变_GBK.ttf),
+	url(res:///system/fonts/方正隶变_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正隶变_GBK.ttf),
+	url(res:///media/fonts/方正隶变_GBK.ttf),
+	url(res:///sdcard/fonts/方正隶变_GBK.ttf),
+	url(res:///system/fonts/方正隶变_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正隶变_GBK.ttf),
+	url(res:///media/flash/fonts/方正隶变_GBK.ttf),
+	url(res:///media/sd/fonts/方正隶变_GBK.ttf),
+	url(res:///../../fonts/方正隶变_GBK.ttf),
+	url(res:///../fonts/方正隶变_GBK.ttf),
+	url(../../../../../方正隶变_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正隶变_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正隶变_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正隶变_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "行楷";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/方正行楷_GBK.ttf),
+  url(../Fonts/xingkai.ttf),
+    local("方正行楷_GBK"),
+	url(../Fonts/方正行楷_GBK.ttf),
+	url(res:///opt/sony/ebook/FONT/方正行楷_GBK.ttf),
+	url(res:///Data/FONT/方正行楷_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正行楷_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正行楷_GBK.ttf),
+	url(res:///ebook/fonts/方正行楷_GBK.ttf),
+	url(res:///fonts/ttf/方正行楷_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正行楷_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正行楷_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正行楷_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正行楷_GBK.ttf),
+	url(res:///system/fonts/方正行楷_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正行楷_GBK.ttf),
+	url(res:///media/fonts/方正行楷_GBK.ttf),
+	url(res:///sdcard/fonts/方正行楷_GBK.ttf),
+	url(res:///system/fonts/方正行楷_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正行楷_GBK.ttf),
+	url(res:///media/flash/fonts/方正行楷_GBK.ttf),
+	url(res:///media/sd/fonts/方正行楷_GBK.ttf),
+	url(res:///../../fonts/方正行楷_GBK.ttf),
+	url(res:///../fonts/方正行楷_GBK.ttf),
+	url(../../../../../方正行楷_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正行楷_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正行楷_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正行楷_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "悦宋";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/方正清刻本悦宋简体.ttf),
+  url(../Fonts/yuesong.ttf),
+    local("方正清刻本悦宋简体"),
+	url(res:///opt/sony/ebook/FONT/方正清刻本悦宋简体.ttf),
+	url(res:///Data/FONT/方正清刻本悦宋简体.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///ebook/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///fonts/ttf/方正清刻本悦宋简体.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正清刻本悦宋简体.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正清刻本悦宋简体.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正清刻本悦宋简体.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/media/sdcard/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///media/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///sdcard/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///system/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///mnt/MOVIFAT/font/方正清刻本悦宋简体.ttf),
+	url(res:///media/flash/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///media/sd/fonts/方正清刻本悦宋简体.ttf),
+	url(res:///../../fonts/方正清刻本悦宋简体.ttf),
+	url(res:///../fonts/方正清刻本悦宋简体.ttf),
+	url(../../../../../方正清刻本悦宋简体.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正清刻本悦宋简体.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正清刻本悦宋简体.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正清刻本悦宋简体.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
+@font-face {
+  font-family: "cwgkf";
+  font-weight: normal;
+  font-style: normal;
+  src: url(../Fonts/cwgkf.ttf);
+}
+
+@font-face {
+  font-family: "手写体";
+  font-weight: normal;
+  font-style: normal;
+  src: url(../Fonts/gangbishouxieti.ttf);
+}
+
+@font-face {
+  font-family: "准圆";
+  font-weight: normal;
+  font-style: normal;
+  src: url(file:///storage/emulated/0/Books/fonts/方正准圆_GBK.ttf),
+  url(../Fonts/zhunyuan.ttf),
+    local("方正准圆_GBK"),
+	url(res:///opt/sony/ebook/FONT/方正准圆_GBK.ttf),
+	url(res:///Data/FONT/方正准圆_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/sdcard/fonts/方正准圆_GBK.ttf),
+	url(res:///ebook/fonts/../../mnt/extsd/fonts/方正准圆_GBK.ttf),
+	url(res:///ebook/fonts/方正准圆_GBK.ttf),
+	url(res:///fonts/ttf/方正准圆_GBK.ttf),
+	url(res:///../../media/mmcblk0p1/fonts/方正准圆_GBK.ttf),
+	url(file:///mnt/us/DK_System/system/fonts/方正准圆_GBK.ttf),				/*Duokan Old Path*/
+	url(file:///mnt/us/DK_System/xKindle/res/userfonts/方正准圆_GBK.ttf),		/*Duokan 2012 Path*/
+	url(res:///abook/fonts/方正准圆_GBK.ttf),
+	url(res:///system/fonts/方正准圆_GBK.ttf),
+	url(res:///system/media/sdcard/fonts/方正准圆_GBK.ttf),
+	url(res:///media/fonts/方正准圆_GBK.ttf),
+	url(res:///sdcard/fonts/方正准圆_GBK.ttf),
+	url(res:///system/fonts/方正准圆_GBK.ttf),
+	url(res:///mnt/MOVIFAT/font/方正准圆_GBK.ttf),
+	url(res:///media/flash/fonts/方正准圆_GBK.ttf),
+	url(res:///media/sd/fonts/方正准圆_GBK.ttf),
+	url(res:///../../fonts/方正准圆_GBK.ttf),
+	url(res:///../fonts/方正准圆_GBK.ttf),
+	url(../../../../../方正准圆_GBK.ttf),										/*EpubReaderI*/
+	url(res:///mnt/sdcard/fonts/方正准圆_GBK.ttf),							/*Nook for Android: fonts in TF Card*/
+	url(res:///fonts/方正准圆_GBK.ttf),										/*ADE1,8, 2.0 Program Path*/
+	url(res:///../../../../Windows/fonts/方正准圆_GBK.ttf);					/*ADE1,8, 2.0 Windows Path*/
+}
