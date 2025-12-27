@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-27.02
+// @version      2025-12-27.03
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -781,7 +781,7 @@
                 if (c.children.length === 0) {
                     textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
                     ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
     <content src="Text/${id}.xhtml"/>
 </navPoint>`);
                 } else {
@@ -789,7 +789,7 @@
                     textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
 
                     let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
     <content src="Text/${id}.xhtml"/>`
 
                     c.children.forEach((d, j) => {
@@ -799,7 +799,7 @@
                         textFolder.file(`${did}.xhtml`, genHtmlPage(d.title));
                         let ncxNav = `
  <navPoint id="${did}" playOrder="${i + 1}">
-    <navLabel><text>${d.title}</text></navLabel>
+    <navLabel><text>${d.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
     <content src="Text/${did}.xhtml"/>
 </navPoint>
                         `;
