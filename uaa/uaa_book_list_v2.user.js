@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-27.01
+// @version      2025-12-27.02
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -698,7 +698,7 @@
                     author = infoBox[i].innerText.replace("作者：", '').trim();
                 }
                 if (infoBox[i].innerText.trim().includes("题材：")) {
-                    type = infoBox[i].innerText.replace("题材：", '').replaceAll('\n', '').replaceAll(' ', '').trim();
+                    type = infoBox[i].innerText.replace("题材：", '').split(' ').map(str => str.trim()).filter(str => str.length > 0);
                 }
                 if (infoBox[i].innerText.trim().includes("评分：")) {
                     score = infoBox[i].innerText.replace("评分：", '').trim();
@@ -944,7 +944,7 @@ ${ncxNav.join('\n')}
     }
 
     function genHtmlPage(title) {
-        const titleArray = title.split(' ');
+        const titleArray = title.split(' ').map(str => str.trim()).filter(str => str.length > 0);
         let t1 = titleArray[0];
         let t2 = "";
         if (titleArray.length > 1) {
@@ -955,7 +955,7 @@ ${ncxNav.join('\n')}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>${title}</title>
+    <title>${titleArray.join(' ')}</title>
     <link href="../Styles/fonts.css" rel="stylesheet" type="text/css"/>
     <link href="../Styles/main.css" rel="stylesheet" type="text/css"/>
   </head>
@@ -970,13 +970,13 @@ ${ncxNav.join('\n')}
 
 
     function genVolumeHtmlPage(title, i = 0) {
-        const titleArray = title.split(' ');
+        const titleArray = title.split(' ').map(str => str.trim()).filter(str => str.length > 0);
         return `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
-    <title>${title}</title>
+    <title>${titleArray.join(' ')}</title>
     <link href="../Styles/fonts.css" type="text/css" rel="stylesheet"/>
     <link href="../Styles/main.css" type="text/css" rel="stylesheet"/>
 </head>
