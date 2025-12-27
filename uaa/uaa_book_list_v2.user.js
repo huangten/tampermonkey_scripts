@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-26.02
+// @version      2025-12-27.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -376,9 +376,8 @@
                                     layer.msg("正在导出中，请等待导出完后再继续");
                                     return;
                                 }
-                                exportEpub().then(r => {
+                                exportEpub().then(() => {
                                 });
-
                                 return;
                             }
                             if (type === "clear") {
@@ -396,7 +395,7 @@
                         checkedData.reverse();
 
                         for (let i = 0; i < checkedData.length; i++) {
-                            console.log(checkedData[i]);
+                            // console.log(checkedData[i]);
                             scheduler.enqueue(checkedData[i].href)
                         }
                     }
@@ -541,6 +540,22 @@
             static line1Img = null
             static mainCss = null
             static fontsCss = null
+
+            static gmFetchCoverImageBlob(url) {
+                return new Promise((resolve, reject) => {
+                    GM_xmlhttpRequest({
+                        method: 'GET', url, responseType: 'blob', headers: {
+                            Referer: "https://www.uaa.com/",
+                        }, onload: res => {
+                            if (res.status === 200) {
+                                resolve(res.response);
+                            } else {
+                                reject(new Error('HTTP ' + res.status));
+                            }
+                        }, onerror: err => reject(err),
+                    });
+                });
+            }
 
             static gmFetchImageBlob(url) {
                 return new Promise((resolve, reject) => {
@@ -710,7 +725,7 @@
 
             let coverUrl = doc.getElementsByClassName("cover")[0].src;
 
-            imgFolder.file("cover.jpg", await fetchImage(coverUrl));
+            imgFolder.file("cover.jpg", await CommonRes.gmFetchCoverImageBlob(coverUrl));
 
             imgFolder.file("logo.webp", await CommonRes.getLogoImg());
 
