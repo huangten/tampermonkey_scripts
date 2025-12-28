@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-27.03
+// @version      2025-12-28.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -92,13 +92,13 @@
                 if (this.running) return;
                 this.running = true;
 
-                this._tick();
+                this._tick().then(() => {});
             }
 
             clear() {
                 if (this.running) return;
                 this.running = false;
-                this.queue = null;
+                this.queue = [];
             }
 
             async _tick() {
@@ -167,14 +167,16 @@
             async start() {
                 if (this.running) return;
                 this.running = true;
-
+                if(this.running) {
+                    layer.msg("开始导出中，请稍等。。。");
+                }
                 await this._tick();
             }
 
             clear() {
                 if (this.running) return;
                 this.running = false;
-                this.queue = null;
+                this.queue = [];
             }
 
             async _tick() {
@@ -201,7 +203,14 @@
             }
 
             async _openInBackground(url) {
-                await buildEpub(url);
+                await buildEpub(url).catch((reason) => {
+                    layui.layer.alert('导出失败',
+                        {icon: 1, shadeClose: true},
+                        function (index) {
+                            layer.close(index);
+                        });
+                    this.clear();
+                });
             }
         }
 
