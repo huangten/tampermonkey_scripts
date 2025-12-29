@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05.01
+// @version      2025-12-29.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -23,8 +23,12 @@
                 link.type = 'text/css';
                 link.href = src;
                 link.media = 'all';
-                link.onload = () => { resolve(); };
-                link.onerror = () => { reject(); };
+                link.onload = () => {
+                    resolve();
+                };
+                link.onerror = () => {
+                    reject();
+                };
                 head.appendChild(link);
             }
         });
@@ -36,8 +40,12 @@
                 var script = document.createElement('script');
                 script.src = src;
                 script.id = id;
-                script.onload = () => { resolve(); };
-                script.onerror = () => { reject(); };
+                script.onload = () => {
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject();
+                };
                 document.body.appendChild(script);
             }
         });
@@ -60,7 +68,7 @@
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            layer.msg('复制成功', { icon: 1 });
+            layer.msg('复制成功', {icon: 1});
         }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
@@ -68,6 +76,18 @@
     }
 
     function run() {
+        const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
+
+        function cleanText(str) {
+            return str.replace(/\u00A0/g, ' ').replace(INVISIBLE_RE, '');
+        }
+
+        function getFileNameFromPath(filePath) {
+            // 兼容 / 和 \
+            const parts = filePath.split(/[\\/]/);
+            return parts[parts.length - 1];
+        }
+
         var downloadArray = new Array();
         const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
@@ -97,7 +117,7 @@
                     }],
 
                 default: true,
-                css: { bottom: "15%" },
+                css: {bottom: "15%"},
                 margin: 0,
                 on: {
                     mouseenter: function (type) {
@@ -183,7 +203,7 @@
                             }],
                         default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                         bgcolor: '#16baaa', // bar 的默认背景色
-                        css: { bottom: "15%", right: 30 },
+                        css: {bottom: "15%", right: 30},
                         target: layero, // 插入 fixbar 节点的目标元素选择器
                         click: function (type) {
                             // console.log(this, type);
@@ -212,6 +232,7 @@
                         downloadArray = getMenuArray(checkedData)
                         doDownload()
                     }
+
                     function reloadTree() {
                         tree.reload('title', { // options
                             data: getMenuTree()
@@ -245,7 +266,6 @@
         }
 
 
-
         var timer = 0;
         const ListenMessage = (e) => {
             if (e.data.handle === 'lhd_close') {
@@ -273,7 +293,7 @@
                 }
                 if (downloadArray.length === 0) {
                     // layer.msg('下载完毕', {icon: 1});
-                    layui.layer.alert('下载完毕', { icon: 1, shadeClose: true }, function (index) {
+                    layui.layer.alert('下载完毕', {icon: 1, shadeClose: true}, function (index) {
                         layer.close(index);
                     });
                     return;
@@ -283,6 +303,7 @@
                 }, 1000 * 2);
             }
         }
+
         function cycleClear(el) {
             try {
                 if (el) {
@@ -310,33 +331,33 @@
                     for (let j = 0; j < alist.length; j++) {
                         menus.push({
                             'id': (index + 1) * 100000000 + j,
-                            "title": preName + alist[j].innerText.replace("new", "").trim(),
+                            "title": cleanText(preName + alist[j].innerText.replace("new", "").trim()),
                             "href": alist[j].href,
                             "children": [],
                             "spread": true,
                             "field": "",
-                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false 
+                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false
                         });
                     }
                 }
                 if (lis[index].className.indexOf("volume") > -1) {
-                    preName = lis[index].querySelector("span").innerText;
+                    preName = cleanText(lis[index].querySelector("span").innerText);
                     let children = new Array();
                     let alist = lis[index].getElementsByTagName("a");
                     for (let j = 0; j < alist.length; j++) {
                         children.push({
                             'id': (index + 1) * 100000000 + j + 1,
-                            "title": alist[j].innerText.replace("new", "").trim(),
+                            "title": cleanText(alist[j].innerText.replace("new", "").trim()),
                             "href": alist[j].href,
                             "children": [],
                             "spread": true,
                             "field": "",
-                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false 
+                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false
                         });
                     }
                     menus.push({
                         'id': (index + 1) * 100000000,
-                        "title": preName,
+                        "title": cleanText(preName),
                         "href": "",
                         "children": children,
                         "spread": true,
@@ -407,32 +428,20 @@
 
 
         function saveContentToLocal(el) {
-            let title = getTitle(el);
-            let text = "";
-            let html = "";
-            let lines = getLines(el);
-
-            for (let i = 0; i < lines.length; i++) {
-                text += "　　" + lines[i] + "\n";
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                html += "<p>" + lines[i] + "</p>\n";
-            }
             let separator = "\n\n=============================================\n";
             let content = "book name:\n" + getBookName2(el)
                 + separator +
                 "author:\n" + getAuthorInfo(el)
                 + separator +
-                "title:\n" + title
+                "title:\n" + getTitle(el)
                 + separator +
-                "text:\n" + text
+                "text:\n" + getTexts(el).map((s) => `　　${s}`).join('\n')
                 + separator +
-                "html:\n" + html;
+                "html:\n" + getLines(el).join('');
             try {
-                var isFileSaverSupported = !!new Blob;
-                var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-                saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
+                const isFileSaverSupported = !!new Blob;
+                const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+                saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + getTitle(el) + ".txt");
             } catch (e) {
                 console.log(e);
             }
@@ -440,27 +449,77 @@
         }
 
         function getTitle(el) {
-            let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] != undefined ?
+            let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] !== undefined ?
                 el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
-            return level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText;
+            return cleanText(level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
+        }
+
+        function getTexts(el) {
+            let lines = el.getElementsByClassName("line");
+            let texts = [];
+            for (let i = 0; i < lines.length; i++) {
+                let spanElement = lines[i].getElementsByTagName('span');
+                if (spanElement.length > 0) {
+                    for (let j = 0; j < spanElement.length; j++) {
+                        console.log(spanElement[j])
+                        spanElement[j].parentNode.removeChild(spanElement[j]);
+                    }
+                }
+                let imgElement = lines[i].getElementsByTagName('img');
+                if (imgElement.length > 0) {
+                    for (let j = 0; j < imgElement.length; j++) {
+                        texts.push(`【image_src】: ${imgElement[j].src},${getFileNameFromPath(imgElement[j].src)}`);
+                    }
+                }
+                if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
+                    continue;
+                }
+                let t = cleanText(lines[i].innerText.trim());
+                if (t.length === 0) {
+                    continue;
+                }
+
+                texts.push(t);
+            }
+
+            return texts;
         }
 
         function getLines(el) {
             let lines = el.getElementsByClassName("line");
-            let texts = new Array();
-            for (var i = 0; i < lines.length; i++) {
+            let htmlLines = [];
+            for (let i = 0; i < lines.length; i++) {
+                let spanElement = lines[i].getElementsByTagName('span');
+                if (spanElement.length > 0) {
+                    for (let j = 0; j < spanElement.length; j++) {
+                        console.log(spanElement[j])
+                        spanElement[j].parentNode.removeChild(spanElement[j]);
+                    }
+                }
+                let imgElement = lines[i].getElementsByTagName('img');
+                if (imgElement.length > 0) {
+                    for (let j = 0; j < imgElement.length; j++) {
+                        htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>\n`);
+                    }
+                }
+
                 if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
                     continue;
                 }
-                texts.push(lines[i].innerText);
+                let t = cleanText(lines[i].innerText.trim());
+                if (t.length === 0) {
+                    continue;
+                }
+                htmlLines.push(`<p>${t}</p>\n`);
+
             }
-            return texts;
+            return htmlLines;
         }
 
         function getBookName2(el) {
-            return el.getElementsByClassName('chapter_box')[0]
+            return cleanText(el.getElementsByClassName('chapter_box')[0]
                 .getElementsByClassName("title_box")[0]
-                .getElementsByTagName('a')[0].innerText.trim()
+                .getElementsByTagName('a')[0].innerText.trim());
         }
 
         function getBookName(el) {
@@ -469,8 +528,9 @@
             bookName = bookName.replaceAll("/", "_");
             return bookName;
         }
+
         function getAuthorInfo(el) {
-            return el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText;
+            return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
         }
     }
 })();

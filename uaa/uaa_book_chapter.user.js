@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 章节内容复制
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05
+// @version      2025-12-29.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/chapter*
@@ -23,8 +23,12 @@
                 link.type = 'text/css';
                 link.href = src;
                 link.media = 'all';
-                link.onload = () => { resolve(); };
-                link.onerror = () => { reject(); };
+                link.onload = () => {
+                    resolve();
+                };
+                link.onerror = () => {
+                    reject();
+                };
                 head.appendChild(link);
             }
         });
@@ -36,8 +40,12 @@
                 var script = document.createElement('script');
                 script.src = src;
                 script.id = id;
-                script.onload = () => { resolve(); };
-                script.onerror = () => { reject(); };
+                script.onload = () => {
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject();
+                };
                 document.body.appendChild(script);
             }
         });
@@ -60,7 +68,7 @@
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            layer.msg('复制成功', { icon: 1 });
+            layer.msg('复制成功', {icon: 1});
         }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
@@ -69,20 +77,53 @@
 
     function run() {
 
+
+        const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
+
+        function cleanText(str) {
+            return str.replace(/\u00A0/g, ' ').replace(INVISIBLE_RE, '');
+        }
+
+        function getFileNameFromPath(filePath) {
+            // 兼容 / 和 \
+            const parts = filePath.split(/[\\/]/);
+            return parts[parts.length - 1];
+        }
+
         // 标题内容
-        let level = document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] != undefined ? 
-        document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " :"";
-        var titleBox = level + document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText;
+        let level = document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] !== undefined ?
+            document.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
+        const titleBox = cleanText(level + document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
         // 行内容
-        var lines = document.getElementsByClassName("line");
-        var texts = new Array();
-        for (var i = 0; i < lines.length; i++) {
+        const lines = document.getElementsByClassName("line");
+        const texts = [];
+        const htmlLines = [];
+        for (let i = 0; i < lines.length; i++) {
+            let spanElement = lines[i].getElementsByTagName('span');
+            if (spanElement.length > 0) {
+                for (let j = 0; j < spanElement.length; j++) {
+                    console.log(spanElement[j])
+                    spanElement[j].parentNode.removeChild(spanElement[j]);
+                }
+            }
+            let imgElement = lines[i].getElementsByTagName('img');
+            if (imgElement.length > 0) {
+                for (let j = 0; j < imgElement.length; j++) {
+                    htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
+                    texts.push(`【image_src】: ${imgElement[j].src},${getFileNameFromPath(imgElement[j].src)}`);
+                }
+            }
+
             if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
                 continue;
             }
-            texts.push(lines[i].innerText);
+            let t = cleanText(lines[i].innerText.trim());
+            if (t.length === 0) {
+                continue;
+            }
+            htmlLines.push(`<p>${t}</p>`);
+            texts.push(t);
         }
-        lines = texts;
 
         // 找到指定的 div 元素
         const targetDiv = document.querySelector('body div.title_box')
@@ -121,28 +162,28 @@
                     style: fixbarStyle
                 }
                     , {
-                    type: 'prev',
-                    content: '上一章',
-                    style: fixbarStyle
-                }
+                        type: 'prev',
+                        content: '上一章',
+                        style: fixbarStyle
+                    }
                     , {
-                    type: 'self',
-                    content: '本书',
-                    style: fixbarStyle
-                }
+                        type: 'self',
+                        content: '本书',
+                        style: fixbarStyle
+                    }
                     , {
-                    type: 'next',
-                    content: '下一章',
-                    style: fixbarStyle
-                }
+                        type: 'next',
+                        content: '下一章',
+                        style: fixbarStyle
+                    }
 
                     , {
-                    type: 'toBottom',
-                    content: '底部',
-                    style: fixbarStyle
-                }],
+                        type: 'toBottom',
+                        content: '底部',
+                        style: fixbarStyle
+                    }],
                 default: true,
-                css: { bottom: "15%" },
+                css: {bottom: "15%"},
                 margin: 0,
                 on: {
                     mouseenter: function (type) {
@@ -221,8 +262,8 @@
 
 
         function toBottom() {
-            var windowHeight = parseInt($("body").css("height"));//jq
-            $("html,body").animate({ "scrollTop": windowHeight }, 200);
+            let windowHeight = parseInt($("body").css("height"));//jq
+            $("html,body").animate({"scrollTop": windowHeight}, 200);
         }
 
         // 添加按钮的点击事件
@@ -233,49 +274,26 @@
         function titleHtml() {
             copyContext("<h2>" + titleBox + "</h2>")
         }
+
         function contentText() {
-            var str = "";
-            for (var i = 0; i < lines.length; i++) {
-                str += "　　" + lines[i] + "\n";
-            }
-            copyContext(str)
+            copyContext(texts.map((s) => `　　${s}`).join('\n'))
         }
+
         function contentHtml() {
-            var str = "";
-            for (var i = 0; i < lines.length; i++) {
-                str += "<p>" + lines[i] + "</p>\n";
-            }
-            copyContext(str)
+            copyContext(htmlLines.join('\n'))
         }
 
         function titleAndContentText() {
-            var str = titleBox + "\n\n";
-            for (var i = 0; i < lines.length; i++) {
-                str += "　　" + lines[i] + "\n";
-            }
-            copyContext(str)
+            copyContext(titleBox + "\n\n" + texts.map((s) => `　　${s}`).join('\n'))
         }
 
         function titleAndContentHtml() {
-            var str = "<h2>" + titleBox + "</h2>\n\n";
-            for (var i = 0; i < lines.length; i++) {
-                str += "<p>" + lines[i] + "</p>\n";
-            }
-            copyContext(str)
+            copyContext("<h2>" + titleBox + "</h2>\n\n" + htmlLines.join('\n'))
         }
 
         function saveContentToLocal() {
             let title = titleBox;
-            let text = "";
-            let html = "";
 
-            for (let i = 0; i < lines.length; i++) {
-                text += "　　" + lines[i] + "\n";
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                html += "<p>" + lines[i] + "</p>\n";
-            }
             let separator = "\n\n=============================================\n";
             let content = "book name:\n" + getBookName2()
                 + separator +
@@ -283,12 +301,12 @@
                 + separator +
                 "title:\n" + title
                 + separator +
-                "text:\n" + text
+                "text:\n" + texts.map((s) => `　　${s}`).join('\n')
                 + separator +
-                "html:\n" + html;
+                "html:\n" + htmlLines.join('\n');
             try {
-                var isFileSaverSupported = !!new Blob;
-                var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+                const isFileSaverSupported = !!new Blob;
+                const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
                 saveAs(blob, getBookName2() + " " + getAuthorInfo() + " " + title + ".txt");
             } catch (e) {
                 console.log(e);
@@ -296,9 +314,10 @@
 
         }
 
-        if (unsafeWindow.top.location != unsafeWindow.self.location) {
+        if (unsafeWindow.top.location !== unsafeWindow.self.location) {
             setTimeout(function () {
-                var id = unsafeWindow.setInterval(function () { }, 0);
+                var id = unsafeWindow.setInterval(function () {
+                }, 0);
                 while (id--) unsafeWindow.clearInterval(id);
                 // saveContentToLocal();
                 // unsafeWindow.parent.postMessage('lhd_close');
@@ -306,9 +325,9 @@
         }
 
         function getBookName2() {
-            return document.getElementsByClassName('chapter_box')[0]
+            return cleanText(document.getElementsByClassName('chapter_box')[0]
                 .getElementsByClassName("title_box")[0]
-                .getElementsByTagName('a')[0].innerText.trim()
+                .getElementsByTagName('a')[0].innerText.trim())
         }
 
         function getBookName() {
@@ -317,9 +336,11 @@
             bookName = bookName.replaceAll("/", "_");
             return bookName;
         }
+
         function getAuthorInfo() {
-            return document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText;
+            return cleanText(document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
         }
+
         function buttonAddBody(e) {
             // 将按钮添加到页面中
             document.body.appendChild(e)

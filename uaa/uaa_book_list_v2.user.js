@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-28.01
+// @version      2025-12-29.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/list*
@@ -66,6 +66,12 @@
 
 
     function run() {
+
+        const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
+
+        function cleanText(str) {
+            return str.replace(/\u00A0/g, ' ').replace(INVISIBLE_RE, '');
+        }
 
         class BackgroundTabScheduler {
             constructor({
@@ -686,7 +692,7 @@
 
             let doc = await fetchBookIntro(url)
 
-            let bookName = doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim();
+            let bookName = cleanText(doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim());
             let author = '';
             let type = ""
             let tags = doc.getElementsByClassName('tag_box')[0].innerText.replaceAll('\n', '').replaceAll('标签：', '').replaceAll(' ', '').replaceAll('#', ' #').trim()
@@ -704,7 +710,7 @@
                     lastUpdateTime = infoBox[i].innerText.replace("最新：", '').trim();
                 }
                 if (infoBox[i].innerText.trim().includes("作者：")) {
-                    author = infoBox[i].innerText.replace("作者：", '').trim();
+                    author = cleanText(infoBox[i].innerText.replace("作者：", '').trim());
                 }
                 if (infoBox[i].innerText.trim().includes("题材：")) {
                     type = infoBox[i].innerText.replace("题材：", '').split(' ').map(str => str.trim()).filter(str => str.length > 0);
@@ -788,9 +794,9 @@
                 spine.push(`<itemref idref="${id}"/>`);
 
                 if (c.children.length === 0) {
-                    textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
+                    textFolder.file(`${id}.xhtml`, genHtmlPage(cleanText(c.title)));
                     ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
+    <navLabel><text>${cleanText(c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' '))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>
 </navPoint>`);
                 } else {
@@ -798,17 +804,17 @@
                     textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
 
                     let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
+    <navLabel><text>${cleanText(c.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' '))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>`
 
                     c.children.forEach((d, j) => {
                         const did = `vol_${String(i + 1).padStart(4, '0')}_${String(j + 1).padStart(4, '0')}`;
                         manifest.push(`<item id="${did}" href="Text/${did}.xhtml" media-type="application/xhtml+xml"/>`);
                         spine.push(`<itemref idref="${did}"/>`);
-                        textFolder.file(`${did}.xhtml`, genHtmlPage(d.title));
+                        textFolder.file(`${did}.xhtml`, genHtmlPage(cleanText(d.title)));
                         let ncxNav = `
  <navPoint id="${did}" playOrder="${i + 1}">
-    <navLabel><text>${d.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')}</text></navLabel>
+    <navLabel><text>${cleanText(d.title.split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' '))}</text></navLabel>
     <content src="Text/${did}.xhtml"/>
 </navPoint>
                         `;
