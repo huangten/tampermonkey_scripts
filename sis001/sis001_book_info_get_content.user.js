@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         获取sis001书籍内容
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05
+// @version      2025-12-30.01
 // @description  try to take over the world!
 // @author       You
 // @match        *://*.sis001.com/forum/thread-*-1-1.html
@@ -19,8 +19,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -36,7 +36,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => { resolve(); };
@@ -71,7 +71,7 @@
         }
 
         layui.use(function () {
-            var util = layui.util;
+            const util = layui.util;
             const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
             // 自定义固定条
             util.fixbar({
@@ -114,7 +114,6 @@
 
                     if (type === "CopyContentHtml") {
                         copyContext(getPreTagContentHtml(unsafeWindow));
-                        return;
                     }
 
                 }
@@ -144,7 +143,7 @@
                     // 4. 如果不是，则它是非直接子元素（孙子、曾孙等），执行移除
                     element.remove();
                 }
-                if (element.tagName == "A") {
+                if (element.tagName === "A") {
                     element.remove();
                 }
             });
@@ -153,7 +152,6 @@
         }
 
         function getPreTagContent(uw) {
-
             return getElement(uw).innerText;
         }
         function getPreTagContentHtml(uw) {

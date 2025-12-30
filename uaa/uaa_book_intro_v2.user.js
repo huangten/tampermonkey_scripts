@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页V2版
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-25.02
+// @version      2025-12-30.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -15,8 +15,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -36,7 +36,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => {
@@ -92,7 +92,7 @@
         });
     }
 
-    var downloadArray = new Array();
+    let downloadArray = [];
 
     class Downloader {
         constructor() {
@@ -177,9 +177,9 @@
 
     async function downloadChapter(task) {
         let iframeId = "__uaa_iframe__" + crypto.randomUUID();
-        const iframe = ensureIframe(iframeId);
+        const iframe = ensureIframe(iframeId, task.href);
         updateIframeHeader(task.title);
-        iframe.src = task.href;
+        // iframe.src = task.href;
         slideInIframe();
         console.log(task.href);
         // await fetch(task.href).then(content => content.text()).then((data) => {
@@ -210,7 +210,7 @@
         return success;
     }
 
-    const downloader = Downloader.getInstance();
+    const downloader = new Downloader();
 
     downloader.setConfig({
         interval: 2500,
@@ -226,6 +226,19 @@
             layer.alert('下载完毕', {icon: 1, shadeClose: true});
         }
     });
+
+
+    const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
+
+    function cleanText(str) {
+        return str.replace(/\u00A0/g, ' ').replace(INVISIBLE_RE, '');
+    }
+
+    function getFileNameFromPath(filePath) {
+        // 兼容 / 和 \
+        const parts = filePath.split(/[\\/]/);
+        return parts[parts.length - 1];
+    }
 
     function run() {
         const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
@@ -327,9 +340,9 @@
             maxmin: true, //开启最大化最小化按钮
             content: `<div id='openPage'></div>`,
             success: function (layero, index, that) {
-                var tree = layui.tree;
-                var layer = layui.layer;
-                var util = layui.util;
+                const tree = layui.tree;
+                const layer = layui.layer;
+                const util = layui.util;
 
                 // 自定义固定条
                 util.fixbar({
@@ -376,8 +389,6 @@
                         downloader.add(data);
                     });
                     downloader.start();
-
-                    return
                 }
 
                 function reloadTree() {
@@ -413,7 +424,7 @@
     }
 
     function getMenuTree() {
-        let menus = new Array();
+        let menus = [];
         let lis = document.querySelectorAll(".catalog_ul > li");
         for (let index = 0; index < lis.length; index++) {
             let preName = "";
@@ -422,33 +433,33 @@
                 for (let j = 0; j < alist.length; j++) {
                     menus.push({
                         'id': (index + 1) * 100000000 + j,
-                        "title": preName + alist[j].innerText.replace("new", "").trim(),
+                        "title": cleanText(preName + alist[j].innerText.replace("new", "").trim()),
                         "href": alist[j].href,
                         "children": [],
                         "spread": true,
                         "field": "",
-                        "checked": alist[j].innerText.indexOf("new") > 0 ? true : false,
+                        "checked": alist[j].innerText.indexOf("new") > 0,
                     });
                 }
             }
             if (lis[index].className.indexOf("volume") > -1) {
-                preName = lis[index].querySelector("span").innerText;
+                preName = cleanText(lis[index].querySelector("span").innerText);
                 let children = new Array();
                 let alist = lis[index].getElementsByTagName("a");
                 for (let j = 0; j < alist.length; j++) {
                     children.push({
                         'id': (index + 1) * 100000000 + j + 1,
-                        "title": alist[j].innerText.replace("new", "").trim(),
+                        "title": cleanText(alist[j].innerText.replace("new", "").trim()),
                         "href": alist[j].href,
                         "children": [],
                         "spread": true,
                         "field": "",
-                        "checked": alist[j].innerText.indexOf("new") > 0 ? true : false,
+                        "checked": alist[j].innerText.indexOf("new") > 0,
                     });
                 }
                 menus.push({
                     'id': (index + 1) * 100000000,
-                    "title": preName,
+                    "title": cleanText(preName),
                     "href": "",
                     "children": children,
                     "spread": true,
@@ -460,7 +471,7 @@
     }
 
     function getMenuArray(trees) {
-        let menus = new Array();
+        let menus = [];
         for (let index = 0; index < trees.length; index++) {
             if (trees[index].children.length === 0) {
                 menus.push({
@@ -483,7 +494,7 @@
         return menus;
     }
 
-    function ensureIframe(iframeId) {
+    function ensureIframe(iframeId, iframeUrl) {
         let containerId = "__uaa_iframe_container__";
         let container = document.getElementById(containerId);
         if (!container) {
@@ -520,7 +531,7 @@
         // 创建 iframe
         const iframe = document.createElement("iframe");
         iframe.id = iframeId;
-        iframe.src = "about:blank";
+        iframe.src = iframeUrl;
         iframe.style.width = "100%";
         iframe.style.height = "calc(100% - 35px)";
         iframe.style.position = "fixed";
@@ -596,30 +607,19 @@
     function saveContentToLocal(el) {
         try {
             let title = getTitle(el);
-            let text = "";
-            let html = "";
-            let lines = getLines(el);
-
-            for (let i = 0; i < lines.length; i++) {
-                text += "　　" + lines[i] + "\n";
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                html += "<p>" + lines[i] + "</p>\n";
-            }
             let separator = "\n\n=============================================\n";
             let content = "book name:\n" + getBookName2(el)
                 + separator +
                 "author:\n" + getAuthorInfo(el)
                 + separator +
-                "title:\n" + title
+                "title:\n" + getTitle(el)
                 + separator +
-                "text:\n" + text
+                "text:\n" + getTexts(el).map((s) => `　　${s}`).join('\n')
                 + separator +
-                "html:\n" + html;
+                "html:\n" + getLines(el).join('');
             try {
-                var isFileSaverSupported = !!new Blob;
-                var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+                const isFileSaverSupported = !!new Blob;
+                const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
                 saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
             } catch (e) {
                 console.log(e);
@@ -634,27 +634,78 @@
     }
 
     function getTitle(el) {
-        let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] != undefined ?
+        let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] !== undefined ?
             el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
-        return level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText;
+        return cleanText(level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
+    }
+
+    function getTexts(el) {
+        let lines = el.getElementsByClassName("line");
+        let texts = [];
+        for (let i = 0; i < lines.length; i++) {
+            let spanElement = lines[i].getElementsByTagName('span');
+            if (spanElement.length > 0) {
+                for (let j = 0; j < spanElement.length; j++) {
+                    console.log(spanElement[j])
+                    spanElement[j].parentNode.removeChild(spanElement[j]);
+                }
+            }
+            let imgElement = lines[i].getElementsByTagName('img');
+            if (imgElement.length > 0) {
+                for (let j = 0; j < imgElement.length; j++) {
+                    texts.push(`【image_src】: ${imgElement[j].src},${getFileNameFromPath(imgElement[j].src)}`);
+                }
+            }
+            if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
+                continue;
+            }
+            let t = cleanText(lines[i].innerText.trim());
+            if (t.length === 0) {
+                continue;
+            }
+
+            texts.push(t);
+        }
+
+        return texts;
     }
 
     function getLines(el) {
         let lines = el.getElementsByClassName("line");
-        let texts = new Array();
-        for (var i = 0; i < lines.length; i++) {
+        let htmlLines = [];
+        for (let i = 0; i < lines.length; i++) {
+            let spanElement = lines[i].getElementsByTagName('span');
+            if (spanElement.length > 0) {
+                for (let j = 0; j < spanElement.length; j++) {
+                    console.log(spanElement[j])
+                    spanElement[j].parentNode.removeChild(spanElement[j]);
+                }
+            }
+            let imgElement = lines[i].getElementsByTagName('img');
+            if (imgElement.length > 0) {
+                for (let j = 0; j < imgElement.length; j++) {
+                    htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>\n`);
+                }
+            }
+
             if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
                 continue;
             }
-            texts.push(lines[i].innerText);
+            let t = cleanText(lines[i].innerText.trim());
+            if (t.length === 0) {
+                continue;
+            }
+            htmlLines.push(`<p>${t}</p>\n`);
+
         }
-        return texts;
+        return htmlLines;
     }
 
+
     function getBookName2(el) {
-        return el.getElementsByClassName('chapter_box')[0]
+        return cleanText(el.getElementsByClassName('chapter_box')[0]
             .getElementsByClassName("title_box")[0]
-            .getElementsByTagName('a')[0].innerText.trim()
+            .getElementsByTagName('a')[0].innerText.trim())
     }
 
     function getBookName(el) {
@@ -665,6 +716,6 @@
     }
 
     function getAuthorInfo(el) {
-        return el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText;
+        return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
     }
 })();

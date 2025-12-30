@@ -17,8 +17,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';

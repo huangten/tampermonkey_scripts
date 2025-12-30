@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         uaa 详情页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-29.01
+// @version      2025-12-30.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.uaa.com/novel/intro*
@@ -16,8 +16,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -37,7 +37,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => {
@@ -88,10 +88,10 @@
             return parts[parts.length - 1];
         }
 
-        var downloadArray = new Array();
+        let downloadArray = [];
         const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         layui.use(function () {
-            var util = layui.util;
+            const util = layui.util;
             // 自定义固定条
             util.fixbar({
                 bars: [
@@ -133,7 +133,7 @@
                 },
                 // 点击事件
                 click: function (type) {
-                    console.log(this, type);
+                    // console.log(this, type);
                     // layer.msg(type);
                     if (type === "downloadAll") {
                         if (downloadArray.length !== 0) {
@@ -154,12 +154,11 @@
                     }
 
                     if (type === "clearDownloadList") {
-                        downloadArray = new Array();
+                        downloadArray = [];
                         return;
                     }
                     if (type === "menuList") {
                         openPage();
-                        return;
                     }
                 }
             });
@@ -237,7 +236,7 @@
                         tree.reload('title', { // options
                             data: getMenuTree()
                         }); // 重载实例
-                        downloadArray = new Array();
+                        downloadArray = [];
                     }
 
 
@@ -283,7 +282,7 @@
                         const el = iframes[index];
                         el.src = "about:blank";
                         if (el.contentWindow) {
-                            setTimeout(cycleClear(el), 100);
+                            setTimeout((el) => cycleClear(el), 100);
                         }
                     }
                 });
@@ -309,10 +308,9 @@
                 if (el) {
                     el.contentDocument.write("")
                     el.contentWindow.document.write('');
-                    el.contentWindow.document.clear();
+                    // el.contentWindow.document.clear();
                     el.contentWindow.close();
-                    var p = el.parentNode;
-                    p.removeChild(el);
+                    el.parentNode.removeChild(el);
                 }
             } catch (e) {
                 // setTimeout(cycleClear(el), 100);
@@ -322,7 +320,7 @@
         unsafeWindow.addEventListener('message', ListenMessage);
 
         function getMenuTree() {
-            let menus = new Array();
+            let menus = [];
             let lis = document.querySelectorAll(".catalog_ul > li");
             for (let index = 0; index < lis.length; index++) {
                 let preName = "";
@@ -336,13 +334,13 @@
                             "children": [],
                             "spread": true,
                             "field": "",
-                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false
+                            "checked": alist[j].innerText.indexOf("new") > 0
                         });
                     }
                 }
                 if (lis[index].className.indexOf("volume") > -1) {
                     preName = cleanText(lis[index].querySelector("span").innerText);
-                    let children = new Array();
+                    let children = [];
                     let alist = lis[index].getElementsByTagName("a");
                     for (let j = 0; j < alist.length; j++) {
                         children.push({
@@ -352,7 +350,7 @@
                             "children": [],
                             "spread": true,
                             "field": "",
-                            "checked": alist[j].innerText.indexOf("new") > 0 ? true : false
+                            "checked": alist[j].innerText.indexOf("new") > 0
                         });
                     }
                     menus.push({
@@ -369,7 +367,7 @@
         }
 
         function getMenuArray(trees) {
-            let menus = new Array();
+            let menus = [];
             for (let index = 0; index < trees.length; index++) {
                 if (trees[index].children.length === 0) {
                     menus.push({

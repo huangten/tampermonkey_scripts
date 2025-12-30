@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 列表页相关操作
 // @namespace    http://tampermonkey.net/
-// @version      2025-12-09.03
+// @version      2025-12-30.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/forum*
@@ -16,8 +16,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -37,7 +37,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => {
@@ -96,7 +96,7 @@
     function run() {
 
         document.onvisibilitychange = () => {
-            if (document.visibilityState == 'visible' && document.readyState == 'complete') {
+            if (document.visibilityState === 'visible' && document.readyState === 'complete') {
                 check18R();
             }
         }
@@ -122,7 +122,7 @@
                         const el = iframes[index];
                         el.src = "about:blank";
                         if (el.contentWindow) {
-                            setTimeout(cycleClear(el), 100);
+                            setTimeout((el) => cycleClear(el), 100);
                         }
                     }
                 });
@@ -148,10 +148,9 @@
                 if (el) {
                     el.contentDocument.write("")
                     el.contentWindow.document.write('');
-                    el.contentWindow.document.clear();
+                    //el.contentWindow.document.clear();
                     el.contentWindow.close();
-                    var p = el.parentNode;
-                    p.removeChild(el);
+                    el.parentNode.removeChild(el);
                 }
             } catch (e) {
                 // setTimeout(cycleClear(el), 100);

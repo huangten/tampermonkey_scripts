@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         98堂 详情页相关
 // @namespace    http://tampermonkey.net/
-// @version      2025-11-05
+// @version      2025-12-30.01
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.sehuatang.org/thread*
@@ -22,8 +22,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -39,7 +39,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => { resolve(); };
@@ -86,7 +86,7 @@
         }
 
         document.onvisibilitychange = () => {
-            if (document.visibilityState == 'visible' && document.readyState == 'complete') {
+            if (document.visibilityState === 'visible' && document.readyState === 'complete') {
                 check18R();
             }
         }
@@ -220,8 +220,8 @@
                 }
 
                 try {
-                    var isFileSaverSupported = !!new Blob;
-                    var blob = new Blob([JSON.stringify(info, null, 4)], { type: "text/plain;charset=utf-8" });
+                    const isFileSaverSupported = !!new Blob;
+                    const blob = new Blob([JSON.stringify(info, null, 4)], {type: "text/plain;charset=utf-8"});
                     saveAs(blob, selfFilename);
                 } catch (e) {
                     console.log(e);

@@ -16,8 +16,8 @@
     function addCss(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var head = document.getElementsByTagName('head')[0];
-                var link = document.createElement('link');
+                const head = document.getElementsByTagName('head')[0];
+                const link = document.createElement('link');
                 link.id = id;
                 link.rel = 'stylesheet';
                 link.type = 'text/css';
@@ -37,7 +37,7 @@
     function addScript(id, src) {
         return new Promise((resolve, reject) => {
             if (!document.getElementById(id)) {
-                var script = document.createElement('script');
+                const script = document.createElement('script');
                 script.src = src;
                 script.id = id;
                 script.onload = () => {
@@ -251,10 +251,8 @@
                         }
                         return;
                     }
-
                     if (type === "toBottom") {
                         toBottom();
-                        return;
                     }
                 }
             });
@@ -314,15 +312,15 @@
 
         }
 
-        if (unsafeWindow.top.location !== unsafeWindow.self.location) {
-            setTimeout(function () {
-                var id = unsafeWindow.setInterval(function () {
-                }, 0);
-                while (id--) unsafeWindow.clearInterval(id);
-                // saveContentToLocal();
-                // unsafeWindow.parent.postMessage('lhd_close');
-            }, 1000)
-        }
+        // if (unsafeWindow.top.location !== unsafeWindow.self.location) {
+        //     setTimeout(function () {
+        //         var id = unsafeWindow.setInterval(function () {
+        //         }, 0);
+        //         while (id--) unsafeWindow.clearInterval(id);
+        //         // saveContentToLocal();
+        //         // unsafeWindow.parent.postMessage('lhd_close');
+        //     }, 1000)
+        // }
 
         function getBookName2() {
             return cleanText(document.getElementsByClassName('chapter_box')[0]
@@ -339,13 +337,6 @@
 
         function getAuthorInfo() {
             return cleanText(document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
-        }
-
-        function buttonAddBody(e) {
-            // 将按钮添加到页面中
-            document.body.appendChild(e)
-            // 将按钮添加到指定的 div 元素中
-            targetDiv.appendChild(e)
         }
     }
 })();
