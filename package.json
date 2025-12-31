@@ -15,9 +15,13 @@
   },
   "devDependencies": {
     "@types/tampermonkey": "^5.0.5",
+    "@vitejs/plugin-vue": "^6.0.3",
     "cross-env": "^10.1.0",
+    "element-plus": "^2.13.0",
     "unplugin-auto-import": "^20.3.0",
+    "unplugin-vue-components": "^30.0.0",
     "vite": "^7.1.3",
+    "vue": "^3.5.26",
     "vite-plugin-monkey": "^7.1.1"
   }
 }

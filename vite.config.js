@@ -1,6 +1,9 @@
 import {defineConfig} from 'vite';
-import monkey, {util} from 'vite-plugin-monkey';
+import vue from '@vitejs/plugin-vue';
+import monkey, {cdn, util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
+import Components from 'unplugin-vue-components/vite'
+import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 
 // 1. 定义你的脚本库配置
@@ -39,7 +42,6 @@ export default defineConfig(({mode}) => {
     // 2. 获取当前要打包的脚本 Key
     const targetKey = process.env.TARGET_SCRIPT;
     const config = scriptConfigs[targetKey];
-    // console.log(config)
     if (!config) {
         throw new Error(`请指定有效的脚本名称！当前输入: ${targetKey}`);
     }
@@ -50,9 +52,13 @@ export default defineConfig(({mode}) => {
             strictPort: true, // 如果 5173 被占用直接报错，而不是切换到 5173
         },
         plugins: [
-
+            vue(),
             AutoImport({
                 imports: [util.unimportPreset],
+                resolvers: [ElementPlusResolver()],
+            }),
+            Components({
+                resolvers: [ElementPlusResolver({importStyle: 'css'})],
             }),
             monkey(
                 {
@@ -66,8 +72,14 @@ export default defineConfig(({mode}) => {
                         fileName: `${targetKey}.user.js`,
                         // 关键：告诉 Vite，如果代码里出现了 'layui'，请不要打包它，直接找全局变量
                         externalGlobals: {
-                            layui: 'layui'
-                        }
+                            // 这里的配置会让打包体积瞬间减小
+                            vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
+                            'element-plus': cdn.jsdelivr('ElementPlus', 'dist/index.full.min.js'),
+                        },
+                        externalResource: {
+                            // 引入 Element Plus 的 CSS
+                            'element-plus/dist/index.css': cdn.jsdelivr(),
+                        },
                     }
                 }),
         ],
