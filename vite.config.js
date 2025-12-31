@@ -2,8 +2,8 @@ import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import monkey, {cdn, util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite'
-import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
+// import Components from 'unplugin-vue-components/vite'
+// import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 
 // 1. 定义你的脚本库配置
@@ -48,6 +48,7 @@ export default defineConfig(({mode}) => {
 
     return {
         server: {
+            open: false,
             port: 5173,
             strictPort: true, // 如果 5173 被占用直接报错，而不是切换到 5173
         },
@@ -55,11 +56,11 @@ export default defineConfig(({mode}) => {
             vue(),
             AutoImport({
                 imports: [util.unimportPreset],
-                resolvers: [ElementPlusResolver()],
+                // resolvers: [ElementPlusResolver()],
             }),
-            Components({
-                resolvers: [ElementPlusResolver({importStyle: 'css'})],
-            }),
+            // Components({
+            //     resolvers: [ElementPlusResolver({importStyle: 'css'})],
+            // }),
             monkey(
                 {
                     entry: config.entry,
@@ -71,15 +72,15 @@ export default defineConfig(({mode}) => {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
                         fileName: `${targetKey}.user.js`,
                         // 关键：告诉 Vite，如果代码里出现了 'layui'，请不要打包它，直接找全局变量
-                        externalGlobals: {
-                            // 这里的配置会让打包体积瞬间减小
-                            vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
-                            'element-plus': cdn.jsdelivr('ElementPlus', 'dist/index.full.min.js'),
-                        },
-                        externalResource: {
-                            // 引入 Element Plus 的 CSS
-                            'element-plus/dist/index.css': cdn.jsdelivr(),
-                        },
+                        // externalGlobals: {
+                        //     // 这里的配置会让打包体积瞬间减小
+                        //     vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
+                        //     'element-plus': cdn.jsdelivr('ElementPlus', 'dist/index.full.min.js'),
+                        // },
+                        // externalResource: {
+                        //     // 引入 Element Plus 的 CSS
+                        //     'element-plus/dist/index.css': cdn.jsdelivr(),
+                        // },
                     }
                 }),
         ],

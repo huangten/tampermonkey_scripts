@@ -1,26 +1,17 @@
 <template>
   <el-config-provider :teleported="true">
 
-    <el-affix position="bottom" :offset="150">
-      <el-button type="primary" @click="openDialog">复制书名</el-button>
-    </el-affix>
-    <el-affix position="bottom" :offset="110">
-      <el-button type="primary" @click="">下载全部</el-button>
-    </el-affix>
-    <el-affix position="bottom" :offset="70">
-      <el-button type="primary" @click="">清除下载</el-button>
-    </el-affix>
-    <el-affix position="bottom" :offset="20">
-      <el-button type="primary" @click="openDialog2">章节列表</el-button>
+    <el-affix position="bottom" :offset="10">
+      <el-button-group size="small" direction="vertical">
+        <el-button type="primary" @click="openDialog">复制书名</el-button>
+        <el-button type="primary">下载全部</el-button>
+        <el-button type="primary">清除下载</el-button>
+        <el-button type="primary" @click="openDialog2">章节列表</el-button>
+      </el-button-group>
     </el-affix>
 
-
-    <!--      <el-button type="primary" @click="openDialog">-->
-    <!--        打开 Dialog-->
-    <!--      </el-button>-->
-
-
-    <el-drawer v-model="drawerVisible" :modal="false" modal-penetrable>
+    <el-drawer v-model="drawerVisible" size="20%" :modal="false" lock-scroll="false" resizable="true" show-close="true" destroy-on-close="true"
+               modal-penetrable="true">
       <span>It's a modal Drawer</span>
       <template #footer>
         <div class="drawer-footer">
@@ -41,6 +32,11 @@
 
 <script setup lang="ts">
 import {ref} from 'vue'
+import {
+  House,
+  Notification,
+  Operation,
+} from '@element-plus/icons-vue'
 
 const visible = ref(false)
 const drawerVisible = ref(false)
@@ -51,7 +47,7 @@ function openDialog() {
 
 
 function openDialog2() {
-drawerVisible.value = true
+  drawerVisible.value = true
 
 }
 </script>

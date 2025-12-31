@@ -14,6 +14,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/layui-src": "^2.6.4",
     "@types/tampermonkey": "^5.0.5",
     "@vitejs/plugin-vue": "^6.0.3",
     "cross-env": "^10.1.0",
