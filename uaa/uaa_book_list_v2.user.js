@@ -98,7 +98,8 @@
                 if (this.running) return;
                 this.running = true;
 
-                this._tick().then(() => {});
+                this._tick().then(() => {
+                });
             }
 
             clear() {
@@ -173,7 +174,7 @@
             async start() {
                 if (this.running) return;
                 this.running = true;
-                if(this.running) {
+                if (this.running) {
                     layer.msg("开始导出中，请稍等。。。");
                 }
                 await this._tick();
@@ -724,12 +725,7 @@
             let chapters = getChapterMenu(doc)
 
             zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
-            zip.folder('META-INF').file('container.xml', `<?xml version="1.0"?>
-<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-  <rootfiles>
-    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
-  </rootfiles>
-</container>`);
+            zip.folder('META-INF').file('container.xml', createContainer());
 
             const o = zip.folder('OEBPS');
             const cssFolder = o.folder("Styles");
@@ -830,7 +826,7 @@
 
             let contentOpfStr = `<?xml version="1.0"?>
 <package version="2.0" unique-identifier="duokan-book-id" xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
-  <metadata xmlns:opf="http://www.idpf.org/2007/opf">
+  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
       <dc:identifier id="duokan-book-id" opf:scheme="UUID" xmlns:opf="http://www.idpf.org/2007/opf">${crypto.randomUUID()}</dc:identifier>
       <dc:title>${bookName}</dc:title>
       <dc:language>zh-CN</dc:language>
@@ -865,9 +861,9 @@
 <docTitle>
     <text>${bookName}</text>
 </docTitle>
-  <docAuthor>
-    <text>${author}, </text>
-  </docAuthor>
+<docAuthor>
+   <text>${author}, </text>
+</docAuthor>
 <navMap>
 ${ncxNav.join('\n')}
 </navMap>
@@ -881,20 +877,142 @@ ${ncxNav.join('\n')}
 
     }
 
+
+    function formatXML(xmlStr) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlStr, 'application/xml');
+
+        //       const xslt = `
+        //   <xsl:stylesheet version="1.0"
+        //     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        //     <xsl:output method="xml" indent="yes"/>
+        //     <xsl:strip-space elements="*"/>
+        //
+        //     <xsl:template match="@*|node()">
+        //       <xsl:copy>
+        //         <xsl:apply-templates select="@*|node()"/>
+        //       </xsl:copy>
+        //     </xsl:template>
+        //   </xsl:stylesheet>
+        // `;
+
+        const xslt = `<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  exclude-result-prefixes="xhtml">
+
+  <!-- 输出为 XML，带缩进 -->
+  <xsl:output
+    method="xml"
+    indent="yes"
+    encoding="UTF-8"/>
+
+  <!-- 去除无意义空白 -->
+  <xsl:strip-space elements="*"/>
+
+  <!-- 核心：恒等拷贝（identity transform） -->
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+</xsl:stylesheet>
+`;
+
+        const xsltDoc = parser.parseFromString(xslt, 'application/xml');
+        const processor = new XSLTProcessor();
+        processor.importStylesheet(xsltDoc);
+
+        const result = processor.transformToDocument(xml);
+        return new XMLSerializer().serializeToString(result);
+    }
+
+    function formatXHTML(xmlStr) {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlStr, 'application/xhtml+xml');
+
+        const xslt = `<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  exclude-result-prefixes="xhtml">
+
+  <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
+  <xsl:strip-space elements="*"/>
+
+  <!-- 默认拷贝 -->
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+</xsl:stylesheet>
+`;
+
+        const xsltDoc = parser.parseFromString(xslt, 'application/xml');
+        const processor = new XSLTProcessor();
+        processor.importStylesheet(xsltDoc);
+
+        const result = processor.transformToDocument(xml);
+
+        console.log(result)
+        return new XMLSerializer().serializeToString(result);
+    }
+
+    function serializeXML(doc) {
+        const xml = new XMLSerializer().serializeToString(doc);
+        return '<?xml version="1.0" encoding="utf-8"?>\n' + formatXML(xml);
+    }
+
+    function serializeXHTML(doc) {
+        const xml = new XMLSerializer().serializeToString(doc);
+        return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n' + formatXHTML(xml);
+    }
+
+    function createContainer() {
+        const doc = document.implementation.createDocument(
+            null,
+            'container',
+            null
+        );
+        const container = doc.documentElement;
+        container.setAttribute('version', '1.0');
+        container.setAttribute('xmlns', 'urn:oasis:names:tc:opendocument:xmlns:container')
+        const rootfiles = doc.createElement('rootfiles');
+        const rootfile = doc.createElement('rootfile');
+        rootfile.setAttribute('full-path', "OEBPS/content.opf")
+        rootfile.setAttribute('media-type', "application/oebps-package+xml")
+        rootfiles.appendChild(rootfile);
+        container.appendChild(rootfiles);
+        return serializeXML(doc);
+    }
+
     function genCoverHtmlPage() {
-        return `<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <title>Cover</title>
-</head>
-
-<body>
-<div style="text-align: center;padding: 0pt;margin: 0pt;"><img width="100%" src="../Images/cover.jpg"/>
-</div>
-</body>
-</html>`;
+        const doc = document.implementation.createDocument(
+            null,
+            'html',
+            null
+        );
+        const html = doc.documentElement;
+        html.setAttribute('xmlns', "http://www.w3.org/1999/xhtml");
+        html.setAttribute('xmlns:epub', 'http://www.idpf.org/2007/ops')
+        const head = doc.createElement('head');
+        const title = doc.createElement('title');
+        title.textContent = "Cover";
+        head.appendChild(title)
+        const body = doc.createElement("body")
+        const div = doc.createElement("div");
+        div.setAttribute('style', "text-align: center;padding: 0pt;margin: 0pt;");
+        const img = doc.createElement("img")
+        img.setAttribute('width', "100%");
+        img.setAttribute('src', '../Images/cover.jpg');
+        div.appendChild(img);
+        body.appendChild(div);
+        html.appendChild(head);
+        html.appendChild(body);
+        return serializeXHTML(doc);
     }
 
     function genFyHtmlPage(book = {
