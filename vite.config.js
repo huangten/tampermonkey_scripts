@@ -6,6 +6,10 @@ import AutoImport from 'unplugin-auto-import/vite';
 // import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 
+const date = new Date();
+const version = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.01`
+
+
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     uaa_novel_intro: {
@@ -16,7 +20,7 @@ const scriptConfigs = {
             match: ['https://www.uaa.com/novel/intro*'],
             icon: 'https://vitejs.dev/logo.svg',
             namespace: 'https://tampermonkey.net/',
-            version: "2025-12-30.01",
+            version: version,
             noframes: true,
 
         }
@@ -29,7 +33,7 @@ const scriptConfigs = {
             match: ['https://www.uaa.com/novel/chapter*'],
             icon: 'https://vitejs.dev/logo.svg',
             namespace: 'https://tampermonkey.net/',
-            version: "2025-12-30.01",
+            version: version,
             noframes: true,
         }
     }
@@ -65,7 +69,7 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle'],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow'],
                         ...config.userscript
                     },
                     build: {
