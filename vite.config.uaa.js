@@ -7,13 +7,13 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}.01`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
 
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     uaa_novel_intro: {
-        entry: 'src/uaa/uaa_novel_intro.js',
+        entry: 'src/uaa/intro/intro.js',
         userscript: {
             name: 'UAA 描述页 增强',
             author: 'YourName',
@@ -23,10 +23,14 @@ const scriptConfigs = {
             version: version,
             noframes: true,
 
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_intro"
         }
     },
     uaa_novel_chapter: {
-        entry: 'src/uaa/uaa_novel_chapter.js',
+        entry: 'src/uaa/chapter/chapter.js',
         userscript: {
             name: 'UAA 章节页 增强',
             author: 'YourName',
@@ -35,6 +39,10 @@ const scriptConfigs = {
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_chapter"
         }
     }
 };
@@ -51,6 +59,10 @@ export default defineConfig(({mode}) => {
     }
 
     return {
+        build:{
+            outDir:`dist/${config.build.outDir}`,
+            emptyOutDir:false
+        },
         server: {
             open: false,
             port: 5173,
@@ -74,7 +86,7 @@ export default defineConfig(({mode}) => {
                     },
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
-                        fileName: `${targetKey}.user.js`,
+                        fileName: `${config.build.fileName}.user.js`,
                         // 关键：告诉 Vite，如果代码里出现了 'layui'，请不要打包它，直接找全局变量
                         // externalGlobals: {
                         //     // 这里的配置会让打包体积瞬间减小

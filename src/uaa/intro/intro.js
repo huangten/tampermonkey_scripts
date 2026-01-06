@@ -18,12 +18,12 @@
 //
 // app.mount(mountEl)
 
-import {init, copyContext, waitForElement, Downloader} from "../common/common.js";
+import {init, copyContext, waitForElement, Downloader} from "../../common/common.js";
 import {
     getMenuArray,
     getMenuTree,
     saveContentToLocal
-} from "./common.js";
+} from "../common.js";
 
 const downloader = new Downloader();
 
