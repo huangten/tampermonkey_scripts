@@ -258,7 +258,10 @@
     copyContext(info).then();
   }
   function getTitle(el) {
-    return el.getElementById("thread_subject");
+    if (el.getElementById !== void 0) {
+      return el.getElementById("thread_subject");
+    }
+    return el.querySelector("#thread_subject");
   }
   function getTitleText(el) {
     return getTitle(el).innerText;
