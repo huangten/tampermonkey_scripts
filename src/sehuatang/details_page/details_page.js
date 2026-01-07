@@ -1,11 +1,7 @@
-import {addCss, copyContext, addScript} from '../../common/common.js'
+import {copyContext, init} from '../../common/common.js'
 import {check18R, copyTitleAndBlockcode, copyTitleAndDownload, getInfo, getTitleText} from "../common.js";
 
-Promise.all([
-    addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
-    // addScript('filesave_id', ""),
-    addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
-]).then(() => {
+init().then(() => {
     run();
 });
 

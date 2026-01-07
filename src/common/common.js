@@ -54,17 +54,6 @@ export function getFileNameFromPath(filePath) {
     return parts[parts.length - 1];
 }
 
-
-export async function init() {
-    return Promise.all([
-        addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
-        addScript("jq_id", "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"),
-        addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
-        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
-    ]);
-}
-
-
 export function copyContext(str) {
     return new Promise((resolve, reject) => {
         navigator.clipboard.writeText(str).then(() => {
@@ -98,6 +87,12 @@ export function waitForElement(doc, selector, timeout = 10000) {
     });
 }
 
+export function init() {
+    return Promise.all([
+        addCss('layui_css', 'https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css'),
+        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
+    ]);
+}
 
 export class Downloader {
     constructor() {

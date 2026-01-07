@@ -1,11 +1,8 @@
 import {check18R, getInfo} from "../common.js";
-import {addCss, addScript} from "../../common/common.js";
+import {init} from "../../common/common.js";
 
 
-Promise.all([
-    addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css'),
-    addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
-]).then(() => {
+init().then(() => {
     run();
 });
 

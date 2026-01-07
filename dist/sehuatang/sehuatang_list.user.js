@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-7.01
+// @version    2026-1-8.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -57,6 +57,12 @@
         return resolve();
       }
     });
+  }
+  function init() {
+    return Promise.all([
+      addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
+      addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
+    ]);
   }
   function check18R() {
     if (document.getElementsByTagName("head")[0].getElementsByTagName("title")[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
@@ -245,10 +251,7 @@
     return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
   }
   var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
-  Promise.all([
-    addCss("layui_css", "https://cdn.jsdelivr.net/npm/layui@2.9.18/dist/css/layui.min.css"),
-    addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.9.18/layui.js")
-  ]).then(() => {
+  init().then(() => {
     run();
   });
   let downloadArray = [];

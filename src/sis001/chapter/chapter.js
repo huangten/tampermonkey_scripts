@@ -1,10 +1,6 @@
-import {addCss, copyContext, addScript} from '../../common/common.js'
+import {copyContext, init} from '../../common/common.js'
 
-Promise.all([
-    addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/css/layui.min.css'),
-    // addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
-    addScript('layui_id', "https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/layui.min.js")
-]).then(() => {
+init().then(() => {
     run();
 });
 

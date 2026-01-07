@@ -1,9 +1,6 @@
 import {defineConfig} from 'vite';
-import vue from '@vitejs/plugin-vue';
 import monkey, {cdn, util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
-// import Components from 'unplugin-vue-components/vite'
-// import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 
 const date = new Date();
@@ -13,9 +10,9 @@ const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     uaa_novel_intro: {
-        entry: 'src/uaa/intro/intro.js',
+        entry: 'src/uaa/intro/intro.v2.js',
         userscript: {
-            name: 'UAA 描述页 增强',
+            name: 'UAA 描述页 增强 V2',
             author: 'YourName',
             match: ['https://www.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
@@ -26,7 +23,7 @@ const scriptConfigs = {
         },
         build: {
             outDir: "uaa",
-            fileName: "uaa_novel_intro"
+            fileName: "uaa_novel_intro_v2"
         }
     },
     uaa_novel_chapter: {
@@ -69,14 +66,9 @@ export default defineConfig(({mode}) => {
             strictPort: true, // 如果 5173 被占用直接报错，而不是切换到 5173
         },
         plugins: [
-            vue(),
             AutoImport({
                 imports: [util.unimportPreset],
-                // resolvers: [ElementPlusResolver()],
             }),
-            // Components({
-            //     resolvers: [ElementPlusResolver({importStyle: 'css'})],
-            // }),
             monkey(
                 {
                     entry: config.entry,
@@ -86,39 +78,15 @@ export default defineConfig(({mode}) => {
                     },
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
-                        fileName: `${config.build.fileName}.user.js`,
-                        // 关键：告诉 Vite，如果代码里出现了 'layui'，请不要打包它，直接找全局变量
-                        // externalGlobals: {
-                        //     // 这里的配置会让打包体积瞬间减小
-                        //     vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
-                        //     'element-plus': cdn.jsdelivr('ElementPlus', 'dist/index.full.min.js'),
-                        // },
-                        // externalResource: {
-                        //     // 引入 Element Plus 的 CSS
-                        //     'element-plus/dist/index.css': cdn.jsdelivr(),
-                        // },
+                        fileName: `${config.build.fileName}.user.js`,                        // 配置外部全局变量
+                        externalGlobals: {
+                            // 格式：'包名': util.cdn.jsdelivr('全局变量名', '文件名')
+                            // 对于 file-saver，它的全局变量名通常是 saveAs
+                            'file-saver': 'saveAs',
+                        },
+
                     }
                 }),
         ],
     };
 });
-
-
-// https://vitejs.dev/config/
-// export default defineConfig({
-//     plugins: [
-//         AutoImport({
-//             imports: [util.unimportPreset],
-//         }),
-//         monkey({
-//             entry: 'src/main.js',
-//             userscript: {
-//                 icon: 'https://vitejs.dev/logo.svg',
-//                 namespace: 'https://tampermonkey.net/',
-//                 match: ['https://www.google.com/'],
-//                 version: "2025-12-30.01",
-//                 noframes: true,
-//             },
-//         }),
-//     ],
-// });

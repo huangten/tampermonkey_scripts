@@ -1,4 +1,5 @@
 import {cleanText, getFileNameFromPath} from "../common/common.js";
+import {saveAs} from "file-saver";
 
 export function getMenuTree() {
     let menus = [];

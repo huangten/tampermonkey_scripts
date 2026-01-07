@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sshuba 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-7.02
+// @version    2026-1-8.02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sshuba.com
 // @match      *://sshuba.com/books/*
@@ -65,11 +65,14 @@
       });
     });
   }
+  function init() {
+    return Promise.all([
+      addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
+      addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
+    ]);
+  }
   var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
-  Promise.all([
-    addCss("layui_css", "https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/css/layui.min.css"),
-addScript("layui_id", "https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/layui.min.js")
-  ]).then(() => {
+  init().then(() => {
     run();
   });
   function run() {

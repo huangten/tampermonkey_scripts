@@ -1,24 +1,4 @@
-// import { createApp } from 'vue'
-// import App from './App.vue'
-// import elCss from 'element-plus/dist/index.css?raw'
-//
-// function createShadowRoot() {
-//   const host = document.createElement('div')
-//   host.id = '__tm_ui_root__'
-//   document.body.appendChild(host)
-//   const style = document.createElement('style')
-//   style.textContent = elCss
-//   document.body.appendChild(style)
-//   return host
-// }
-//
-// const mountEl = createShadowRoot()
-//
-// const app = createApp(App)
-//
-// app.mount(mountEl)
-
-import {init, copyContext, waitForElement, Downloader} from "../../common/common.js";
+import {copyContext, waitForElement, Downloader, init} from "../../common/common.js";
 import {
     getMenuArray,
     getMenuTree,
@@ -29,7 +9,6 @@ const downloader = new Downloader();
 
 init().then(() => {
     run();
-
 }).catch(() => {
     console.log('初始化失败');
 });
@@ -220,7 +199,6 @@ function openPage() {
             function treeCheckedDownload() {
                 let checkedData = tree.getChecked('title'); // 获取选中节点的数据
 
-                // console.log(checkedData[0]);
                 if (checkedData.length === 0) {
                     layer.msg("未选中任何数据");
                     return;
@@ -272,7 +250,6 @@ function openPage() {
     });
 }
 
-
 function ensureIframe(iframeId, iframeUrl) {
     let containerId = "__uaa_iframe_container__";
     let container = document.getElementById(containerId);
@@ -320,7 +297,6 @@ function ensureIframe(iframeId, iframeUrl) {
     iframe.style.background = "#fff";
     iframe.style.border = "none";
     container.appendChild(iframe);
-
     return document.getElementById(iframeId);
 }
 
