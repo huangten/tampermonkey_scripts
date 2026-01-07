@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name       cool18 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-7.01
+// @version    2026-1-7.02
 // @author     YourName
-// @icon       https://vitejs.dev/logo.svg
+// @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*
 // @grant      GM_addStyle
 // @grant      GM_getResourceText

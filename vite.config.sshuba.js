@@ -5,7 +5,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.02`
 
 
 // 1. 定义你的脚本库配置
@@ -16,6 +16,7 @@ const scriptConfigs = {
             name: 'sshuba 章节页 增强',
             author: 'YourName',
             match: ['*://sshuba.com/books/*'],
+            icon:'https://www.google.com/s2/favicons?sz=64&domain=sshuba.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,

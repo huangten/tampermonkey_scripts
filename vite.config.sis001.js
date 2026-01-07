@@ -5,7 +5,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.02`
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
@@ -19,6 +19,7 @@ const scriptConfigs = {
                 '*://*.sis001.com/bbs/viewthread.php?tid=*',
                 '*://*.sis001.com/bbs/thread-*-1-1.html'
             ],
+            icon:'https://www.google.com/s2/favicons?sz=64&domain=sis001.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,

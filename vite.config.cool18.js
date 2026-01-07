@@ -5,7 +5,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.02`
 
 
 // 1. 定义你的脚本库配置
@@ -16,6 +16,7 @@ const scriptConfigs = {
             name: 'cool18 列表页 增强',
             author: 'YourName',
             match: ['https://www.uaa.com/novel/intro*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,
@@ -31,6 +32,7 @@ const scriptConfigs = {
             name: 'cool18 章节页 增强',
             author: 'YourName',
             match: ['*://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,
