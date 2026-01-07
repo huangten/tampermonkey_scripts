@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name       UAA 描述页 增强
+// @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
 // @version    2026-1-7.01
 // @author     YourName

@@ -12,7 +12,7 @@ const scriptConfigs = {
     sehuatang_list: {
         entry: 'src/sehuatang/list/list.js',
         userscript: {
-            name: 'UAA 描述页 增强',
+            name: 'sehuatang 列表页 增强',
             author: 'YourName',
             match: ['https://*.sehuatang.org/forum*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
@@ -29,7 +29,7 @@ const scriptConfigs = {
     sehuatang_details_page: {
         entry: 'src/sehuatang/details_page/details_page.js',
         userscript: {
-            name: 'UAA 章节页 增强',
+            name: 'sehuatang 详情页 增强',
             author: 'YourName',
             match: [
                 'https://*.sehuatang.org/thread*',
