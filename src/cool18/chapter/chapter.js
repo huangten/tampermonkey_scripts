@@ -1,19 +1,87 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import elCss from 'element-plus/dist/index.css?raw'
+import {addCss, copyContext, addScript} from '../../common/common.js'
 
-function createShadowRoot() {
-  const host = document.createElement('div')
-  host.id = '__tm_ui_root__'
-  document.body.appendChild(host)
-  const style = document.createElement('style')
-  style.textContent = elCss
-  document.body.appendChild(style)
-  return host
+
+Promise.all([
+    addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/css/layui.min.css'),
+    // addScript('filesave_id', "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"),
+    addScript('layui_id', "https://cdn.jsdelivr.net/npm/layui@2.11.5/dist/layui.min.js")
+]).then(() => {
+    run();
+});
+
+
+function run() {
+    layui.use(function () {
+        const util = layui.util;
+        const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
+        // 自定义固定条
+        util.fixbar({
+            bars: [
+                {
+                    type: 'CopyContent',
+                    content: '复制内容',
+                    style: fixbarStyle
+                },
+                {
+                    type: 'CopyContentHtml',
+                    content: '复制内容HTML',
+                    style: fixbarStyle
+                },
+                {
+                    type: 'CopyChapter',
+                    content: '复制章节',
+                    style: fixbarStyle
+                },
+                {
+                    type: 'CopyChapterHtml',
+                    content: '复制章节HTML',
+                    style: fixbarStyle
+                }
+            ],
+            default: false,
+            css: {bottom: "21%"},
+            margin: 0,
+            click: function (type) {
+                if (type === "CopyContent") {
+                    getPreTagContent();
+                }
+                if (type === "CopyContentHtml") {
+                    getPreTagContentHtml();
+                }
+                if (type === "CopyChapter") {
+                    copyChapterContent();
+                }
+                if (type === "CopyChapterHtml") {
+                    copyChapterHtml();
+                }
+            }
+        });
+    });
 }
 
-const mountEl = createShadowRoot()
+function getPreTagContent() {
+    copyContext(unsafeWindow.document.getElementsByTagName('pre')[0].innerText).then();
+}
 
-const app = createApp(App)
+function getPreTagContentHtml() {
+    copyContext(unsafeWindow.document.getElementsByTagName('pre')[0].innerHTML).then();
+}
 
-app.mount(mountEl)
+function copyChapterContent() {
+    const preElement = unsafeWindow.document.getElementsByTagName('pre')[0];
+    const brs = preElement.getElementsByTagName('br');
+    for (let i = brs.length - 1; i >= 0; i--) {
+        preElement.removeChild(brs[i]);
+    }
+    copyContext(preElement.innerText).then();
+}
+
+function copyChapterHtml() {
+    const preElement = unsafeWindow.document.getElementsByTagName('pre')[0];
+    const brs = preElement.getElementsByTagName('br');
+    for (let i = brs.length - 1; i >= 0; i--) {
+        preElement.removeChild(brs[i]);
+    }
+    // console.log(preElement);
+    copyContext(preElement.innerHTML).then();
+}

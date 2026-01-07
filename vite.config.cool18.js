@@ -1,9 +1,7 @@
 import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
-import monkey, {cdn, util} from 'vite-plugin-monkey';
+import monkey, {util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite'
-import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 
 const date = new Date();
@@ -71,10 +69,6 @@ export default defineConfig(({mode}) => {
             vue(),
             AutoImport({
                 imports: [util.unimportPreset],
-                resolvers: [ElementPlusResolver()],
-            }),
-            Components({
-                resolvers: [ElementPlusResolver({importStyle: 'css'})],
             }),
             monkey(
                 {
@@ -86,15 +80,6 @@ export default defineConfig(({mode}) => {
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
                         fileName: `${config.build.fileName}.user.js`,
-                        externalGlobals: {
-                            // 这里的配置会让打包体积瞬间减小
-                            vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
-                            'element-plus': cdn.jsdelivr('ElementPlus', 'dist/index.full.min.js'),
-                        },
-                        externalResource: {
-                            // 引入 Element Plus 的 CSS
-                            'element-plus/dist/index.css': cdn.jsdelivr(),
-                        },
                     }
                 }),
         ],

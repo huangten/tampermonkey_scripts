@@ -1,4 +1,4 @@
-function addCss(id, src) {
+export function addCss(id, src) {
     return new Promise((resolve, reject) => {
         if (!document.getElementById(id)) {
             const head = document.getElementsByTagName('head')[0];
@@ -21,7 +21,7 @@ function addCss(id, src) {
     });
 }
 
-function addScript(id, src) {
+export function addScript(id, src) {
     return new Promise((resolve, reject) => {
 
         if (!document.getElementById(id)) {
