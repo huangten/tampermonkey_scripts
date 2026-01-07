@@ -10,34 +10,19 @@ const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
-    cool18_list: {
-        entry: 'src/cool18/list/list.js',
+    sshuba_chapter: {
+        entry: 'src/sshuba/chapter/chapter.js',
         userscript: {
-            name: 'cool18 列表页 增强',
+            name: 'sshuba 章节页 增强',
             author: 'YourName',
-            match: ['https://www.uaa.com/novel/intro*'],
+            match: ['*://sshuba.com/books/*'],
             namespace: 'https://tampermonkey.net/',
             version: version,
             noframes: true,
         },
         build: {
-            outDir: "cool18",
-            fileName: "cool18_list"
-        }
-    },
-    cool18_chapter: {
-        entry: 'src/cool18/chapter/chapter.js',
-        userscript: {
-            name: 'cool18 章节页 增强',
-            author: 'YourName',
-            match: ['*://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*'],
-            namespace: 'https://tampermonkey.net/',
-            version: version,
-            noframes: true,
-        },
-        build: {
-            outDir: "cool18",
-            fileName: "cool18_chapter"
+            outDir: "sshuba",
+            fileName: "sshuba_book_chapter"
         }
     }
 };
