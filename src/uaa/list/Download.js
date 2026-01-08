@@ -357,7 +357,7 @@ ${ncxNav.join('\n')}
     } catch (e) {
         console.log(e)
     }
-
+    console.log(bookName + ' 下载完毕！')
 }
 
 

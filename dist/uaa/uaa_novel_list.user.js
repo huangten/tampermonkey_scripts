@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.04
+// @version    2026-1-8.05
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -449,6 +449,7 @@ ${ncxNav.join("\n")}
     } catch (e) {
       console.log(e);
     }
+    console.log(bookName + " 下载完毕！");
   }
   function getChapterMenu(doc) {
     let menus = [];
