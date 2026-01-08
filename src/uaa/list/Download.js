@@ -354,7 +354,7 @@ ${ncxNav.join('\n')}
         o.file('toc.ncx', formatXML(tocNcxStr));
 
         const blob = await zip.generateAsync({type: 'blob'});
-        console.log(blob);
+        console.log(zip);
         saveAs(blob, `${bookName} 作者：${author}.epub`);
         console.log(bookName + ' 下载完毕！');
         GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
