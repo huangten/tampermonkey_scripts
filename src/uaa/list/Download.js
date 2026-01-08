@@ -204,7 +204,7 @@ async function buildEpub(url) {
             }
         }
 
-console.log(doc)
+
         let chapters = getChapterMenu(doc)
 
         zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
@@ -352,7 +352,7 @@ ${ncxNav.join('\n')}
 </navMap>
 </ncx>`;
         o.file('toc.ncx', formatXML(tocNcxStr));
-
+console.log(contentOpfStr)
         const blob = await zip.generateAsync({type: 'blob'});
         saveAs(blob, `${bookName} 作者：${author}.epub`);
         console.log(bookName + ' 下载完毕！');
