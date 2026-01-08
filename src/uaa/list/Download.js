@@ -330,7 +330,7 @@ async function buildEpub(url) {
         ${spine.join('\n        ')}
     </spine>
 </package>`;
-        o.file('content.opf', contentOpfStr);
+        o.file('content.opf', formatXML(contentOpfStr));
 
 
         let tocNcxStr = `<?xml version="1.0"?>
@@ -352,10 +352,12 @@ ${ncxNav.join('\n')}
 </navMap>
 </ncx>`;
         o.file('toc.ncx', formatXML(tocNcxStr));
-console.log(contentOpfStr)
+
         const blob = await zip.generateAsync({type: 'blob'});
+        console.log(blob);
         saveAs(blob, `${bookName} 作者：${author}.epub`);
         console.log(bookName + ' 下载完毕！');
+        GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
     } catch (e) {
         console.log(e)
     }
