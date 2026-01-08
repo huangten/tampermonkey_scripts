@@ -174,7 +174,7 @@ async function buildEpub(url) {
         throw new Error(e);
     });
 
-console.log(doc);
+
     let bookName = escapeHtml(cleanText(doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim()));
     let author = '';
     let type = ""
@@ -351,9 +351,13 @@ ${ncxNav.join('\n')}
 </navMap>
 </ncx>`;
     o.file('toc.ncx', formatXML(tocNcxStr));
+    try {
+        const blob = await zip.generateAsync({type: 'blob'});
+        saveAs(blob, `${bookName} 作者：${author}.epub`);
+    } catch (e) {
+        console.log(e)
+    }
 
-    const blob = await zip.generateAsync({type: 'blob'});
-    saveAs(blob, `${bookName} 作者：${author}.epub`);
 }
 
 
@@ -489,7 +493,7 @@ function formatXHTML(xmlStr) {
 
     const result = processor.transformToDocument(xml);
 
-    console.log(result)
+    // console.log(result)
     return new XMLSerializer().serializeToString(result);
 }
 

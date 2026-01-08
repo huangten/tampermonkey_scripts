@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.03
+// @version    2026-1-8.04
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -295,7 +295,6 @@
       console.log(e);
       throw new Error(e);
     });
-    console.log(doc);
     let bookName = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
     let author = "";
     let type = "";
@@ -444,8 +443,12 @@ ${ncxNav.join("\n")}
 </navMap>
 </ncx>`;
     o.file("toc.ncx", formatXML(tocNcxStr));
-    const blob = await zip.generateAsync({ type: "blob" });
-    fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
+    try {
+      const blob = await zip.generateAsync({ type: "blob" });
+      fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
+    } catch (e) {
+      console.log(e);
+    }
   }
   function getChapterMenu(doc) {
     let menus = [];
@@ -553,7 +556,6 @@ ${ncxNav.join("\n")}
     const processor = new XSLTProcessor();
     processor.importStylesheet(xsltDoc);
     const result = processor.transformToDocument(xml);
-    console.log(result);
     return new XMLSerializer().serializeToString(result);
   }
   function serializeXML(doc) {
