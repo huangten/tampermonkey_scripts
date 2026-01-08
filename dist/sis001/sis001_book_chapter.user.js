@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sis001 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-08 19:42:59
+// @version    2026-01-08.20:20:41
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sis001.com
 // @match      *://*.sis001.com/forum/thread-*-1-1.html
