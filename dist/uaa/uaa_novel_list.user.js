@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.17:24:22.01
+// @version    2026-1-8.17:34:13.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -10,6 +10,7 @@
 // @grant      GM_addStyle
 // @grant      GM_download
 // @grant      GM_getResourceText
+// @grant      GM_notification
 // @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
@@ -68,6 +69,7 @@
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
+  var _GM_notification = (() => typeof GM_notification != "undefined" ? GM_notification : void 0)();
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
   class CommonRes {
     static logoImg = null;
@@ -424,7 +426,7 @@ ${ncxNav2}`;
         ${spine.join("\n        ")}
     </spine>
 </package>`;
-      o.file("content.opf", contentOpfStr);
+      o.file("content.opf", formatXML(contentOpfStr));
       let tocNcxStr = `<?xml version="1.0"?>
 <ncx version="2005-1" xmlns="http://www.daisy.org/z3986/2005/ncx/">
 <head>
@@ -444,10 +446,11 @@ ${ncxNav.join("\n")}
 </navMap>
 </ncx>`;
       o.file("toc.ncx", formatXML(tocNcxStr));
-      console.log(contentOpfStr);
       const blob = await zip.generateAsync({ type: "blob" });
+      console.log(blob);
       fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
       console.log(bookName + " 下载完毕！");
+      _GM_notification({ text: `bookName EPUB 已生成`, title: "完成", timeout: 2e3 });
     } catch (e) {
       console.log(e);
     }
