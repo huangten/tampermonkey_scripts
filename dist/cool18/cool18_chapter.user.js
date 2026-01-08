@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.02
+// @version    2026-1-8.19:25:3.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*
@@ -130,17 +130,23 @@
   function copyChapterContent() {
     const preElement = document.getElementsByTagName("pre")[0];
     const brs = preElement.getElementsByTagName("br");
-    for (let i = brs.length - 1; i >= 0; i--) {
-      preElement.removeChild(brs[i]);
+    if (brs) {
+      for (let i = brs.length - 1; i >= 0; i--) {
+        brs[i].remove();
+      }
     }
+    console.log(preElement);
     copyContext(preElement.innerText).then();
   }
   function copyChapterHtml() {
     const preElement = document.getElementsByTagName("pre")[0];
     const brs = preElement.getElementsByTagName("br");
-    for (let i = brs.length - 1; i >= 0; i--) {
-      preElement.removeChild(brs[i]);
+    if (brs) {
+      for (let i = brs.length - 1; i >= 0; i--) {
+        brs[i].remove();
+      }
     }
+    console.log(preElement);
     copyContext(preElement.innerHTML).then();
   }
 

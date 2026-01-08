@@ -65,18 +65,24 @@ function getPreTagContentHtml() {
 function copyChapterContent() {
     const preElement = document.getElementsByTagName('pre')[0];
     const brs = preElement.getElementsByTagName('br');
-    for (let i = brs.length - 1; i >= 0; i--) {
-        preElement.removeChild(brs[i]);
+    if (brs) {
+        for (let i = brs.length - 1; i >= 0; i--) {
+            brs[i].remove();
+        }
     }
+
+    console.log(preElement);
     copyContext(preElement.innerText).then();
 }
 
 function copyChapterHtml() {
     const preElement = document.getElementsByTagName('pre')[0];
     const brs = preElement.getElementsByTagName('br');
-    for (let i = brs.length - 1; i >= 0; i--) {
-        preElement.removeChild(brs[i]);
+    if (brs) {
+        for (let i = brs.length - 1; i >= 0; i--) {
+            brs[i].remove();
+        }
     }
-    // console.log(preElement);
+    console.log(preElement);
     copyContext(preElement.innerHTML).then();
 }
