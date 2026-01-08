@@ -4,7 +4,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.06`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.01`
 
 
 // 1. 定义你的脚本库配置

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.06
+// @version    2026-1-8.17:20:29.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -296,7 +296,7 @@
         console.log(e);
         throw new Error(e);
       });
-      let bookName2 = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
+      let bookName = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
       let author = "";
       let type = "";
       let tags = doc.getElementsByClassName("tag_box")[0].innerText.replaceAll("\n", "").replaceAll("标签：", "").replaceAll(" ", "").replaceAll("#", " #").trim();
@@ -319,6 +319,7 @@
           score = infoBox[i].innerText.replace("评分：", "").trim();
         }
       }
+      console.log(doc);
       let chapters = getChapterMenu(doc);
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.folder("META-INF").file("container.xml", createContainer());
@@ -341,7 +342,7 @@
     <content src="Text/cover.xhtml"/>
 </navPoint>`);
       textFolder.file(`fy.xhtml`, genFyHtmlPage({
-        name: bookName2,
+        name: bookName,
         author
       }));
       manifest.push(`<item id="fy.xhtml" href="Text/fy.xhtml" media-type="application/xhtml+xml"/>`);
@@ -351,7 +352,7 @@
     <content src="Text/fy.xhtml"/>
 </navPoint>`);
       textFolder.file(`intro.xhtml`, genIntroHtmlPage({
-        bookName: bookName2,
+        bookName,
         author,
         type,
         tags,
@@ -405,7 +406,7 @@ ${ncxNav2}`;
 <package version="2.0" unique-identifier="duokan-book-id" xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
       <dc:identifier id="duokan-book-id" opf:scheme="UUID" xmlns:opf="http://www.idpf.org/2007/opf">${crypto.randomUUID()}</dc:identifier>
-      <dc:title>${bookName2}</dc:title>
+      <dc:title>${bookName}</dc:title>
       <dc:language>zh-CN</dc:language>
       <dc:creator opf:role="aut" opf:file-as="${author}, " xmlns:opf="http://www.idpf.org/2007/opf">${author}</dc:creator>
       <dc:date opf:event="creation" xmlns:opf="http://www.idpf.org/2007/opf">${ new Date()}</dc:date>
@@ -434,7 +435,7 @@ ${ncxNav2}`;
     <meta name="dtb:maxPageNumber" content="0" />
 </head>
 <docTitle>
-    <text>${bookName2}</text>
+    <text>${bookName}</text>
 </docTitle>
 <docAuthor>
    <text>${author}, </text>
@@ -445,11 +446,11 @@ ${ncxNav.join("\n")}
 </ncx>`;
       o.file("toc.ncx", formatXML(tocNcxStr));
       const blob = await zip.generateAsync({ type: "blob" });
-      fileSaver.saveAs(blob, `${bookName2} 作者：${author}.epub`);
+      fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
+      console.log(bookName + " 下载完毕！");
     } catch (e) {
       console.log(e);
     }
-    console.log(bookName + " 下载完毕！");
   }
   function getChapterMenu(doc) {
     let menus = [];
