@@ -6,9 +6,9 @@ import {getVersion} from "./src/common/version.js";
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     uaa_novel_intro: {
-        entry: 'src/uaa/intro/intro.v2.js',
+        entry: 'src/uaa/intro/intro.js',
         userscript: {
-            name: 'UAA 书籍描述页 增强 V2',
+            name: 'UAA 书籍描述页 增强',
             author: 'YourName',
             match: ['https://*.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
@@ -19,7 +19,7 @@ const scriptConfigs = {
         },
         build: {
             outDir: "uaa",
-            fileName: "uaa_novel_intro_v2"
+            fileName: "uaa_novel_intro"
         }
     },
     uaa_novel_chapter: {
