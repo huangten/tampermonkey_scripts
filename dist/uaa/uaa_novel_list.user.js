@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.17:20:29.01
+// @version    2026-1-8.17:24:22.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -319,7 +319,6 @@
           score = infoBox[i].innerText.replace("评分：", "").trim();
         }
       }
-      console.log(doc);
       let chapters = getChapterMenu(doc);
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.folder("META-INF").file("container.xml", createContainer());
@@ -445,6 +444,7 @@ ${ncxNav.join("\n")}
 </navMap>
 </ncx>`;
       o.file("toc.ncx", formatXML(tocNcxStr));
+      console.log(contentOpfStr);
       const blob = await zip.generateAsync({ type: "blob" });
       fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
       console.log(bookName + " 下载完毕！");
