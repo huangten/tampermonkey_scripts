@@ -22,6 +22,25 @@ const scriptConfigs = {
             fileName: "uaa_novel_intro"
         }
     },
+
+        uaa_novel_intro_v2: {
+        entry: 'src/uaa/intro/intro_v2.js',
+        userscript: {
+            name: 'UAA 书籍描述页 V2 增强',
+            author: 'YourName',
+            match: ['https://*.uaa.com/novel/intro*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
+            namespace: 'https://tampermonkey.net/',
+            version: getVersion(),
+            noframes: true,
+
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_intro_v2"
+        }
+    },
+
     uaa_novel_chapter: {
         entry: 'src/uaa/chapter/chapter.js',
         userscript: {

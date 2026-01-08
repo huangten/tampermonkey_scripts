@@ -1,24 +1,35 @@
-import {copyContext, waitForElement, Downloader, init} from "../../common/common.js";
-import {
-    getMenuArray,
-    getMenuTree,
-    saveContentToLocal
-} from "../common.js";
+import {cleanText, copyContext, init, waitForElement} from "../../common/common.js";
+import {Downloader} from "./download.js";
+import {saveContentToLocal} from "../common.js";
 
 const downloader = new Downloader();
 
-init().then(() => {
-    run();
-}).catch(() => {
-    console.log('初始化失败');
+downloader.setConfig({
+    interval: 2500,
+    downloadHandler: downloadChapter,
+    onTaskComplete: (task, success) => {
+        console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: (downloaded, failed) => {
+        console.log("下载完成 ✅");
+        console.log("已下载:", downloaded.map(t => t));
+        console.log("未下载:", failed.map(t => t));
+
+        console.log(document.getElementsByTagName('iframe'));
+
+        // ✅ 全部完成 — 销毁 iframe
+        layui.layer.alert('下载完毕', {icon: 1, shadeClose: true});
+    }
 });
+
 
 async function downloadChapter(task) {
     let iframeId = "__uaa_iframe__" + crypto.randomUUID();
     const iframe = ensureIframe(iframeId, task.href);
     updateIframeHeader(task.title);
     slideInIframe();
-    console.log(task.href);
+
+
     // 等待页面加载
     await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
@@ -43,32 +54,16 @@ async function downloadChapter(task) {
     return success;
 }
 
+
+init().then(() => {
+    run();
+}).catch((e) => {
+    console.log(e);
+});
+
+
 function run() {
-    const layer = layui.layer;
-    downloader.setConfig({
-        interval: 2500,
-        downloadHandler: downloadChapter,
-        onTaskComplete: (task, success) => {
-            console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
-        },
-        onFinish: (downloaded, failed) => {
-            console.log("下载完成 ✅");
-            console.log("已下载:", downloaded.map(t => t));
-            console.log("未下载:", failed.map(t => t));
-            // ✅ 全部完成 — 销毁 iframe
-            layer.alert('下载完毕', {icon: 1, shadeClose: true});
-        }
-    });
-
-    const fixbarStyle = `
-    background-color: #ff5555;
-    font-size: 16px;
-    width:100px;
-    height:36px;
-    line-height:36px;
-    margin-bottom:6px;
-    border-radius:10px;`.trim();
-
+    const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
     layui.use(function () {
         const util = layui.util;
         // 自定义固定条
@@ -94,35 +89,14 @@ function run() {
                     content: '章节列表',
                     style: fixbarStyle
                 }],
-
             default: false,
-            css: {bottom: "15%"},
+            css: {bottom: "15%", right: 5},
             margin: 0,
-            on: {
-                mouseenter: function (type) {
-                    console.log(this.innerText)
-                    layer.tips(type, this, {
-                        tips: 4,
-                        fixed: true
-                    });
-                },
-                mouseleave: function (type) {
-                    layer.closeAll('tips');
-                }
-            },
             // 点击事件
             click: function (type) {
-                console.log(this, type);
-                // layer.msg(type);
                 if (type === "downloadAll") {
-                    if (downloader.running) {
-                        layer.tips("正在下载中，请等待下载完后再继续", this, {
-                            tips: 4,
-                            fixed: true
-                        });
-                        return;
-                    }
                     downloadAll();
+                    return;
                 }
 
                 if (type === "copyBookName") {
@@ -136,7 +110,7 @@ function run() {
                     return;
                 }
                 if (type === "menuList") {
-                    openPage();
+                    openBookChapterListPage();
                 }
             }
         });
@@ -144,15 +118,13 @@ function run() {
 }
 
 function downloadAll() {
-    const downloadArray = getMenuArray(getMenuTree())
-    downloadArray.forEach(data => {
+    getMenuArray(getMenuTree()).forEach(data => {
         downloader.add(data);
     });
-    downloader.start().then(r => {
-    });
+    downloader.start().then();
 }
 
-function openPage() {
+function openBookChapterListPage() {
     layui.layer.open({
         type: 1,
         title: "章节列表",
@@ -161,7 +133,7 @@ function openPage() {
         shade: 0,
         anim: 'slideLeft', // 从右往左
         area: ['20%', '80%'],
-        skin: 'layui-layer-rim', // 加上边框
+        skin: 'layui-layer-win10', // 加上边框
         maxmin: true, //开启最大化最小化按钮
         content: `<div id='openPage'></div>`,
         success: function (layero, index, that) {
@@ -180,13 +152,11 @@ function openPage() {
                         type: 'clear',
                         icon: 'layui-icon-refresh',
                     }],
-                default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
+                default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
                 bgcolor: '#16baaa', // bar 的默认背景色
-                css: {bottom: "15%", right: 30},
+                css: {bottom: "15%", right: 10},
                 target: layero, // 插入 fixbar 节点的目标元素选择器
                 click: function (type) {
-                    // console.log(this, type);
-                    // layer.msg(type);
                     if (type === "getCheckedNodeData") {
                         treeCheckedDownload()
                     }
@@ -198,18 +168,11 @@ function openPage() {
 
             function treeCheckedDownload() {
                 let checkedData = tree.getChecked('title'); // 获取选中节点的数据
-
                 if (checkedData.length === 0) {
                     layer.msg("未选中任何数据");
                     return;
                 }
-                if (downloader.running) {
-                    layer.msg("正在下载中，请等待下载完后再继续");
-                    return;
-                }
-                const downloadArray = getMenuArray(checkedData)
-                downloader.clear();
-                downloadArray.forEach(data => {
+                getMenuArray(checkedData).forEach(data => {
                     downloader.add(data);
                 });
                 downloader.start().then();
@@ -222,7 +185,6 @@ function openPage() {
                 downloader.clear();
             }
 
-
             tree.render({
                 elem: '#openPage',
                 data: getMenuTree(),
@@ -232,22 +194,83 @@ function openPage() {
                 isJump: false, // 是否允许点击节点时弹出新窗口跳转
                 click: function (obj) {
                     const data = obj.data; //获取当前点击的节点数据
-                    if (downloader.running) {
-                        layer.tips("正在下载中，请等待下载完后再继续", obj, {
-                            tips: 4,
-                            fixed: true
-                        });
-                        return;
-                    }
-                    const downloadArray = getMenuArray([data])
-                    downloadArray.forEach((task) => {
-                        downloader.add(task)
-                    })
+                    downloader.add(data);
                     downloader.start().then();
                 }
             });
         }
     });
+}
+
+function getMenuTree() {
+    let menus = [];
+    let lis = document.querySelectorAll(".catalog_ul > li");
+    for (let index = 0; index < lis.length; index++) {
+        let preName = "";
+        if (lis[index].className.indexOf("menu") > -1) {
+            let alist = lis[index].getElementsByTagName("a");
+            for (let j = 0; j < alist.length; j++) {
+                menus.push({
+                    'id': (index + 1) * 100000000 + j,
+                    "title": cleanText(preName + alist[j].innerText.trim()),
+                    "href": alist[j].href,
+                    "children": [],
+                    "spread": true,
+                    "field": "",
+                    "checked": alist[j].innerText.indexOf("new") > 0,
+                });
+            }
+        }
+        if (lis[index].className.indexOf("volume") > -1) {
+            preName = cleanText(lis[index].querySelector("span").innerText);
+            let children = [];
+            let alist = lis[index].getElementsByTagName("a");
+            for (let j = 0; j < alist.length; j++) {
+                children.push({
+                    'id': (index + 1) * 100000000 + j + 1,
+                    "title": cleanText(alist[j].innerText.trim()),
+                    "href": alist[j].href,
+                    "children": [],
+                    "spread": true,
+                    "field": "",
+                    "checked": alist[j].innerText.indexOf("new") > 0,
+                });
+            }
+            menus.push({
+                'id': (index + 1) * 100000000,
+                "title": cleanText(preName),
+                "href": "",
+                "children": children,
+                "spread": true,
+                "field": "",
+            });
+        }
+    }
+    return menus;
+}
+
+function getMenuArray(trees) {
+    let menus = [];
+    for (let index = 0; index < trees.length; index++) {
+        if (trees[index].children.length === 0) {
+            menus.push({
+                'id': trees[index].id,
+                "title": trees[index].title,
+                "href": trees[index].href
+            });
+        } else {
+            for (let j = 0; j < trees[index].children.length; j++) {
+                let preName = trees[index].title + " ";
+                menus.push({
+                    'id': trees[index].children[j].id,
+                    "title": preName + trees[index].children[j].title,
+                    "href": trees[index].children[j].href
+                });
+            }
+
+        }
+    }
+    return menus;
 }
 
 function ensureIframe(iframeId, iframeUrl) {
@@ -297,6 +320,7 @@ function ensureIframe(iframeId, iframeUrl) {
     iframe.style.background = "#fff";
     iframe.style.border = "none";
     container.appendChild(iframe);
+
     return document.getElementById(iframeId);
 }
 
@@ -357,6 +381,5 @@ function destroyIframe(iframeId) {
         }, 100); // 等待动画完成 0.5s
     }
 }
-
 
 
