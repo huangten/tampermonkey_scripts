@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-08.20:20:29
+// @version    2026-01-08.22:08:05
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -770,7 +770,7 @@ click: function(type) {
         shade: 0,
         anim: "slideLeft",
 area: ["25%", "80%"],
-        skin: "layui-layer-rim",
+        skin: "layui-layer-win10",
 maxmin: true,
 content: `<div id='openPage'></div>`,
         success: function(layero, index, that) {

@@ -129,7 +129,7 @@ function run() {
             shade: 0,
             offset: 'l',
             anim: 'slideRight',
-            skin: 'layui-layer-rim', // 加上边框
+            skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             area: ['75%', '80%'],
             content: menu.href,
@@ -157,7 +157,7 @@ function run() {
             shade: 0,
             anim: 'slideLeft', // 从右往左
             area: ['25%', '90%'],
-            skin: 'layui-layer-rim', // 加上边框
+            skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             content: `<div id='openPage'></div>`,
             success: function (layero, index, that) {

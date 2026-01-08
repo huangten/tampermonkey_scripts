@@ -67,7 +67,7 @@ function run() {
             shade: 0,
             anim: 'slideLeft', // 从右往左
             area: ['25%', '80%'],
-            skin: 'layui-layer-rim', // 加上边框
+            skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             content: `<div id='openPage'></div>`,
             success: function (layero, index, that) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-08.20:20:50
+// @version    2026-01-08.22:08:16
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -363,7 +363,7 @@ click: function(type) {
         shade: 0,
         offset: "l",
         anim: "slideRight",
-        skin: "layui-layer-rim",
+        skin: "layui-layer-win10",
 maxmin: true,
 area: ["75%", "80%"],
         content: menu.href,
@@ -390,7 +390,7 @@ area: ["75%", "80%"],
         shade: 0,
         anim: "slideLeft",
 area: ["25%", "90%"],
-        skin: "layui-layer-rim",
+        skin: "layui-layer-win10",
 maxmin: true,
 content: `<div id='openPage'></div>`,
         success: function(layero, index, that) {
