@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.00:16:15
+// @version    2026-01-09.00:41:37
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -283,26 +283,35 @@ async start() {
     }
   });
   async function downloadChapter(task) {
-    let iframeId = "__uaa_iframe__" + crypto.randomUUID();
-    const iframe = ensureIframe(iframeId, task.href);
-    updateIframeHeader(task.title);
-    slideInIframe();
-    await new Promise((resolve, reject) => {
+    const doc = await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
-      iframe.onload = async () => {
-        try {
-          await waitForElement(iframe.contentDocument, ".line", 1e3 * 25 * 60);
-          clearTimeout(timeout);
-          resolve();
-        } catch (err) {
-          clearTimeout(timeout);
-          reject(new Error("正文元素未找到"));
+      layui.layer.open({
+        type: 2,
+        title: task.title,
+        shadeClose: false,
+        shade: 0,
+        offset: "l",
+        anim: "slideRight",
+        skin: "layui-layer-win10",
+maxmin: true,
+area: ["75%", "80%"],
+        content: task.href,
+        success: async function(layero, index, that) {
+          let iframeDocument = layui.layer.getChildFrame("html", index);
+          let iDocument = iframeDocument[0];
+          try {
+            await waitForElement(iDocument, ".line", 1e3 * 25 * 60);
+            clearTimeout(timeout);
+            resolve(iDocument);
+          } catch (err) {
+            clearTimeout(timeout);
+            reject(new Error("正文元素未找到"));
+          }
         }
-      };
+      });
     });
-    const el = iframe.contentDocument;
-    const success = saveContentToLocal(el);
-    slideOutIframe(iframeId);
+    const success = saveContentToLocal(doc);
+    layui.layer.closeAll("iframe");
     return success;
   }
   init().then(() => {
@@ -507,99 +516,6 @@ click: function(obj) {
       }
     }
     return menus;
-  }
-  function ensureIframe(iframeId, iframeUrl) {
-    let containerId = "__uaa_iframe_container__";
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement("div");
-      container.id = containerId;
-      container.style.position = "fixed";
-      container.style.top = "10%";
-      container.style.left = "0";
-      container.style.width = "70%";
-      container.style.height = "80%";
-      container.style.zIndex = "999999";
-      container.style.transform = "translateX(-100%)";
-      container.style.transition = "transform 0.5s ease";
-      container.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-      container.style.background = "#fff";
-      document.body.appendChild(container);
-      const header = document.createElement("div");
-      header.id = "__iframe_header__";
-      header.style.width = "100%";
-      header.style.height = "35px";
-      header.style.lineHeight = "35px";
-      header.style.background = "#ff5555";
-      header.style.color = "#fff";
-      header.style.fontWeight = "bold";
-      header.style.textAlign = "center";
-      header.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
-      header.innerText = "加载中...";
-      container.appendChild(header);
-    }
-    const iframe = document.createElement("iframe");
-    iframe.id = iframeId;
-    iframe.src = iframeUrl;
-    iframe.style.width = "100%";
-    iframe.style.height = "calc(100% - 35px)";
-    iframe.style.position = "fixed";
-    iframe.style.zIndex = "999999";
-    iframe.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-    iframe.style.border = " 2px solid #ff5555";
-    iframe.style.background = "#fff";
-    iframe.style.border = "none";
-    container.appendChild(iframe);
-    return document.getElementById(iframeId);
-  }
-  function slideInIframe() {
-    const iframe = document.getElementById("__uaa_iframe_container__");
-    iframe.style.transform = "translateX(0)";
-  }
-  function slideOutIframe(iframeId) {
-    const container = document.getElementById("__uaa_iframe_container__");
-    const iframe = document.getElementById(iframeId);
-    if (!container || !iframe) return;
-    container.style.transform = "translateX(-100%)";
-    destroyIframe(iframeId);
-    setTimeout(() => {
-      try {
-        if (iframe) {
-          iframe.src = "about:blank";
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
-          console.log("✅ iframe 已清空为白页");
-        }
-      } catch (e) {
-        console.error("清空 iframe 失败", e);
-      }
-    }, 100);
-  }
-  function updateIframeHeader(title) {
-    const header = document.getElementById("__iframe_header__");
-    if (header) {
-      header.innerText = title || "加载中...";
-    }
-  }
-  function destroyIframe(iframeId) {
-    let iframe = document.getElementById(iframeId);
-    if (iframe) {
-      setTimeout(async () => {
-        try {
-          iframe.onload = null;
-          iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
-          iframe.src = "about:blank";
-          await new Promise((r) => setTimeout(r, 0));
-          iframe.remove();
-          iframe = null;
-        } catch (e) {
-          console.error("清空 iframe 失败", e);
-        }
-        console.log("✅ iframe 已完全清理并销毁");
-      }, 100);
-    }
   }
 
 })(saveAs);
