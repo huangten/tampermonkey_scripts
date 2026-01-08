@@ -126,7 +126,7 @@ export class BackgroundExportEpubScheduler {
             layui.layer.alert('导出完毕',
                 {icon: 1, shadeClose: true},
                 function (index) {
-                    layer.close(index);
+                    layui.layer.close(index);
                 });
         }
 
@@ -137,10 +137,11 @@ export class BackgroundExportEpubScheduler {
 
     async _openInBackground(url) {
         await buildEpub(url).catch((reason) => {
+            console.log(reason)
             layui.layer.alert('导出失败',
                 {icon: 1, shadeClose: true},
                 function (index) {
-                    layer.close(index);
+                    layui.layer.close(index);
                 });
             this.clear();
         });
@@ -173,7 +174,7 @@ async function buildEpub(url) {
         throw new Error(e);
     });
 
-
+console.log(doc);
     let bookName = escapeHtml(cleanText(doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim()));
     let author = '';
     let type = ""

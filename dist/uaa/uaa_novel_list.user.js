@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.02
+// @version    2026-1-8.03
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -257,7 +257,7 @@
           "导出完毕",
           { icon: 1, shadeClose: true },
           function(index) {
-            layer.close(index);
+            layui.layer.close(index);
           }
         );
       }
@@ -266,11 +266,12 @@
     }
     async _openInBackground(url) {
       await buildEpub(url).catch((reason) => {
+        console.log(reason);
         layui.layer.alert(
           "导出失败",
           { icon: 1, shadeClose: true },
           function(index) {
-            layer.close(index);
+            layui.layer.close(index);
           }
         );
         this.clear();
@@ -294,6 +295,7 @@
       console.log(e);
       throw new Error(e);
     });
+    console.log(doc);
     let bookName = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
     let author = "";
     let type = "";
