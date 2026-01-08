@@ -131,7 +131,7 @@ function run() {
             anim: 'slideRight',
             skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
-            area: ['75%', '80%'],
+            area: ['65%', '80%'],
             content: menu.href,
             success: function (layero, index, that) {
                 let iframeDocument = layui.layer.getChildFrame('html', index);

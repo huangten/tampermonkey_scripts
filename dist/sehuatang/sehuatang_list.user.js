@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-08.22:08:16
+// @version    2026-01-08.22:32:39
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -365,7 +365,7 @@ click: function(type) {
         anim: "slideRight",
         skin: "layui-layer-win10",
 maxmin: true,
-area: ["75%", "80%"],
+area: ["65%", "80%"],
         content: menu.href,
         success: function(layero, index, that) {
           let iframeDocument = layui.layer.getChildFrame("html", index);
