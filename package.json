@@ -6,17 +6,11 @@
   "scripts": {
     "dev:uaa_novel_intro": "cross-env TARGET_SCRIPT=uaa_novel_intro vite --config vite.config.uaa.js",
     "build:uaa_novel_intro": "cross-env TARGET_SCRIPT=uaa_novel_intro vite build --config vite.config.uaa.js",
-
-
-
     "dev:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite --config vite.config.uaa.js",
     "build:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite build --config vite.config.uaa.js",
-
     "dev:uaa_novel_list": "cross-env TARGET_SCRIPT=uaa_novel_list vite --config vite.config.uaa.js",
     "build:uaa_novel_list": "cross-env TARGET_SCRIPT=uaa_novel_list vite build --config vite.config.uaa.js",
-
     "build_uaa:all": "npm run build:uaa_novel_intro && npm run build:uaa_novel_chapter && npm run build:uaa_novel_list",
-
     "dev:cool18_chapter": "cross-env TARGET_SCRIPT=cool18_chapter vite --config vite.config.cool18.js",
     "build:cool18_chapter": "cross-env TARGET_SCRIPT=cool18_chapter vite build --config vite.config.cool18.js",
     "build_cool18:all": "npm run build:cool18_chapter",
@@ -42,6 +36,7 @@
     "@types/tampermonkey": "^5.0.5",
     "@vitejs/plugin-vue": "^6.0.3",
     "cross-env": "^10.1.0",
+    "dayjs": "^1.11.19",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "unplugin-auto-import": "^20.3.0",

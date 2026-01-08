@@ -2,11 +2,7 @@ import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import monkey, {util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
-
-
-const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.01`
-
+import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
@@ -18,7 +14,7 @@ const scriptConfigs = {
             match: ['https://www.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
         },
         build: {
@@ -34,7 +30,7 @@ const scriptConfigs = {
             match: ['*://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
         },
         build: {

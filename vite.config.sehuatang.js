@@ -1,10 +1,8 @@
 import {defineConfig} from 'vite';
 import monkey, {cdn, util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
+import {getVersion} from "./src/common/version.js";
 
-
-const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
 
 
 // 1. 定义你的脚本库配置
@@ -17,7 +15,7 @@ const scriptConfigs = {
             match: ['https://*.sehuatang.org/forum*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
 
         },
@@ -37,7 +35,7 @@ const scriptConfigs = {
             ],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
         },
         build: {

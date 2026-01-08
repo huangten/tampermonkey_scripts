@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.01
+// @version    2026-01-08 19:43:08
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*

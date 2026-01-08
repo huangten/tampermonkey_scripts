@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.02
+// @version    2026-01-08 19:42:31
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/chapter*
@@ -9,6 +9,7 @@
 // @grant      GM_addStyle
 // @grant      GM_download
 // @grant      GM_getResourceText
+// @grant      GM_notification
 // @grant      unsafeWindow
 // @noframes
 // ==/UserScript==

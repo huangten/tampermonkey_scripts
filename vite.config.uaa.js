@@ -1,11 +1,7 @@
 import {defineConfig} from 'vite';
 import monkey, {cdn, util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
-
-
-const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.01`
-
+import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
@@ -17,7 +13,7 @@ const scriptConfigs = {
             match: ['https://*.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
 
         },
@@ -34,7 +30,7 @@ const scriptConfigs = {
             match: ['https://*.uaa.com/novel/chapter*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
             namespace: 'https://tampermonkey.net/',
-            version: version,
+            version: getVersion(),
             noframes: true,
         },
         build: {
@@ -54,7 +50,7 @@ const scriptConfigs = {
                 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
                 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
             ],
-            version: version,
+            version: getVersion(),
             noframes: true,
         },
         build: {
