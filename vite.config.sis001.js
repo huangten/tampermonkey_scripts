@@ -58,7 +58,7 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow'],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow','GM_notification'],
                         ...config.userscript
                     },
                     build: {
