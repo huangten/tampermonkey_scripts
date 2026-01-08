@@ -1,9 +1,9 @@
 import {cleanText, getFileNameFromPath} from "../common/common.js";
 import {saveAs} from "file-saver";
 
-export function getMenuTree() {
+export function getMenuTree(doc = document) {
     let menus = [];
-    let lis = document.querySelectorAll(".catalog_ul > li");
+    let lis = doc.querySelectorAll(".catalog_ul > li");
     for (let index = 0; index < lis.length; index++) {
         let preName = "";
         if (lis[index].className.indexOf("menu") > -1) {
@@ -73,8 +73,102 @@ export function getMenuArray(trees) {
 }
 
 
+export class CommonRes {
 
-export function saveContentToLocal(el) {
+    static logoImg = null
+    static girlImg = null
+    static line1Img = null
+    static mainCss = null
+    static fontsCss = null
+
+    static async gmFetchCoverImageBlob(url) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET', url, responseType: 'blob', headers: {
+                    Referer: "https://www.uaa.com/",
+                }, onload: res => {
+                    if (res.status === 200) {
+                        resolve(res.response);
+                    } else {
+                        reject(new Error('HTTP CODE ' + res.status));
+                    }
+                }, onerror: err => reject(err),
+            });
+        });
+    }
+
+    static async gmFetchImageBlob(url) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET', url, responseType: 'blob', onload: res => {
+                    if (res.status === 200) {
+                        resolve(res.response);
+                    } else {
+                        reject(new Error('HTTP CODE ' + res.status));
+                    }
+                }, onerror: err => reject(err),
+            });
+        });
+    }
+
+    static async gmFetchText(url) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET', url,
+                responseType: 'arraybuffer',
+                onload: res => {
+                    if (res.status !== 200) {
+                        reject(new Error(`HTTP CODE ${res.status}`));
+                    } else {
+                        //const decoder = new TextDecoder('utf-8');
+                        //const text = decoder.decode(res.response);
+                        resolve(res.response);
+                    }
+
+
+                },
+                onerror: err => reject(err),
+            });
+        });
+    }
+
+    static async getLogoImg() {
+        if (this.logoImg === null) {
+            this.logoImg = await this.gmFetchImageBlob('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/logo.webp');
+        }
+        return this.logoImg;
+    }
+
+    static async getGirlImg() {
+        if (this.girlImg === null) {
+            this.girlImg = await this.gmFetchImageBlob('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/girl.jpg');
+        }
+        return this.girlImg;
+    }
+
+    static async getLine1Img() {
+        if (this.line1Img === null) {
+            this.line1Img = await this.gmFetchImageBlob('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/line1.webp');
+        }
+        return this.line1Img;
+    }
+
+    static async getMainCss() {
+        if (this.mainCss === null) {
+            this.mainCss = await this.gmFetchText('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/main.css');
+        }
+        return this.mainCss;
+    }
+
+    static async getFontsCss() {
+        if (this.fontsCss === null) {
+            this.fontsCss = await this.gmFetchText('https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/fonts.css');
+        }
+        return this.fontsCss;
+    }
+}
+
+export function saveContentToLocal(el = document) {
     try {
         let title = getTitle(el);
         let separator = "\n\n=============================================\n";
@@ -102,13 +196,13 @@ export function saveContentToLocal(el) {
     }
 }
 
-export function getTitle(el) {
+export function getTitle(el = document) {
     let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] !== undefined ?
         el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
     return cleanText(level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
 }
 
-export function getTexts(el) {
+export function getTexts(el = document) {
     let lines = el.getElementsByClassName("line");
     let texts = [];
     for (let i = 0; i < lines.length; i++) {
@@ -139,7 +233,7 @@ export function getTexts(el) {
     return texts;
 }
 
-export function getLines(el) {
+export function getLines(el = document) {
     let lines = el.getElementsByClassName("line");
     let htmlLines = [];
     for (let i = 0; i < lines.length; i++) {
@@ -171,12 +265,19 @@ export function getLines(el) {
 }
 
 
-export function getBookName2(el) {
+export function getBookName2(el = document) {
     return cleanText(el.getElementsByClassName('chapter_box')[0]
         .getElementsByClassName("title_box")[0]
         .getElementsByTagName('a')[0].innerText.trim())
 }
 
-export function getAuthorInfo(el) {
+export function getBookName(el = document) {
+    let htmlTitle = el.getElementsByTagName("title")[0].innerText;
+    let bookName = htmlTitle.split(" | ")[0].split(" - ").pop();
+    bookName = bookName.replaceAll("/", "_");
+    return bookName;
+}
+
+export function getAuthorInfo(el = document) {
     return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
 }

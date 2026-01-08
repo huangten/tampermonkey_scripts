@@ -4,7 +4,7 @@ import AutoImport from 'unplugin-auto-import/vite';
 
 
 const date = new Date();
-const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.01`
+const version = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.02`
 
 
 // 1. 定义你的脚本库配置
@@ -12,9 +12,9 @@ const scriptConfigs = {
     uaa_novel_intro: {
         entry: 'src/uaa/intro/intro.v2.js',
         userscript: {
-            name: 'UAA 描述页 增强 V2',
+            name: 'UAA 书籍描述页 增强 V2',
             author: 'YourName',
-            match: ['https://www.uaa.com/novel/intro*'],
+            match: ['https://*.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
@@ -29,9 +29,9 @@ const scriptConfigs = {
     uaa_novel_chapter: {
         entry: 'src/uaa/chapter/chapter.js',
         userscript: {
-            name: 'UAA 章节页 增强',
+            name: 'UAA 书籍章节页 增强',
             author: 'YourName',
-            match: ['https://www.uaa.com/novel/chapter*'],
+            match: ['https://*.uaa.com/novel/chapter*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
             namespace: 'https://tampermonkey.net/',
             version: version,
@@ -40,6 +40,26 @@ const scriptConfigs = {
         build: {
             outDir: "uaa",
             fileName: "uaa_novel_chapter"
+        }
+    },
+    uaa_novel_list: {
+        entry: 'src/uaa/list/list.js',
+        userscript: {
+            name: 'UAA 书籍列表页 增强',
+            author: 'YourName',
+            match: ['https://*.uaa.com/novel/list*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
+            namespace: 'https://tampermonkey.net/',
+            require: [
+                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+            ],
+            version: version,
+            noframes: true,
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_list"
         }
     }
 };
@@ -56,9 +76,9 @@ export default defineConfig(({mode}) => {
     }
 
     return {
-        build:{
-            outDir:`dist/${config.build.outDir}`,
-            emptyOutDir:false
+        build: {
+            outDir: `dist/${config.build.outDir}`,
+            emptyOutDir: false
         },
         server: {
             open: false,
@@ -73,7 +93,10 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow'],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_download'],
+                        require: [
+                            'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+                        ],
                         ...config.userscript
                     },
                     build: {
@@ -83,8 +106,8 @@ export default defineConfig(({mode}) => {
                             // 格式：'包名': util.cdn.jsdelivr('全局变量名', '文件名')
                             // 对于 file-saver，它的全局变量名通常是 saveAs
                             'file-saver': 'saveAs',
+                            'jszip': 'JSZip'
                         },
-
                     }
                 }),
         ],
