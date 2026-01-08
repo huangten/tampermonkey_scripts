@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.17:36:48.01
+// @version    2026-1-8.18:2:37.01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
-// @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js
+// @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant      GM_addStyle
 // @grant      GM_download
@@ -69,7 +69,6 @@
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
-  var _GM_notification = (() => typeof GM_notification != "undefined" ? GM_notification : void 0)();
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
   class CommonRes {
     static logoImg = null;
@@ -238,7 +237,7 @@
       if (this.running) return;
       this.running = true;
       if (this.running) {
-        layer.msg("开始导出中，请稍等。。。");
+        layui.layer.msg("开始导出中，请稍等。。。");
       }
       await this._tick();
     }
@@ -446,11 +445,14 @@ ${ncxNav.join("\n")}
 </navMap>
 </ncx>`;
       o.file("toc.ncx", formatXML(tocNcxStr));
-      const blob = await zip.generateAsync({ type: "blob" });
-      console.log(zip);
+      const blob = await zip.generateAsync({
+        type: "blob"
+
+
+
+});
       fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
       console.log(bookName + " 下载完毕！");
-      _GM_notification({ text: `bookName EPUB 已生成`, title: "完成", timeout: 2e3 });
     } catch (e) {
       console.log(e);
     }

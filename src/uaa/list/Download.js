@@ -1,5 +1,5 @@
 import {cleanText} from "../../common/common.js";
-import {CommonRes, getMenuTree} from "../common.js";
+import {CommonRes} from "../common.js";
 import JSZip from "jszip";
 import {saveAs} from "file-saver";
 
@@ -101,7 +101,7 @@ export class BackgroundExportEpubScheduler {
         if (this.running) return;
         this.running = true;
         if (this.running) {
-            layer.msg("开始导出中，请稍等。。。");
+            layui.layer.msg("开始导出中，请稍等。。。");
         }
         await this._tick();
     }
@@ -353,11 +353,17 @@ ${ncxNav.join('\n')}
 </ncx>`;
         o.file('toc.ncx', formatXML(tocNcxStr));
 
-        const blob = await zip.generateAsync({type: 'blob'});
-        console.log(zip);
+        const blob = await zip.generateAsync({
+            type: 'blob',
+            // compression: "DEFLATE",
+            // compressionOptions: {
+            //     level: 9 // 压缩级别
+            // }
+        });
+        // console.log(blob);
         saveAs(blob, `${bookName} 作者：${author}.epub`);
         console.log(bookName + ' 下载完毕！');
-        GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
+        // GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
     } catch (e) {
         console.log(e)
     }
