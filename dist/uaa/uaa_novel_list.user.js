@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-1-8.05
+// @version    2026-1-8.06
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -290,121 +290,122 @@
     });
   }
   async function buildEpub(url) {
-    const zip = new JSZip();
-    let doc = await fetchBookIntro(url).catch((e) => {
-      console.log(e);
-      throw new Error(e);
-    });
-    let bookName = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
-    let author = "";
-    let type = "";
-    let tags = doc.getElementsByClassName("tag_box")[0].innerText.replaceAll("\n", "").replaceAll("标签：", "").replaceAll(" ", "").replaceAll("#", " #").trim();
-    let rou = doc.getElementsByClassName("props_box")[0].getElementsByTagName("li")[0].innerText.trim();
-    let score = "";
-    let lastUpdateTime = "";
-    let intro = doc.getElementsByClassName("brief_box")[0].innerText.replaceAll("小说简介：", "").replaceAll("\n", "").trim();
-    let infoBox = doc.getElementsByClassName("info_box")[0].getElementsByTagName("div");
-    for (let i = 0; i < infoBox.length; i++) {
-      if (infoBox[i].innerText.trim().includes("最新：")) {
-        lastUpdateTime = infoBox[i].innerText.replace("最新：", "").trim();
+    try {
+      const zip = new JSZip();
+      let doc = await fetchBookIntro(url).catch((e) => {
+        console.log(e);
+        throw new Error(e);
+      });
+      let bookName2 = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
+      let author = "";
+      let type = "";
+      let tags = doc.getElementsByClassName("tag_box")[0].innerText.replaceAll("\n", "").replaceAll("标签：", "").replaceAll(" ", "").replaceAll("#", " #").trim();
+      let rou = doc.getElementsByClassName("props_box")[0].getElementsByTagName("li")[0].innerText.trim();
+      let score = "";
+      let lastUpdateTime = "";
+      let intro = doc.getElementsByClassName("brief_box")[0].innerText.replaceAll("小说简介：", "").replaceAll("\n", "").trim();
+      let infoBox = doc.getElementsByClassName("info_box")[0].getElementsByTagName("div");
+      for (let i = 0; i < infoBox.length; i++) {
+        if (infoBox[i].innerText.trim().includes("最新：")) {
+          lastUpdateTime = infoBox[i].innerText.replace("最新：", "").trim();
+        }
+        if (infoBox[i].innerText.trim().includes("作者：")) {
+          author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", "").trim()));
+        }
+        if (infoBox[i].innerText.trim().includes("题材：")) {
+          type = infoBox[i].innerText.replace("题材：", "").split(" ").map((str) => str.trim()).filter((str) => str.length > 0);
+        }
+        if (infoBox[i].innerText.trim().includes("评分：")) {
+          score = infoBox[i].innerText.replace("评分：", "").trim();
+        }
       }
-      if (infoBox[i].innerText.trim().includes("作者：")) {
-        author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", "").trim()));
-      }
-      if (infoBox[i].innerText.trim().includes("题材：")) {
-        type = infoBox[i].innerText.replace("题材：", "").split(" ").map((str) => str.trim()).filter((str) => str.length > 0);
-      }
-      if (infoBox[i].innerText.trim().includes("评分：")) {
-        score = infoBox[i].innerText.replace("评分：", "").trim();
-      }
-    }
-    let chapters = getChapterMenu(doc);
-    zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
-    zip.folder("META-INF").file("container.xml", createContainer());
-    const o = zip.folder("OEBPS");
-    const cssFolder = o.folder("Styles");
-    cssFolder.file("main.css", CommonRes.getMainCss());
-    cssFolder.file("fonts.css", CommonRes.getFontsCss());
-    const imgFolder = o.folder("Images");
-    let coverUrl = doc.getElementsByClassName("cover")[0].src;
-    imgFolder.file("cover.jpg", await CommonRes.gmFetchCoverImageBlob(coverUrl));
-    imgFolder.file("logo.webp", await CommonRes.getLogoImg());
-    imgFolder.file("girl.jpg", await CommonRes.getGirlImg());
-    const manifest = [], spine = [], ncxNav = [];
-    const textFolder = o.folder("Text");
-    textFolder.file(`cover.xhtml`, genCoverHtmlPage());
-    manifest.push(`<item id="cover.xhtml" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>`);
-    spine.push(`<itemref idref="cover.xhtml"  properties="duokan-page-fullscreen"/>`);
-    ncxNav.push(`<navPoint id="cover.xhtml" playOrder="10000">
+      let chapters = getChapterMenu(doc);
+      zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
+      zip.folder("META-INF").file("container.xml", createContainer());
+      const o = zip.folder("OEBPS");
+      const cssFolder = o.folder("Styles");
+      cssFolder.file("main.css", CommonRes.getMainCss());
+      cssFolder.file("fonts.css", CommonRes.getFontsCss());
+      const imgFolder = o.folder("Images");
+      let coverUrl = doc.getElementsByClassName("cover")[0].src;
+      imgFolder.file("cover.jpg", await CommonRes.gmFetchCoverImageBlob(coverUrl));
+      imgFolder.file("logo.webp", await CommonRes.getLogoImg());
+      imgFolder.file("girl.jpg", await CommonRes.getGirlImg());
+      const manifest = [], spine = [], ncxNav = [];
+      const textFolder = o.folder("Text");
+      textFolder.file(`cover.xhtml`, genCoverHtmlPage());
+      manifest.push(`<item id="cover.xhtml" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>`);
+      spine.push(`<itemref idref="cover.xhtml"  properties="duokan-page-fullscreen"/>`);
+      ncxNav.push(`<navPoint id="cover.xhtml" playOrder="10000">
     <navLabel><text>封面</text></navLabel>
     <content src="Text/cover.xhtml"/>
 </navPoint>`);
-    textFolder.file(`fy.xhtml`, genFyHtmlPage({
-      name: bookName,
-      author
-    }));
-    manifest.push(`<item id="fy.xhtml" href="Text/fy.xhtml" media-type="application/xhtml+xml"/>`);
-    spine.push(`<itemref idref="fy.xhtml"/>`);
-    ncxNav.push(`<navPoint id="fy.xhtml" playOrder="10001">
+      textFolder.file(`fy.xhtml`, genFyHtmlPage({
+        name: bookName2,
+        author
+      }));
+      manifest.push(`<item id="fy.xhtml" href="Text/fy.xhtml" media-type="application/xhtml+xml"/>`);
+      spine.push(`<itemref idref="fy.xhtml"/>`);
+      ncxNav.push(`<navPoint id="fy.xhtml" playOrder="10001">
     <navLabel><text>扉页</text></navLabel>
     <content src="Text/fy.xhtml"/>
 </navPoint>`);
-    textFolder.file(`intro.xhtml`, genIntroHtmlPage({
-      bookName,
-      author,
-      type,
-      tags,
-      rou,
-      score,
-      lastUpdateTime,
-      intro
-    }));
-    manifest.push(`<item id="intro.xhtml" href="Text/intro.xhtml" media-type="application/xhtml+xml"/>`);
-    spine.push(`<itemref idref="intro.xhtml"/>`);
-    ncxNav.push(`<navPoint id="intro.xhtml" playOrder="10002">
+      textFolder.file(`intro.xhtml`, genIntroHtmlPage({
+        bookName: bookName2,
+        author,
+        type,
+        tags,
+        rou,
+        score,
+        lastUpdateTime,
+        intro
+      }));
+      manifest.push(`<item id="intro.xhtml" href="Text/intro.xhtml" media-type="application/xhtml+xml"/>`);
+      spine.push(`<itemref idref="intro.xhtml"/>`);
+      ncxNav.push(`<navPoint id="intro.xhtml" playOrder="10002">
     <navLabel><text>内容简介</text></navLabel>
     <content src="Text/intro.xhtml"/>
 </navPoint>`);
-    chapters.forEach((c, i) => {
-      let volumeIndex = 0;
-      const id = `vol_${String(i + 1).padStart(4, "0")}`;
-      manifest.push(`<item id="${id}" href="Text/${id}.xhtml" media-type="application/xhtml+xml"/>`);
-      spine.push(`<itemref idref="${id}"/>`);
-      if (c.children.length === 0) {
-        textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
-        ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
+      chapters.forEach((c, i) => {
+        let volumeIndex = 0;
+        const id = `vol_${String(i + 1).padStart(4, "0")}`;
+        manifest.push(`<item id="${id}" href="Text/${id}.xhtml" media-type="application/xhtml+xml"/>`);
+        spine.push(`<itemref idref="${id}"/>`);
+        if (c.children.length === 0) {
+          textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
+          ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
     <navLabel><text>${c.title}</text></navLabel>
     <content src="Text/${id}.xhtml"/>
 </navPoint>`);
-      } else {
-        ++volumeIndex;
-        textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
-        let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
+        } else {
+          ++volumeIndex;
+          textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
+          let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
     <navLabel><text>${c.title}</text></navLabel>
     <content src="Text/${id}.xhtml"/>`;
-        c.children.forEach((d, j) => {
-          const did = `vol_${String(i + 1).padStart(4, "0")}_${String(j + 1).padStart(4, "0")}`;
-          manifest.push(`<item id="${did}" href="Text/${did}.xhtml" media-type="application/xhtml+xml"/>`);
-          spine.push(`<itemref idref="${did}"/>`);
-          textFolder.file(`${did}.xhtml`, genHtmlPage(escapeHtml(cleanText(d.title))));
-          let ncxNav2 = `
+          c.children.forEach((d, j) => {
+            const did = `vol_${String(i + 1).padStart(4, "0")}_${String(j + 1).padStart(4, "0")}`;
+            manifest.push(`<item id="${did}" href="Text/${did}.xhtml" media-type="application/xhtml+xml"/>`);
+            spine.push(`<itemref idref="${did}"/>`);
+            textFolder.file(`${did}.xhtml`, genHtmlPage(escapeHtml(cleanText(d.title))));
+            let ncxNav2 = `
  <navPoint id="${did}" playOrder="${i + 1}">
     <navLabel><text>${d.title}</text></navLabel>
     <content src="Text/${did}.xhtml"/>
 </navPoint>
                         `;
-          volumeNcxNav += `
+            volumeNcxNav += `
 ${ncxNav2}`;
-        });
-        volumeNcxNav += `</navPoint>`;
-        ncxNav.push(volumeNcxNav);
-      }
-    });
-    let contentOpfStr = `<?xml version="1.0"?>
+          });
+          volumeNcxNav += `</navPoint>`;
+          ncxNav.push(volumeNcxNav);
+        }
+      });
+      let contentOpfStr = `<?xml version="1.0"?>
 <package version="2.0" unique-identifier="duokan-book-id" xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
       <dc:identifier id="duokan-book-id" opf:scheme="UUID" xmlns:opf="http://www.idpf.org/2007/opf">${crypto.randomUUID()}</dc:identifier>
-      <dc:title>${bookName}</dc:title>
+      <dc:title>${bookName2}</dc:title>
       <dc:language>zh-CN</dc:language>
       <dc:creator opf:role="aut" opf:file-as="${author}, " xmlns:opf="http://www.idpf.org/2007/opf">${author}</dc:creator>
       <dc:date opf:event="creation" xmlns:opf="http://www.idpf.org/2007/opf">${ new Date()}</dc:date>
@@ -423,8 +424,8 @@ ${ncxNav2}`;
         ${spine.join("\n        ")}
     </spine>
 </package>`;
-    o.file("content.opf", contentOpfStr);
-    let tocNcxStr = `<?xml version="1.0"?>
+      o.file("content.opf", contentOpfStr);
+      let tocNcxStr = `<?xml version="1.0"?>
 <ncx version="2005-1" xmlns="http://www.daisy.org/z3986/2005/ncx/">
 <head>
     <meta name="dtb:uid" content="${crypto.randomUUID()}"/>
@@ -433,7 +434,7 @@ ${ncxNav2}`;
     <meta name="dtb:maxPageNumber" content="0" />
 </head>
 <docTitle>
-    <text>${bookName}</text>
+    <text>${bookName2}</text>
 </docTitle>
 <docAuthor>
    <text>${author}, </text>
@@ -442,10 +443,9 @@ ${ncxNav2}`;
 ${ncxNav.join("\n")}
 </navMap>
 </ncx>`;
-    o.file("toc.ncx", formatXML(tocNcxStr));
-    try {
+      o.file("toc.ncx", formatXML(tocNcxStr));
       const blob = await zip.generateAsync({ type: "blob" });
-      fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
+      fileSaver.saveAs(blob, `${bookName2} 作者：${author}.epub`);
     } catch (e) {
       console.log(e);
     }
