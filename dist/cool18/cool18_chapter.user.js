@@ -71,7 +71,6 @@
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
-  var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
   init().then(() => {
     run();
   });
@@ -123,13 +122,13 @@
     });
   }
   function getPreTagContent() {
-    copyContext(_unsafeWindow.document.getElementsByTagName("pre")[0].innerText).then();
+    copyContext(document.getElementsByTagName("pre")[0].innerText).then();
   }
   function getPreTagContentHtml() {
-    copyContext(_unsafeWindow.document.getElementsByTagName("pre")[0].innerHTML).then();
+    copyContext(document.getElementsByTagName("pre")[0].innerHTML).then();
   }
   function copyChapterContent() {
-    const preElement = _unsafeWindow.document.getElementsByTagName("pre")[0];
+    const preElement = document.getElementsByTagName("pre")[0];
     const brs = preElement.getElementsByTagName("br");
     for (let i = brs.length - 1; i >= 0; i--) {
       preElement.removeChild(brs[i]);
@@ -137,7 +136,7 @@
     copyContext(preElement.innerText).then();
   }
   function copyChapterHtml() {
-    const preElement = _unsafeWindow.document.getElementsByTagName("pre")[0];
+    const preElement = document.getElementsByTagName("pre")[0];
     const brs = preElement.getElementsByTagName("br");
     for (let i = brs.length - 1; i >= 0; i--) {
       preElement.removeChild(brs[i]);

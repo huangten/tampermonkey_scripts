@@ -55,15 +55,15 @@ function run() {
 }
 
 function getPreTagContent() {
-    copyContext(unsafeWindow.document.getElementsByTagName('pre')[0].innerText).then();
+    copyContext(document.getElementsByTagName('pre')[0].innerText).then();
 }
 
 function getPreTagContentHtml() {
-    copyContext(unsafeWindow.document.getElementsByTagName('pre')[0].innerHTML).then();
+    copyContext(document.getElementsByTagName('pre')[0].innerHTML).then();
 }
 
 function copyChapterContent() {
-    const preElement = unsafeWindow.document.getElementsByTagName('pre')[0];
+    const preElement = document.getElementsByTagName('pre')[0];
     const brs = preElement.getElementsByTagName('br');
     for (let i = brs.length - 1; i >= 0; i--) {
         preElement.removeChild(brs[i]);
@@ -72,7 +72,7 @@ function copyChapterContent() {
 }
 
 function copyChapterHtml() {
-    const preElement = unsafeWindow.document.getElementsByTagName('pre')[0];
+    const preElement = document.getElementsByTagName('pre')[0];
     const brs = preElement.getElementsByTagName('br');
     for (let i = brs.length - 1; i >= 0; i--) {
         preElement.removeChild(brs[i]);
