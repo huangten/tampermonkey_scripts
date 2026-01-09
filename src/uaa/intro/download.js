@@ -121,8 +121,6 @@ export class Downloader {
 }
 
 
-
-
 export async function downloadChapterV2(task) {
     let iframeId = "__uaa_iframe__" + crypto.randomUUID();
     const iframe = ensureIframe(iframeId, task.href);
@@ -148,7 +146,7 @@ export async function downloadChapterV2(task) {
     // 保存内容
     const el = iframe.contentDocument;
     const success = saveContentToLocal(el);
-
+    await sleep(300);
     // 动画滑出 + 清空 iframe
     slideOutIframe(iframeId);
     return success;
