@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.00:05:28
+// @version    2026-01-10.00:54:29
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -315,14 +315,17 @@ async start() {
         type: 1,
         title: "下载窗口",
         shadeClose: false,
-        scrollbar: false,
-        shade: 0,
+shade: 0,
         offset: "l",
 skin: "layui-layer-win10",
 maxmin: true,
 area: ["75%", "80%"],
-        content: `<div id="${divId2}" style="width: 100%;height: 100%"></div>`,
+        content: `<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">
+  <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>
+</div><div id="${divId2}" style="width: 100%;height: 100%;"></div>`,
         success: function(layero, index, that) {
+          layui.element.render("progress", "demo-filter-progress");
+          layui.element.progress("demo-filter-progress", "0%");
           layui.layer.min(index);
           resolve(index);
         }
@@ -338,6 +341,9 @@ area: ["75%", "80%"],
   }
   async function downloadChapterV1(task) {
     const winId = await ensureDownloadWindow(divId);
+    let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
+    console.log(percent);
+    layui.element.progress("demo-filter-progress", percent);
     layui.layer.title(task.title, winId);
     const iframe = document.createElement("iframe");
     const IframeId = "__uaa_iframe__" + crypto.randomUUID();

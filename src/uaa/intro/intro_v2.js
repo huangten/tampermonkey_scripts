@@ -34,15 +34,19 @@ async function createDownloadWindow(divId) {
             type: 1,
             title: '下载窗口',
             shadeClose: false,
-            scrollbar: false,
+            // scrollbar: false,
             shade: 0,
             offset: 'l',
             // anim: 'slideRight',
             skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             area: ['75%', '80%'],
-            content: `<div id="${divId}" style="width: 100%;height: 100%"></div>`,
+            content: `<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">
+  <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>
+</div><div id="${divId}" style="width: 100%;height: 100%;"></div>`,
             success: function (layero, index, that) {
+                layui.element.render('progress', 'demo-filter-progress');
+                layui.element.progress('demo-filter-progress', '0%');
                 layui.layer.min(index);
                 resolve(index);
             }
@@ -60,6 +64,10 @@ async function ensureDownloadWindow(divId = 'downloadWindowDivId') {
 
 async function downloadChapterV1(task) {
     const winId = await ensureDownloadWindow(divId);
+    let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + '%'
+    console.log(percent)
+    layui.element.progress('demo-filter-progress', percent);
+
     layui.layer.title(task.title, winId)
     // 创建 iframe
     const iframe = document.createElement("iframe");
