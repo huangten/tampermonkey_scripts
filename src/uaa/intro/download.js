@@ -23,6 +23,9 @@ export class Downloader {
             },     // 单任务完成回调
             onFinish: () => {
             },           // 全部任务完成回调
+            onCatch: (err) => {
+
+            },
             downloadHandler: null,      // 下载逻辑回调
             // === 新增策略 ===
             retryFailed: false,       // 是否允许失败任务再次 add
@@ -107,7 +110,7 @@ export class Downloader {
                 this.failedSet.add(key);
                 this.config.onTaskComplete(task, false);
                 this.running = false;
-                alert(`下载失败: ${task.title}\n原因: ${err.message}`);
+                this.config.onCatch(err);
                 return;
             }
 
@@ -240,7 +243,7 @@ function slideOutIframe(iframeId) {
     }, 100); // 等待动画完成 0.5s
 }
 
-function destroyIframe(iframeId) {
+export function destroyIframe(iframeId) {
     let iframe = document.getElementById(iframeId);
     if (iframe) {
         setTimeout(async () => {

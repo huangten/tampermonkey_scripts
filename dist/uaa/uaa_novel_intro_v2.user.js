@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.21:36:20
+// @version    2026-01-09.23:30:59
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -200,7 +200,9 @@ onTaskComplete: () => {
         },
 onFinish: () => {
         },
-downloadHandler: null,
+onCatch: (err) => {
+        },
+        downloadHandler: null,
 
 retryFailed: false,
 uniqueKey: (task) => task?.href
@@ -257,8 +259,7 @@ async start() {
           this.failedSet.add(key);
           this.config.onTaskComplete(task, false);
           this.running = false;
-          alert(`下载失败: ${task.title}
-原因: ${err.message}`);
+          this.config.onCatch(err);
           return;
         }
         if (this.queue.length > 0) await sleep(this.config.interval);
@@ -266,104 +267,6 @@ async start() {
       this.running = false;
       this.config.onFinish(this.downloaded, this.failed);
     }
-  }
-  async function downloadChapterV2(task) {
-    let iframeId = "__uaa_iframe__" + crypto.randomUUID();
-    const iframe = ensureIframe(iframeId, task.href);
-    updateIframeHeader(task.title);
-    slideInIframe();
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
-      iframe.onload = async () => {
-        try {
-          await waitForElement(iframe.contentDocument, ".line", 1e3 * 25 * 60);
-          clearTimeout(timeout);
-          resolve();
-        } catch (err) {
-          clearTimeout(timeout);
-          reject(new Error("正文元素未找到"));
-        }
-      };
-    });
-    const el = iframe.contentDocument;
-    const success = saveContentToLocal(el);
-    await sleep(500);
-    slideOutIframe(iframeId);
-    return success;
-  }
-  function ensureIframe(iframeId, iframeUrl) {
-    let containerId = "__uaa_iframe_container__";
-    let container = document.getElementById(containerId);
-    if (!container) {
-      container = document.createElement("div");
-      container.id = containerId;
-      container.style.position = "fixed";
-      container.style.top = "10%";
-      container.style.left = "0";
-      container.style.width = "70%";
-      container.style.height = "80%";
-      container.style.zIndex = "999999";
-      container.style.transform = "translateX(-100%)";
-      container.style.transition = "transform 0.5s ease";
-      container.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-      container.style.background = "#fff";
-      document.body.appendChild(container);
-      const header = document.createElement("div");
-      header.id = "__iframe_header__";
-      header.style.width = "100%";
-      header.style.height = "35px";
-      header.style.lineHeight = "35px";
-      header.style.background = "#ff5555";
-      header.style.color = "#fff";
-      header.style.fontWeight = "bold";
-      header.style.textAlign = "center";
-      header.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
-      header.innerText = "加载中...";
-      container.appendChild(header);
-    }
-    const iframe = document.createElement("iframe");
-    iframe.id = iframeId;
-    iframe.src = iframeUrl;
-    iframe.style.width = "100%";
-    iframe.style.height = "calc(100% - 35px)";
-    iframe.style.position = "fixed";
-    iframe.style.zIndex = "999999";
-    iframe.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
-    iframe.style.border = " 2px solid #ff5555";
-    iframe.style.background = "#fff";
-    iframe.style.border = "none";
-    container.appendChild(iframe);
-    return document.getElementById(iframeId);
-  }
-  function slideInIframe() {
-    const iframe = document.getElementById("__uaa_iframe_container__");
-    iframe.style.transform = "translateX(0)";
-  }
-  function updateIframeHeader(title) {
-    const header = document.getElementById("__iframe_header__");
-    if (header) {
-      header.innerText = title || "加载中...";
-    }
-  }
-  function slideOutIframe(iframeId) {
-    const container = document.getElementById("__uaa_iframe_container__");
-    const iframe = document.getElementById(iframeId);
-    if (!container || !iframe) return;
-    container.style.transform = "translateX(-100%)";
-    destroyIframe(iframeId);
-    setTimeout(() => {
-      try {
-        if (iframe) {
-          iframe.src = "about:blank";
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
-          console.log("✅ iframe 已清空为白页");
-          iframe.remove();
-        }
-      } catch (e) {
-        console.error("清空 iframe 失败", e);
-      }
-    }, 100);
   }
   function destroyIframe(iframeId) {
     let iframe = document.getElementById(iframeId);
@@ -386,9 +289,11 @@ async start() {
     }
   }
   const downloader = new Downloader();
+  let downloadWindowId = 0;
+  const divId = "downloadWindowDivId";
   downloader.setConfig({
     interval: 2e3,
-    downloadHandler: downloadChapterV2,
+    downloadHandler: downloadChapterV1,
     onTaskComplete: (task, success) => {
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
@@ -398,8 +303,71 @@ async start() {
       console.log("未下载:", failed.map((t) => t));
       console.log(document.getElementsByTagName("iframe"));
       layui.layer.alert("下载完毕", { icon: 1, shadeClose: true });
+    },
+    onCatch: (err) => {
+      layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
     }
   });
+  async function createDownloadWindow(divId2) {
+    return new Promise((resolve, reject) => {
+      layui.layer.open({
+        type: 1,
+        title: "下载窗口",
+        shadeClose: false,
+        shade: 0,
+        offset: "l",
+skin: "layui-layer-win10",
+maxmin: true,
+area: ["75%", "80%"],
+        content: `<div id="${divId2}" style="width: 100%;height: 100%"></div>`,
+        success: function(layero, index, that) {
+          layui.layer.min(index);
+          resolve(index);
+        }
+      });
+    });
+  }
+  async function ensureDownloadWindow(divId2 = "downloadWindowDivId") {
+    if (downloadWindowId !== 0) {
+      return downloadWindowId;
+    }
+    downloadWindowId = await createDownloadWindow(divId2);
+    return downloadWindowId;
+  }
+  async function downloadChapterV1(task) {
+    const winId = await ensureDownloadWindow(divId);
+    layui.layer.title(task.title, winId);
+    const iframe = document.createElement("iframe");
+    const IframeId = "__uaa_iframe__" + crypto.randomUUID();
+    iframe.id = IframeId;
+    iframe.src = task.href;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    document.getElementById(divId).appendChild(iframe);
+    layui.layer.restore(winId);
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
+      iframe.onload = async () => {
+        try {
+          await waitForElement(iframe.contentDocument, ".line", 1e3 * 25 * 60);
+          clearTimeout(timeout);
+          resolve();
+        } catch (err) {
+          clearTimeout(timeout);
+          reject(new Error("正文元素未找到"));
+        }
+      };
+    });
+    const el = iframe.contentDocument;
+    if (getTexts(el).some((s) => s.includes("以下正文内容已隐藏")))
+      throw new Error("章节内容不完整，结束下载");
+    const success = saveContentToLocal(el);
+    await sleep(500);
+    document.getElementById(divId).removeChild(iframe);
+    layui.layer.min(winId);
+    destroyIframe(IframeId);
+    return success;
+  }
   init().then(() => {
     run();
   }).catch((e) => {

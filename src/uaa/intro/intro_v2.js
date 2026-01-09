@@ -1,12 +1,14 @@
 import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
-import {downloadChapterV2, Downloader} from "./download.js";
-import {saveContentToLocal} from "../common.js";
+import {destroyIframe, downloadChapterV2, Downloader} from "./download.js";
+import {getTexts, saveContentToLocal} from "../common.js";
 
 const downloader = new Downloader();
+let downloadWindowId = 0
+const divId = 'downloadWindowDivId';
 
 downloader.setConfig({
     interval: 2000,
-    downloadHandler: downloadChapterV2,
+    downloadHandler: downloadChapterV1,
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
@@ -19,64 +21,82 @@ downloader.setConfig({
 
         // ✅ 全部完成 — 销毁 iframe
         layui.layer.alert('下载完毕', {icon: 1, shadeClose: true});
+    },
+    onCatch: (err) => {
+         layui.layer.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
     }
 });
 
-
-async function downloadChapter(task) {
-    // 等待页面加载
-    return await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
-
+async function createDownloadWindow(divId) {
+    return new Promise((resolve, reject) => {
         layui.layer.open({
-            type: 2,
-            title: task.title,
+            type: 1,
+            title: '下载窗口',
             shadeClose: false,
             shade: 0,
             offset: 'l',
-            anim: 'slideRight',
+            // anim: 'slideRight',
             skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             area: ['75%', '80%'],
-            content: task.href,
-            success: async function (layero, index, that) {
-                let iframeDocument = layui.layer.getChildFrame('html', index);
-                let iDocument = iframeDocument[0];
-                //
-                // console.log('=====================',iframeDocument);
-                // console.log('+++++++++++++++++++',layui.layer.getChildFrame('iframe', index));
-
-
-                try {
-                    await waitForElement(iDocument, '.line', 1000 * 25 * 60);
-                    const success = saveContentToLocal(iDocument);
-
-                    await sleep(500);
-                    layui.layer.closeAll('iframe', () => {
-
-                        const iframes = layero.find('iframe')[0];
-                        if (iframes) {
-                            for (let i = 0; i < iframes.length; i++) {
-                                if (iframes[i] instanceof HTMLIFrameElement) {
-                                    iframes[i].attributes('src', 'about:blank');
-                                    iframes[i].contentWindow.document.write(''); // 写入空内容
-                                    iframes[i].contentWindow.document.close(); // 关闭文档流，帮助垃圾回收
-                                    iframes[i].remove();
-                                }
-                            }
-                        }
-                    });
-
-
-                    clearTimeout(timeout);
-                    resolve(success);
-                } catch (err) {
-                    clearTimeout(timeout);
-                    reject(new Error("正文元素未找到"));
-                }
+            content: `<div id="${divId}" style="width: 100%;height: 100%"></div>`,
+            success: function (layero, index, that) {
+                layui.layer.min(index);
+                resolve(index);
             }
         });
     });
+}
+
+async function ensureDownloadWindow(divId = 'downloadWindowDivId') {
+    if (downloadWindowId !== 0) {
+        return downloadWindowId;
+    }
+    downloadWindowId = await createDownloadWindow(divId);
+    return downloadWindowId;
+}
+
+async function downloadChapterV1(task) {
+    const winId = await ensureDownloadWindow(divId);
+    layui.layer.title(task.title, winId)
+    // 创建 iframe
+    const iframe = document.createElement("iframe");
+    const IframeId = "__uaa_iframe__" + crypto.randomUUID();
+    iframe.id = IframeId
+    iframe.src = task.href;
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    document.getElementById(divId).appendChild(iframe)
+    layui.layer.restore(winId);
+
+    // 等待页面加载
+    await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
+        iframe.onload = async () => {
+            try {
+                await waitForElement(iframe.contentDocument, '.line', 1000 * 25 * 60);
+                clearTimeout(timeout);
+                resolve();
+            } catch (err) {
+                clearTimeout(timeout);
+                reject(new Error("正文元素未找到"));
+            }
+        };
+    });
+
+    // 保存内容
+    const el = iframe.contentDocument;
+    if (getTexts(el).some(s => s.includes('以下正文内容已隐藏')))
+        throw new Error("章节内容不完整，结束下载");
+    const success = saveContentToLocal(el);
+
+    await sleep(500);
+
+    document.getElementById(divId).removeChild(iframe);
+
+    layui.layer.min(winId);
+    destroyIframe(IframeId);
+    return success;
 }
 
 init().then(() => {
