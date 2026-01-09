@@ -4,7 +4,6 @@ import AutoImport from 'unplugin-auto-import/vite';
 import {getVersion} from "./src/common/version.js";
 
 
-
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     sehuatang_list: {
@@ -24,6 +23,25 @@ const scriptConfigs = {
             fileName: "sehuatang_list"
         }
     },
+
+    sehuatang_list_v2: {
+        entry: 'src/sehuatang/list/list_v2.js',
+        userscript: {
+            name: 'sehuatang 列表页 增强 V2',
+            author: 'YourName',
+            match: ['https://*.sehuatang.org/forum*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
+            namespace: 'https://tampermonkey.net/',
+            version: getVersion(),
+            noframes: true,
+
+        },
+        build: {
+            outDir: "sehuatang",
+            fileName: "sehuatang_list_v2"
+        }
+    },
+
     sehuatang_details_page: {
         entry: 'src/sehuatang/details_page/details_page.js',
         userscript: {
@@ -78,7 +96,7 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_xmlhttpRequest', 'GM_download','GM_notification'],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_xmlhttpRequest', 'GM_download', 'GM_notification'],
                         connect: ['*'],
                         require: [
                             'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
