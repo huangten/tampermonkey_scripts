@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.23:52:42
+// @version    2026-01-10.00:05:28
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -315,6 +315,7 @@ async start() {
         type: 1,
         title: "下载窗口",
         shadeClose: false,
+        scrollbar: false,
         shade: 0,
         offset: "l",
 skin: "layui-layer-win10",

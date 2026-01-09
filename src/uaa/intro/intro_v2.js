@@ -34,6 +34,7 @@ async function createDownloadWindow(divId) {
             type: 1,
             title: '下载窗口',
             shadeClose: false,
+            scrollbar: false,
             shade: 0,
             offset: 'l',
             // anim: 'slideRight',
