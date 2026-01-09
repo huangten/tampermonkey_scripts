@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.23:46:02
+// @version    2026-01-09.23:51:41
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -302,6 +302,8 @@ async start() {
       console.log("已下载:", downloaded.map((t) => t));
       console.log("未下载:", failed.map((t) => t));
       console.log(document.getElementsByTagName("iframe"));
+      layui.layer.close(downloadWindowId);
+      downloadWindowId = 0;
       layui.layer.alert("下载完毕", { icon: 1, shadeClose: true });
     },
     onCatch: (err) => {

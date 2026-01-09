@@ -18,12 +18,13 @@ downloader.setConfig({
         console.log("未下载:", failed.map(t => t));
 
         console.log(document.getElementsByTagName('iframe'));
-
+        layui.layer.close(downloadWindowId)
+        downloadWindowId = 0;
         // ✅ 全部完成 — 销毁 iframe
         layui.layer.alert('下载完毕', {icon: 1, shadeClose: true});
     },
     onCatch: (err) => {
-         layui.layer.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
+        layui.layer.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
     }
 });
 
