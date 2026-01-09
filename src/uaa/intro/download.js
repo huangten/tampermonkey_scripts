@@ -146,7 +146,7 @@ export async function downloadChapterV2(task) {
     // 保存内容
     const el = iframe.contentDocument;
     const success = saveContentToLocal(el);
-    await sleep(300);
+    await sleep(500);
     // 动画滑出 + 清空 iframe
     slideOutIframe(iframeId);
     return success;
@@ -208,6 +208,13 @@ function slideInIframe() {
     iframe.style.transform = "translateX(0)";
 }
 
+function updateIframeHeader(title) {
+    const header = document.getElementById("__iframe_header__");
+    if (header) {
+        header.innerText = title || "加载中...";
+    }
+}
+
 function slideOutIframe(iframeId) {
     const container = document.getElementById("__uaa_iframe_container__");
     const iframe = document.getElementById(iframeId);
@@ -231,13 +238,6 @@ function slideOutIframe(iframeId) {
             console.error("清空 iframe 失败", e);
         }
     }, 100); // 等待动画完成 0.5s
-}
-
-function updateIframeHeader(title) {
-    const header = document.getElementById("__iframe_header__");
-    if (header) {
-        header.innerText = title || "加载中...";
-    }
 }
 
 function destroyIframe(iframeId) {

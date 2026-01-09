@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.20:29:16
+// @version    2026-01-09.21:36:20
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -287,7 +287,7 @@ async start() {
     });
     const el = iframe.contentDocument;
     const success = saveContentToLocal(el);
-    await sleep(300);
+    await sleep(500);
     slideOutIframe(iframeId);
     return success;
   }
@@ -339,6 +339,12 @@ async start() {
     const iframe = document.getElementById("__uaa_iframe_container__");
     iframe.style.transform = "translateX(0)";
   }
+  function updateIframeHeader(title) {
+    const header = document.getElementById("__iframe_header__");
+    if (header) {
+      header.innerText = title || "加载中...";
+    }
+  }
   function slideOutIframe(iframeId) {
     const container = document.getElementById("__uaa_iframe_container__");
     const iframe = document.getElementById(iframeId);
@@ -358,12 +364,6 @@ async start() {
         console.error("清空 iframe 失败", e);
       }
     }, 100);
-  }
-  function updateIframeHeader(title) {
-    const header = document.getElementById("__iframe_header__");
-    if (header) {
-      header.innerText = title || "加载中...";
-    }
   }
   function destroyIframe(iframeId) {
     let iframe = document.getElementById(iframeId);
@@ -387,7 +387,7 @@ async start() {
   }
   const downloader = new Downloader();
   downloader.setConfig({
-    interval: 2500,
+    interval: 2e3,
     downloadHandler: downloadChapterV2,
     onTaskComplete: (task, success) => {
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);

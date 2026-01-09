@@ -5,7 +5,7 @@ import {saveContentToLocal} from "../common.js";
 const downloader = new Downloader();
 
 downloader.setConfig({
-    interval: 2500,
+    interval: 2000,
     downloadHandler: downloadChapterV2,
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
