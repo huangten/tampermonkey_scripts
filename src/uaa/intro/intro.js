@@ -39,7 +39,7 @@ function run() {
                     style: fixbarStyle
                 }],
             default: false,
-            css: {bottom: "10%",right: 0},
+            css: {bottom: "10%", right: 0},
             margin: 0,
             // 点击事件
             click: function (type) {
@@ -76,6 +76,15 @@ function run() {
 function ListenMessage(e) {
     if (e.data.handle === 'lhd_close') {
         layui.layer.closeAll('iframe', () => {
+
+            let iframeDocument = layui.layer.getChildFrame('iframe', e.data.layer_index);
+            // console.log(iframeDocument)
+            iframeDocument.attr('src', 'about:blank');
+            iframeDocument.remove();
+            iframeDocument.prevObject.attr('src', 'about:blank');
+            iframeDocument.prevObject.remove();
+            iframeDocument = null;
+
             let iframes = document.getElementsByTagName("iframe");
             for (let index = 0; index < iframes.length; index++) {
                 const el = iframes[index];

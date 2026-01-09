@@ -1,12 +1,12 @@
 import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
-import {Downloader} from "./download.js";
+import {downloadChapterV2, Downloader} from "./download.js";
 import {saveContentToLocal} from "../common.js";
 
 const downloader = new Downloader();
 
 downloader.setConfig({
-    interval: 2500,
-    downloadHandler: downloadChapter,
+    interval: 1500,
+    downloadHandler: downloadChapterV2,
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
@@ -25,7 +25,7 @@ downloader.setConfig({
 
 async function downloadChapter(task) {
     // 等待页面加载
-    const doc = await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
 
         layui.layer.open({
@@ -42,10 +42,34 @@ async function downloadChapter(task) {
             success: async function (layero, index, that) {
                 let iframeDocument = layui.layer.getChildFrame('html', index);
                 let iDocument = iframeDocument[0];
+                //
+                // console.log('=====================',iframeDocument);
+                // console.log('+++++++++++++++++++',layui.layer.getChildFrame('iframe', index));
+
+
                 try {
                     await waitForElement(iDocument, '.line', 1000 * 25 * 60);
+                    const success = saveContentToLocal(iDocument);
+
+                    await sleep(500);
+                    layui.layer.closeAll('iframe', () => {
+
+                        const iframes = layero.find('iframe')[0];
+                        if (iframes) {
+                            for (let i = 0; i < iframes.length; i++) {
+                                if (iframes[i] instanceof HTMLIFrameElement) {
+                                    iframes[i].attributes('src', 'about:blank');
+                                    iframes[i].contentWindow.document.write(''); // 写入空内容
+                                    iframes[i].contentWindow.document.close(); // 关闭文档流，帮助垃圾回收
+                                    iframes[i].remove();
+                                }
+                            }
+                        }
+                    });
+
+
                     clearTimeout(timeout);
-                    resolve(iDocument);
+                    resolve(success);
                 } catch (err) {
                     clearTimeout(timeout);
                     reject(new Error("正文元素未找到"));
@@ -53,11 +77,6 @@ async function downloadChapter(task) {
             }
         });
     });
-
-    const success = saveContentToLocal(doc);
-    await sleep(500);
-    layui.layer.closeAll('iframe');
-    return success;
 }
 
 init().then(() => {

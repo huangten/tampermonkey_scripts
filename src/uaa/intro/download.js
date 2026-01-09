@@ -1,4 +1,5 @@
-import {sleep} from "../../common/common.js";
+import {sleep, waitForElement} from "../../common/common.js";
+import {saveContentToLocal} from "../common.js";
 
 export class Downloader {
     constructor() {
@@ -122,7 +123,7 @@ export class Downloader {
 
 
 
-async function downloadChapterV2(task) {
+export async function downloadChapterV2(task) {
     let iframeId = "__uaa_iframe__" + crypto.randomUUID();
     const iframe = ensureIframe(iframeId, task.href);
     updateIframeHeader(task.title);
@@ -226,6 +227,7 @@ function slideOutIframe(iframeId) {
                 iframe.contentDocument.write("");
                 iframe.contentDocument.close();
                 console.log("✅ iframe 已清空为白页");
+                iframe.remove();
             }
         } catch (e) {
             console.error("清空 iframe 失败", e);

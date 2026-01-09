@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-08.22:02:12
+// @version    2026-01-09.19:34:01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -238,6 +238,12 @@ click: function(type) {
   function ListenMessage(e) {
     if (e.data.handle === "lhd_close") {
       layui.layer.closeAll("iframe", () => {
+        let iframeDocument = layui.layer.getChildFrame("iframe", e.data.layer_index);
+        iframeDocument.attr("src", "about:blank");
+        iframeDocument.remove();
+        iframeDocument.prevObject.attr("src", "about:blank");
+        iframeDocument.prevObject.remove();
+        iframeDocument = null;
         let iframes = document.getElementsByTagName("iframe");
         for (let index = 0; index < iframes.length; index++) {
           const el = iframes[index];
