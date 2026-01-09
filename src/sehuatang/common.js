@@ -1,5 +1,6 @@
 import {copyContext} from "../common/common.js";
 import {saveAs} from "file-saver";
+import {destroyIframe} from "./list/download.js";
 
 
 export function check18R() {
@@ -199,8 +200,38 @@ export function getBtNames(el) {
 export function doBtDownload(el) {
     let attnms = getDownloadBtTags(el);
     for (let index = 0; index < attnms.length; index++) {
-        attnms[index].click();
+        console.log(attnms[index])
+
+        downloadFileByIframe(attnms[index].href, attnms[index].innerText.trim())
+
+        //break
+        //attnms[index].click();
     }
+}
+
+
+function downloadFileByIframe(url, filename) {
+    // 1. 创建 iframe 元素
+    let iframe = document.createElement('iframe');
+    iframe.id = 'downloadFileByIframe'
+    iframe.style.display = 'none'; // 隐藏 iframe
+    document.body.appendChild(iframe); // 添加到 body
+
+    // 2. 创建 a 标签
+    let link = document.createElement('a');
+    link.href = url;
+    link.download = filename || url.substring(url.lastIndexOf('/') + 1); // 设置文件名
+
+    // 3. 模拟点击 (通常在 iframe 内部或直接触发)
+    // 可以在 iframe 的 onload事件中触发，但直接触发更简洁
+    link.click();
+
+    // 4. (可选) 下载完成清理
+    // 也可以用 setTimeout 延迟移除，确保下载已开始
+    setTimeout(() => {
+        document.body.removeChild(iframe);
+        destroyIframe('downloadFileByIframe')
+    }, 100);
 }
 
 export function copyTitleAndDownload(el) {

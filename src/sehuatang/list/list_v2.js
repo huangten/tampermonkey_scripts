@@ -99,9 +99,10 @@ async function downloadV1(task) {
 
     // 保存内容
     const el = iframe.contentDocument;
+
     getInfo(el);
 
-    await sleep(500);
+    await sleep(100);
 
     document.getElementById(divId).removeChild(iframe);
 
