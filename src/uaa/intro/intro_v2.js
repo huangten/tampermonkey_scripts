@@ -7,7 +7,7 @@ let downloadWindowId = 0
 const divId = 'downloadWindowDivId';
 
 downloader.setConfig({
-    interval: 2000,
+    interval: 2500,
     downloadHandler: downloadChapterV1,
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);

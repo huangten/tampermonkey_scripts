@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.23:30:59
+// @version    2026-01-09.23:46:02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -292,7 +292,7 @@ async start() {
   let downloadWindowId = 0;
   const divId = "downloadWindowDivId";
   downloader.setConfig({
-    interval: 2e3,
+    interval: 2500,
     downloadHandler: downloadChapterV1,
     onTaskComplete: (task, success) => {
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
