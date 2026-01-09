@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.00:54:29
+// @version    2026-01-10.01:03:57
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -326,7 +326,6 @@ area: ["75%", "80%"],
         success: function(layero, index, that) {
           layui.element.render("progress", "demo-filter-progress");
           layui.element.progress("demo-filter-progress", "0%");
-          layui.layer.min(index);
           resolve(index);
         }
       });
@@ -352,7 +351,6 @@ area: ["75%", "80%"],
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     document.getElementById(divId).appendChild(iframe);
-    layui.layer.restore(winId);
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
       iframe.onload = async () => {
@@ -372,7 +370,6 @@ area: ["75%", "80%"],
     const success = saveContentToLocal(el);
     await sleep(500);
     document.getElementById(divId).removeChild(iframe);
-    layui.layer.min(winId);
     destroyIframe(IframeId);
     return success;
   }

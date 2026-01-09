@@ -47,7 +47,7 @@ async function createDownloadWindow(divId) {
             success: function (layero, index, that) {
                 layui.element.render('progress', 'demo-filter-progress');
                 layui.element.progress('demo-filter-progress', '0%');
-                layui.layer.min(index);
+                // layui.layer.min(index);
                 resolve(index);
             }
         });
@@ -77,7 +77,7 @@ async function downloadChapterV1(task) {
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     document.getElementById(divId).appendChild(iframe)
-    layui.layer.restore(winId);
+    // layui.layer.restore(winId);
 
     // 等待页面加载
     await new Promise((resolve, reject) => {
@@ -104,7 +104,7 @@ async function downloadChapterV1(task) {
 
     document.getElementById(divId).removeChild(iframe);
 
-    layui.layer.min(winId);
+    // layui.layer.min(winId);
     destroyIframe(IframeId);
     return success;
 }
