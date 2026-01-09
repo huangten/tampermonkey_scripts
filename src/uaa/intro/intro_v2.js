@@ -1,4 +1,4 @@
-import {cleanText, copyContext, init, waitForElement} from "../../common/common.js";
+import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
 import {Downloader} from "./download.js";
 import {saveContentToLocal} from "../common.js";
 
@@ -52,18 +52,11 @@ async function downloadChapter(task) {
                 }
             }
         });
-
     });
 
     const success = saveContentToLocal(doc);
-
-    await new Promise((re, rj) => {
-        setTimeout(() => {
-            layui.layer.closeAll('iframe');
-            return re();
-        }, 300)
-    })
-
+    await sleep(500);
+    layui.layer.closeAll('iframe');
     return success;
 }
 
