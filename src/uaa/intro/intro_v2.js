@@ -61,7 +61,7 @@ async function downloadChapter(task) {
         setTimeout(() => {
             layui.layer.closeAll('iframe');
             return re();
-        }, 100)
+        }, 300)
     })
 
     return success;
