@@ -56,7 +56,14 @@ async function downloadChapter(task) {
     });
 
     const success = saveContentToLocal(doc);
-    layui.layer.closeAll('iframe');
+
+    await new Promise((re, rj) => {
+        setTimeout(() => {
+            layui.layer.closeAll('iframe');
+            return re();
+        }, 100)
+    })
+
     return success;
 }
 

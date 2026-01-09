@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-09.00:41:37
+// @version    2026-01-09.16:21:07
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -311,7 +311,12 @@ area: ["75%", "80%"],
       });
     });
     const success = saveContentToLocal(doc);
-    layui.layer.closeAll("iframe");
+    await new Promise((re, rj) => {
+      setTimeout(() => {
+        layui.layer.closeAll("iframe");
+        return re();
+      }, 100);
+    });
     return success;
   }
   init().then(() => {
