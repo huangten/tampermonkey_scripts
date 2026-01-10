@@ -130,7 +130,9 @@ function run() {
     setTimeout(() => {
         check18R();
     }, 500);
-
+    if (document.location.href === 'https://sehuatang.org/forum.php') {
+        return
+    }
     const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
     layui.use(function () {
         const util = layui.util;

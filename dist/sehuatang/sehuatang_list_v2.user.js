@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.18:26:22
+// @version    2026-01-10.18:48:14
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -481,6 +481,9 @@ area: ["70%", "90%"],
     setTimeout(() => {
       check18R();
     }, 500);
+    if (document.location.href === "https://sehuatang.org/forum.php") {
+      return;
+    }
     const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
     layui.use(function() {
       const util = layui.util;

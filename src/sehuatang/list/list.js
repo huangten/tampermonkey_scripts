@@ -83,6 +83,10 @@ function run() {
         check18R();
     }, 500);
 
+    if (document.location.href === 'https://sehuatang.org/forum.php') {
+        return
+    }
+
     layui.use(function () {
         const util = layui.util;
         // 自定义固定条
@@ -219,9 +223,9 @@ function openMenuPage() {
                                 icon: 'layui-icon-refresh',
                             }],
                         default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
-                        css: {bottom: "5%", right: 10},
+                        css: {bottom: "1%", right: 10},
                         target: '#downloadWindowDivListId', // 插入 fixbar 节点的目标元素选择器
-                        bgcolor: '#ba350f',
+                        // bgcolor: '#ba350f',
                         on: { // 任意事件 --  v2.8.0 新增
                             mouseenter: function (type) {
                                 layui.layer.tips(type, this, {
