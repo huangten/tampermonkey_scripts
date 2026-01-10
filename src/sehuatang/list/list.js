@@ -1,9 +1,73 @@
 import {check18R, getInfo} from "../common.js";
-import {init} from "../../common/common.js";
+import {init, sleep, waitForElement} from "../../common/common.js";
+import {destroyIframe, Downloader} from "./download.js";
 
-let downloadArray = [];
-let timer = 0;
-unsafeWindow.onmessage = ListenMessage;
+
+const downloader = new Downloader();
+let infoWindowIndex = 0
+const downloadWindowDivIntroId = 'downloadWindowDivIntroId';
+
+
+downloader.setConfig({
+    interval: 500,
+    downloadHandler: downloadV1,
+    onTaskComplete: (task, success) => {
+        let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + '%'
+        layui.element.progress('demo-filter-progress', percent);
+        console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: (downloaded, failed) => {
+        console.log("下载结束 ✅");
+        console.log("已下载:", downloaded.map(t => t));
+        console.log("未下载:", failed.map(t => t));
+        // ✅ 全部完成 — 销毁 iframe
+        layui.layer.alert('下载完毕', {icon: 1, shadeClose: true});
+    },
+    onCatch: (err) => {
+        layui.layer.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
+    }
+});
+
+
+async function downloadV1(task) {
+
+    layui.layer.title(task.title, infoWindowIndex);
+    document.getElementById('downloadInfoContentId').href = task.href;
+    document.getElementById('downloadInfoContentId').innerText = task.title;
+    // 创建 iframe
+    const iframe = document.createElement("iframe");
+    const IframeId = "_iframe__" + crypto.randomUUID();
+    iframe.id = IframeId;
+    iframe.src = task.href;
+    iframe.style.display = "block";
+    iframe.style.border = "none";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    document.getElementById(downloadWindowDivIntroId).appendChild(iframe)
+
+    // 等待页面加载
+    await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1000 * 30 * 60);
+        iframe.onload = async () => {
+            try {
+                await waitForElement(iframe.contentDocument, '.plhin', 1000 * 25 * 60);
+                clearTimeout(timeout);
+                resolve();
+            } catch (err) {
+                clearTimeout(timeout);
+                reject(new Error("正文元素未找到"));
+            }
+        };
+    });
+
+    // 保存内容
+    const el = iframe.contentDocument;
+    getInfo(el);
+    await sleep(100);
+    document.getElementById(downloadWindowDivIntroId).removeChild(iframe);
+    destroyIframe(IframeId);
+    return true;
+}
 
 init().then(() => {
     run();
@@ -19,42 +83,21 @@ function run() {
         check18R();
     }, 500);
 
-    const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
     layui.use(function () {
         const util = layui.util;
         // 自定义固定条
         util.fixbar({
             bars: [{
-                type: 'downloadAll',
-                content: '下载全部',
-                style: fixbarStyle
-            }, {
-                type: 'clearDownloadList',
-                content: '清除待下载',
-                style: fixbarStyle
-            }, {
                 type: 'menuList',
-                content: '章节列表',
-                style: fixbarStyle
+                // style: '',
+                icon: 'layui-icon-list'
             }],
             default: false,
-            css: {bottom: "18%", right: 10},
+            // bgcolor:'#f9f5e5',
+            css: {bottom: "20%", right: 10},
             margin: 0,
             // 点击事件
             click: function (type) {
-                if (type === "downloadAll") {
-                    if (downloadArray.length !== 0) {
-                        layui.layer.tips("正在下载中，请等待下载完后再继续", this, {
-                            tips: 4,
-                            fixed: true
-                        });
-                    } else {
-                        downloadAll();
-                    }
-                }
-                if (type === "clearDownloadList") {
-                    downloadArray = [];
-                }
                 if (type === "menuList") {
                     openMenuPage();
                 }
@@ -63,144 +106,163 @@ function run() {
     });
 }
 
-function ListenMessage(e) {
-    if (e.data.handle === 'lhd_close') {
-        layui.layer.closeAll('iframe');
-        if (timer !== 0) {
-            clearTimeout(timer);
-        }
-
-        if (downloadArray.length === 0) {
-            layui.layer.alert('下载完毕', {icon: 1, shadeClose: true}, function (index) {
-                layui.layer.close(index);
-            });
-            return;
-        }
-        timer = setTimeout(() => {
-            doDownload()
-        }, 200);
-    }
-}
-
-function downloadAll() {
-    downloadArray = getMenuArray(getTree())
-    doDownload()
-}
-
-function doDownload() {
-    console.log(downloadArray.length)
-    if (downloadArray.length === 0) {
-        clearTimeout(timer);
-        return;
-    }
-    let menu = downloadArray.shift();
-    layui.layer.open({
-        type: 2,
-        title: menu.sehuatang_type + " " + menu.title,
-        shadeClose: false,
-        shade: 0,
-        offset: 'l',
-        anim: 'slideRight',
-        skin: 'layui-layer-win10', // 加上边框
-        maxmin: true, //开启最大化最小化按钮
-        area: ['70%', '80%'],
-        content: menu.href,
-        success: function (layero, index, that) {
-            let iframeDocument = layui.layer.getChildFrame('html', index);
-            let documentElement = iframeDocument[0];
-            getInfo(documentElement)
-            setTimeout(() => {
-                let msg = {
-                    "handle": "lhd_close",
-                    "layer_index": index
-                }
-                unsafeWindow.postMessage(msg);
-            }, 500);
-        }
-    });
-}
-
 function openMenuPage() {
-    layui.layer.open({
+    if (infoWindowIndex !== 0) {
+        layui.layer.restore(infoWindowIndex);
+        return
+    }
+    infoWindowIndex = layui.layer.open({
         type: 1,
-        title: "章节列表",
+        title: "增强面板",
         shadeClose: false,
-        offset: 'r',
+        closeBtn: 0,
         shade: 0,
-        anim: 'slideLeft', // 从右往左
-        area: ['25%', '90%'],
+        area: ['70%', '80%'],
         skin: 'layui-layer-win10', // 加上边框
         maxmin: true, //开启最大化最小化按钮
-        content: `<div id='openPage'></div>`,
+        content: '<div id="downloadWindowDivId"></div>',
         success: function (layero, index, that) {
-            console.log(layero, index, that)
-            const util = layui.util;
-            const tree = layui.tree;
-            const layer = layui.layer;
-            // 自定义固定条
-            util.fixbar({
-                bars: [
-                    {
-                        type: 'getCheckedNodeData',
-                        content: '选',
-                    },
-                    {
-                        type: 'clear',
-                        icon: 'layui-icon-refresh',
-                    }],
-                default: true, // 是否显示默认的 bar 列表 --  v2.8.0 新增
-                css: {bottom: "10%", right: 10},
-                target: layero, // 插入 fixbar 节点的目标元素选择器
-                bgcolor: '#ba350f',
-                click: function (type) {
-                    if (type === "getCheckedNodeData") {
-                        treeCheckedDownload()
-                    }
-                    if (type === "clear") {
-                        reloadTree()
+            const tabs = layui.tabs;
+            // 方法渲染
+            tabs.render({
+                elem: '#downloadWindowDivId',
+                id: 'downloadWindowDivTabsId',
+                trigger: 'mouseenter',
+                header: [
+                    {title: '说明信息'}
+                ],
+                body: [
+                    {content: `<div></div>`}
+                ],
+                // index: 1, // 初始选中项
+                // className: 'layui-tabs-card',
+                // closable: true
+                // layui-tabs-item
+            });
+
+            tabs.add('downloadWindowDivTabsId', {
+                title: '下载详情',
+                content: `<div id="${downloadWindowDivIntroId}" style="width: 100%;height: 100%;"></div>`,
+                mode: 'prepend',
+                done: () => {
+                   const tabs = document.getElementsByClassName('layui-tabs-item');
+                    for (let i = 0; i < tabs.length; i++) {
+                        tabs[i].style.height = (window.innerHeight * 0.69) + 'px';
                     }
                 }
             });
 
-            tree.render({
-                elem: '#openPage',
-                data: getTree(),
-                showCheckbox: true,
-                onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
-                id: 'titleList',
-                isJump: false, // 是否允许点击节点时弹出新窗口跳转
-                click: function (obj) {
-                    const data = obj.data; //获取当前点击的节点数据
-                    if (downloadArray.length !== 0) {
-                        layer.msg("正在下载中，请等待下载完后再继续");
-                        return;
-                    }
-                    console.log([data])
-                    downloadArray = getMenuArray([data])
-                    doDownload()
+            tabs.add('downloadWindowDivTabsId', {
+                title: '下载进度',
+                content: '<div id="downloadWindowDivInfoId">' +
+                    '<fieldset class="layui-elem-field">\n' +
+                    '  <legend>当前下载</legend>\n' +
+                    '  <div class="layui-field-box">\n' +
+                    '      <a id="downloadInfoContentId" href="">暂无下载</a>\n' +
+                    '  </div>\n' +
+                    '</fieldset>' +
+
+                    '<fieldset class="layui-elem-field">\n' +
+                    '  <legend>进度条</legend>\n' +
+                    '  <div class="layui-field-box">\n' +
+                    '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">' +
+                    ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
+                    '</div>' +
+                    '  </div>' +
+                    '</fieldset>' +
+
+
+                    '</div>',
+                mode: 'prepend',
+                done: () => {
+                    layui.element.render('progress', 'demo-filter-progress');
+                    layui.element.progress('demo-filter-progress', '0%');
                 }
             });
 
+            tabs.add('downloadWindowDivTabsId', {
+                title: '番号列表',
+                content: '<div id="downloadWindowDivListId">' +
+                    '<div id="downloadWindowDivListTreeId"></div>' +
+                    '</div>',
+                mode: 'prepend',
+                done: () => {
+                    const util = layui.util;
+                    const tree = layui.tree;
+                    tree.render({
+                        elem: '#downloadWindowDivListTreeId',
+                        data: getTree(),
+                        showCheckbox: true,
+                        onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
+                        id: 'titleList',
+                        isJump: false, // 是否允许点击节点时弹出新窗口跳转
+                        click: function (obj) {
+                            const data = obj.data; //获取当前点击的节点数据
+                            getMenuArray([data]).forEach(d => downloader.add(d))
+                            downloader.start().then();
+                        }
+                    });
+
+                    // 自定义固定条
+                    util.fixbar({
+                        bars: [
+                            {
+                                type: 'downloadAll',
+                                content: '全',
+                            },
+                            {
+                                type: 'getCheckedNodeData',
+                                content: '选',
+                            },
+                            {
+                                type: 'clear',
+                                icon: 'layui-icon-refresh',
+                            }],
+                        default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
+                        css: {bottom: "5%", right: 10},
+                        target: '#downloadWindowDivListId', // 插入 fixbar 节点的目标元素选择器
+                        bgcolor: '#ba350f',
+                        on: { // 任意事件 --  v2.8.0 新增
+                            mouseenter: function (type) {
+                                layui.layer.tips(type, this, {
+                                    tips: 4,
+                                    fixed: true
+                                });
+                            },
+                            mouseleave: function (type) {
+                                layui.layer.closeAll('tips');
+                            }
+                        },
+
+                        click: function (type) {
+                            if (type === "downloadAll") {
+                                getMenuArray(getTree()).forEach(d => downloader.add(d))
+                                downloader.start().then();
+                                return
+                            }
+                            if (type === "getCheckedNodeData") {
+                                treeCheckedDownload()
+                            }
+                            if (type === "clear") {
+                                reloadTree()
+                            }
+                        }
+                    });
+                }
+            })
             function treeCheckedDownload() {
-                let checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
-
+                let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
                 console.log(checkedData[0]);
                 if (checkedData.length === 0) {
                     return;
                 }
-                if (downloadArray.length !== 0) {
-                    layer.msg("正在下载中，请等待下载完后再继续");
-                    return;
-                }
-                downloadArray = getMenuArray(checkedData)
-                doDownload()
+                getMenuArray(checkedData).forEach(d => downloader.add(d))
+                downloader.start().then();
             }
 
             function reloadTree() {
-                tree.reload('titleList', { // options
-                    data: getTree()
-                }); // 重载实例
-                downloadArray = [];
+                layui.tree.reload('titleList', {data: getTree()}); // 重载实例
+                downloader.clear();
             }
         }
     });

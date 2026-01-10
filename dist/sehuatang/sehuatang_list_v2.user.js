@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:14:23
+// @version    2026-01-10.18:26:22
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -172,8 +172,6 @@ async start() {
         try {
           iframe.onload = null;
           iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
           iframe.src = "about:blank";
           await new Promise((r) => setTimeout(r, 0));
           iframe.remove();
@@ -182,7 +180,7 @@ async start() {
           console.error("清空 iframe 失败", e);
         }
         console.log("✅ iframe 已完全清理并销毁");
-      }, 100);
+      }, 0);
     }
   }
   function check18R() {
@@ -417,9 +415,10 @@ async start() {
         skin: "layui-layer-win10",
 maxmin: true,
 area: ["70%", "90%"],
-        content: `<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">
-  <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>
-</div><div id="${divId2}" style="width: 100%;height: 100%;"></div>`,
+        content: `<fieldset class="layui-elem-field">
+  <legend>进度条</legend>
+  <div class="layui-field-box">
+<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset><div id="${divId2}" style="width: 100%;height: 100%;"></div>`,
         success: function(layero, index, that) {
           layui.element.render("progress", "demo-filter-progress");
           layui.element.progress("demo-filter-progress", "0%");
@@ -445,8 +444,10 @@ area: ["70%", "90%"],
     const IframeId = "_iframe__" + crypto.randomUUID();
     iframe.id = IframeId;
     iframe.src = task.href;
-    iframe.style.width = "99%";
-    iframe.style.height = "99%";
+    iframe.style.display = "block";
+    iframe.style.border = "none";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
     document.getElementById(divId).appendChild(iframe);
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);

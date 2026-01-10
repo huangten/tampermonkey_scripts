@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:14:27
+// @version    2026-01-10.18:26:26
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -59,11 +59,111 @@
       }
     });
   }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  function waitForElement(doc, selector, timeout = 1e4) {
+    return new Promise((resolve) => {
+      const interval = 100;
+      let elapsed = 0;
+      const checker = setInterval(() => {
+        if (doc.querySelector(selector) || elapsed >= timeout) {
+          clearInterval(checker);
+          resolve();
+        }
+        elapsed += interval;
+      }, interval);
+    });
+  }
   function init() {
     return Promise.all([
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
+  }
+  class Downloader {
+    constructor() {
+      if (Downloader.instance) return Downloader.instance;
+      this.queue = [];
+      this.running = false;
+      this.downloaded = [];
+      this.failed = [];
+      this.pendingSet = new Set();
+      this.doneSet = new Set();
+      this.failedSet = new Set();
+      this.config = {
+        interval: 2e3,
+onTaskComplete: () => {
+        },
+onFinish: () => {
+        },
+onCatch: (err) => {
+        },
+        downloadHandler: null,
+
+retryFailed: false,
+uniqueKey: (task) => task?.href
+};
+      Downloader.instance = this;
+    }
+    static getInstance() {
+      if (!Downloader.instance) Downloader.instance = new Downloader();
+      return Downloader.instance;
+    }
+setConfig(options = {}) {
+      this.config = { ...this.config, ...options };
+    }
+add(task) {
+      const key = this.config.uniqueKey(task);
+      if (!key) return false;
+      if (this.pendingSet.has(key)) return false;
+      if (this.doneSet.has(key)) return false;
+      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
+      task.startTime = new Date();
+      this.queue.push(task);
+      this.pendingSet.add(key);
+      return true;
+    }
+clear() {
+      this.queue = [];
+      this.pendingSet.clear();
+    }
+async start() {
+      if (this.running) return;
+      if (typeof this.config.downloadHandler !== "function") {
+        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
+      }
+      this.running = true;
+      while (this.queue.length > 0) {
+        const task = this.queue.shift();
+        const key = this.config.uniqueKey(task);
+        try {
+          const success = await this.config.downloadHandler(task);
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          if (success) {
+            this.downloaded.push(task);
+            this.doneSet.add(key);
+          } else {
+            this.failed.push(task);
+            this.failedSet.add(key);
+          }
+          this.config.onTaskComplete(task, success);
+        } catch (err) {
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          this.failed.push(task);
+          this.failedSet.add(key);
+          this.config.onTaskComplete(task, false);
+          this.running = false;
+          this.config.onCatch(err);
+          return;
+        }
+        if (this.queue.length > 0) await sleep(this.config.interval);
+      }
+      this.running = false;
+      this.config.onFinish(this.downloaded, this.failed);
+    }
   }
   function destroyIframe(iframeId) {
     let iframe = document.getElementById(iframeId);
@@ -72,8 +172,6 @@
         try {
           iframe.onload = null;
           iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
           iframe.src = "about:blank";
           await new Promise((r) => setTimeout(r, 0));
           iframe.remove();
@@ -82,7 +180,7 @@
           console.error("清空 iframe 失败", e);
         }
         console.log("✅ iframe 已完全清理并销毁");
-      }, 100);
+      }, 0);
     }
   }
   function check18R() {
@@ -285,10 +383,60 @@
   function getPageLink(el) {
     return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
   }
-  var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
-  let downloadArray = [];
-  let timer = 0;
-  _unsafeWindow.onmessage = ListenMessage;
+  const downloader = new Downloader();
+  let infoWindowIndex = 0;
+  const downloadWindowDivIntroId = "downloadWindowDivIntroId";
+  downloader.setConfig({
+    interval: 500,
+    downloadHandler: downloadV1,
+    onTaskComplete: (task, success) => {
+      let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
+      layui.element.progress("demo-filter-progress", percent);
+      console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: (downloaded, failed) => {
+      console.log("下载结束 ✅");
+      console.log("已下载:", downloaded.map((t) => t));
+      console.log("未下载:", failed.map((t) => t));
+      layui.layer.alert("下载完毕", { icon: 1, shadeClose: true });
+    },
+    onCatch: (err) => {
+      layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
+    }
+  });
+  async function downloadV1(task) {
+    layui.layer.title(task.title, infoWindowIndex);
+    document.getElementById("downloadInfoContentId").href = task.href;
+    document.getElementById("downloadInfoContentId").innerText = task.title;
+    const iframe = document.createElement("iframe");
+    const IframeId = "_iframe__" + crypto.randomUUID();
+    iframe.id = IframeId;
+    iframe.src = task.href;
+    iframe.style.display = "block";
+    iframe.style.border = "none";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    document.getElementById(downloadWindowDivIntroId).appendChild(iframe);
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
+      iframe.onload = async () => {
+        try {
+          await waitForElement(iframe.contentDocument, ".plhin", 1e3 * 25 * 60);
+          clearTimeout(timeout);
+          resolve();
+        } catch (err) {
+          clearTimeout(timeout);
+          reject(new Error("正文元素未找到"));
+        }
+      };
+    });
+    const el = iframe.contentDocument;
+    getInfo(el);
+    await sleep(100);
+    document.getElementById(downloadWindowDivIntroId).removeChild(iframe);
+    destroyIframe(IframeId);
+    return true;
+  }
   init().then(() => {
     run();
   });
@@ -301,40 +449,17 @@
     setTimeout(() => {
       check18R();
     }, 500);
-    const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
     layui.use(function() {
       const util = layui.util;
       util.fixbar({
         bars: [{
-          type: "downloadAll",
-          content: "下载全部",
-          style: fixbarStyle
-        }, {
-          type: "clearDownloadList",
-          content: "清除待下载",
-          style: fixbarStyle
-        }, {
           type: "menuList",
-          content: "章节列表",
-          style: fixbarStyle
+icon: "layui-icon-list"
         }],
         default: false,
-        css: { bottom: "18%", right: 10 },
+css: { bottom: "20%", right: 10 },
         margin: 0,
 click: function(type) {
-          if (type === "downloadAll") {
-            if (downloadArray.length !== 0) {
-              layui.layer.tips("正在下载中，请等待下载完后再继续", this, {
-                tips: 4,
-                fixed: true
-              });
-            } else {
-              downloadAll();
-            }
-          }
-          if (type === "clearDownloadList") {
-            downloadArray = [];
-          }
           if (type === "menuList") {
             openMenuPage();
           }
@@ -342,136 +467,135 @@ click: function(type) {
       });
     });
   }
-  function ListenMessage(e) {
-    if (e.data.handle === "lhd_close") {
-      layui.layer.closeAll("iframe");
-      if (timer !== 0) {
-        clearTimeout(timer);
-      }
-      if (downloadArray.length === 0) {
-        layui.layer.alert("下载完毕", { icon: 1, shadeClose: true }, function(index) {
-          layui.layer.close(index);
-        });
-        return;
-      }
-      timer = setTimeout(() => {
-        doDownload();
-      }, 200);
-    }
-  }
-  function downloadAll() {
-    downloadArray = getMenuArray(getTree());
-    doDownload();
-  }
-  function doDownload() {
-    console.log(downloadArray.length);
-    if (downloadArray.length === 0) {
-      clearTimeout(timer);
+  function openMenuPage() {
+    if (infoWindowIndex !== 0) {
+      layui.layer.restore(infoWindowIndex);
       return;
     }
-    let menu = downloadArray.shift();
-    layui.layer.open({
-      type: 2,
-      title: menu.sehuatang_type + " " + menu.title,
-      shadeClose: false,
-      shade: 0,
-      offset: "l",
-      anim: "slideRight",
-      skin: "layui-layer-win10",
-maxmin: true,
-area: ["70%", "80%"],
-      content: menu.href,
-      success: function(layero, index, that) {
-        let iframeDocument = layui.layer.getChildFrame("html", index);
-        let documentElement = iframeDocument[0];
-        getInfo(documentElement);
-        setTimeout(() => {
-          let msg = {
-            "handle": "lhd_close",
-            "layer_index": index
-          };
-          _unsafeWindow.postMessage(msg);
-        }, 500);
-      }
-    });
-  }
-  function openMenuPage() {
-    layui.layer.open({
+    infoWindowIndex = layui.layer.open({
       type: 1,
-      title: "章节列表",
+      title: "增强面板",
       shadeClose: false,
-      offset: "r",
+      closeBtn: 0,
       shade: 0,
-      anim: "slideLeft",
-area: ["25%", "90%"],
+      area: ["70%", "80%"],
       skin: "layui-layer-win10",
 maxmin: true,
-content: `<div id='openPage'></div>`,
+content: '<div id="downloadWindowDivId"></div>',
       success: function(layero, index, that) {
-        console.log(layero, index, that);
-        const util = layui.util;
-        const tree = layui.tree;
-        const layer = layui.layer;
-        util.fixbar({
-          bars: [
-            {
-              type: "getCheckedNodeData",
-              content: "选"
-            },
-            {
-              type: "clear",
-              icon: "layui-icon-refresh"
-            }
+        const tabs = layui.tabs;
+        tabs.render({
+          elem: "#downloadWindowDivId",
+          id: "downloadWindowDivTabsId",
+          trigger: "mouseenter",
+          header: [
+            { title: "说明信息" }
           ],
-          default: true,
-css: { bottom: "10%", right: 10 },
-          target: layero,
-bgcolor: "#ba350f",
-          click: function(type) {
-            if (type === "getCheckedNodeData") {
-              treeCheckedDownload();
-            }
-            if (type === "clear") {
-              reloadTree();
+          body: [
+            { content: `<div></div>` }
+          ]
+
+
+
+});
+        tabs.add("downloadWindowDivTabsId", {
+          title: "下载详情",
+          content: `<div id="${downloadWindowDivIntroId}" style="width: 100%;height: 100%;"></div>`,
+          mode: "prepend",
+          done: () => {
+            const tabs2 = document.getElementsByClassName("layui-tabs-item");
+            for (let i = 0; i < tabs2.length; i++) {
+              tabs2[i].style.height = window.innerHeight * 0.69 + "px";
             }
           }
         });
-        tree.render({
-          elem: "#openPage",
-          data: getTree(),
-          showCheckbox: true,
-          onlyIconControl: true,
+        tabs.add("downloadWindowDivTabsId", {
+          title: "下载进度",
+          content: '<div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div>',
+          mode: "prepend",
+          done: () => {
+            layui.element.render("progress", "demo-filter-progress");
+            layui.element.progress("demo-filter-progress", "0%");
+          }
+        });
+        tabs.add("downloadWindowDivTabsId", {
+          title: "番号列表",
+          content: '<div id="downloadWindowDivListId"><div id="downloadWindowDivListTreeId"></div></div>',
+          mode: "prepend",
+          done: () => {
+            const util = layui.util;
+            const tree = layui.tree;
+            tree.render({
+              elem: "#downloadWindowDivListTreeId",
+              data: getTree(),
+              showCheckbox: true,
+              onlyIconControl: true,
 id: "titleList",
-          isJump: false,
+              isJump: false,
 click: function(obj) {
-            const data = obj.data;
-            if (downloadArray.length !== 0) {
-              layer.msg("正在下载中，请等待下载完后再继续");
-              return;
-            }
-            console.log([data]);
-            downloadArray = getMenuArray([data]);
-            doDownload();
+                const data = obj.data;
+                getMenuArray([data]).forEach((d) => downloader.add(d));
+                downloader.start().then();
+              }
+            });
+            util.fixbar({
+              bars: [
+                {
+                  type: "downloadAll",
+                  content: "全"
+                },
+                {
+                  type: "getCheckedNodeData",
+                  content: "选"
+                },
+                {
+                  type: "clear",
+                  icon: "layui-icon-refresh"
+                }
+              ],
+              default: false,
+css: { bottom: "5%", right: 10 },
+              target: "#downloadWindowDivListId",
+bgcolor: "#ba350f",
+              on: {
+mouseenter: function(type) {
+                  layui.layer.tips(type, this, {
+                    tips: 4,
+                    fixed: true
+                  });
+                },
+                mouseleave: function(type) {
+                  layui.layer.closeAll("tips");
+                }
+              },
+              click: function(type) {
+                if (type === "downloadAll") {
+                  getMenuArray(getTree()).forEach((d) => downloader.add(d));
+                  downloader.start().then();
+                  return;
+                }
+                if (type === "getCheckedNodeData") {
+                  treeCheckedDownload();
+                }
+                if (type === "clear") {
+                  reloadTree();
+                }
+              }
+            });
           }
         });
         function treeCheckedDownload() {
-          let checkedData = tree.getChecked("titleList");
+          let checkedData = layui.tree.getChecked("titleList");
           console.log(checkedData[0]);
           if (checkedData.length === 0) {
             return;
           }
-          if (downloadArray.length !== 0) {
-            layer.msg("正在下载中，请等待下载完后再继续");
-            return;
-          }
-          downloadArray = getMenuArray(checkedData);
-          doDownload();
+          getMenuArray(checkedData).forEach((d) => downloader.add(d));
+          downloader.start().then();
         }
         function reloadTree() {
-          tree.reload("titleList", {
-data: getTree()
-          });
-          downloadArray = [];
+          layui.tree.reload("titleList", { data: getTree() });
+          downloader.clear();
         }
       }
     });

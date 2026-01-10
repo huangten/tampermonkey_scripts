@@ -3,7 +3,6 @@ import {init, sleep, waitForElement} from "../../common/common.js";
 import {destroyIframe, Downloader} from "./download.js";
 
 
-
 const downloader = new Downloader();
 let downloadWindowId = 0
 const divId = 'downloadWindowDivId';
@@ -32,7 +31,6 @@ downloader.setConfig({
 });
 
 
-
 async function createDownloadWindow(divId) {
     return new Promise((resolve, reject) => {
         layui.layer.open({
@@ -44,9 +42,14 @@ async function createDownloadWindow(divId) {
             skin: 'layui-layer-win10', // 加上边框
             maxmin: true, //开启最大化最小化按钮
             area: ['70%', '90%'],
-            content: `<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">
-  <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>
-</div><div id="${divId}" style="width: 100%;height: 100%;"></div>`,
+            content: '<fieldset class="layui-elem-field">\n' +
+                '  <legend>进度条</legend>\n' +
+                '  <div class="layui-field-box">\n' +
+                '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="demo-filter-progress">' +
+                ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
+                '</div>' +
+                '  </div>' +
+                '</fieldset>' + `<div id="${divId}" style="width: 100%;height: 100%;"></div>`,
             success: function (layero, index, that) {
                 layui.element.render('progress', 'demo-filter-progress');
                 layui.element.progress('demo-filter-progress', '0%');
@@ -77,8 +80,10 @@ async function downloadV1(task) {
     const IframeId = "_iframe__" + crypto.randomUUID();
     iframe.id = IframeId
     iframe.src = task.href;
-    iframe.style.width = "99%";
-    iframe.style.height = "99%";
+    iframe.style.display = "block";
+    iframe.style.border = "none";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
     document.getElementById(divId).appendChild(iframe)
     // layui.layer.restore(winId);
 
@@ -235,6 +240,7 @@ function openMenuPage() {
                 downloader.start().then();
 
             }
+
             function reloadTree() {
                 tree.reload('titleList', { // options
                     data: getTree()

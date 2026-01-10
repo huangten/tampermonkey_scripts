@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:14:31
+// @version    2026-01-10.18:26:34
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*
@@ -84,8 +84,6 @@
         try {
           iframe.onload = null;
           iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
           iframe.src = "about:blank";
           await new Promise((r) => setTimeout(r, 0));
           iframe.remove();
@@ -94,7 +92,7 @@
           console.error("清空 iframe 失败", e);
         }
         console.log("✅ iframe 已完全清理并销毁");
-      }, 100);
+      }, 0);
     }
   }
   function check18R() {

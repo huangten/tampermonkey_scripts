@@ -131,8 +131,8 @@ export function destroyIframe(iframeId) {
             try {
                 iframe.onload = null;
                 iframe.onerror = null;
-                iframe.contentDocument.write("");
-                iframe.contentDocument.close();
+                // iframe.contentDocument.write("");
+                // iframe.contentDocument.close();
                 iframe.src = "about:blank";
                 await new Promise(r => setTimeout(r, 0))
                 iframe.remove();
@@ -142,6 +142,6 @@ export function destroyIframe(iframeId) {
             }
 
             console.log("✅ iframe 已完全清理并销毁");
-        }, 100); // 等待动画完成 0.5s
+        }, 0); // 等待动画完成 0.5s
     }
 }
