@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.02:43:19
+// @version    2026-01-10.13:14:23
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -342,7 +342,6 @@ async start() {
   function doBtDownload(el) {
     let attnms = getDownloadBtTags(el);
     for (let index = 0; index < attnms.length; index++) {
-      console.log(attnms[index]);
       downloadFileByIframe(attnms[index].href, attnms[index].innerText.trim());
     }
   }
@@ -356,9 +355,9 @@ async start() {
     link.download = filename || url.substring(url.lastIndexOf("/") + 1);
     link.click();
     setTimeout(() => {
-      document.body.removeChild(iframe);
       destroyIframe("downloadFileByIframe");
-    }, 100);
+      document.body.removeChild(iframe);
+    }, 200);
   }
   function getMagnets(el) {
     const magnets = [];

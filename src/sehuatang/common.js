@@ -200,11 +200,7 @@ export function getBtNames(el) {
 export function doBtDownload(el) {
     let attnms = getDownloadBtTags(el);
     for (let index = 0; index < attnms.length; index++) {
-        console.log(attnms[index])
-
         downloadFileByIframe(attnms[index].href, attnms[index].innerText.trim())
-
-        //break
         //attnms[index].click();
     }
 }
@@ -229,9 +225,9 @@ function downloadFileByIframe(url, filename) {
     // 4. (可选) 下载完成清理
     // 也可以用 setTimeout 延迟移除，确保下载已开始
     setTimeout(() => {
-        document.body.removeChild(iframe);
         destroyIframe('downloadFileByIframe')
-    }, 100);
+        document.body.removeChild(iframe);
+    }, 200);
 }
 
 export function copyTitleAndDownload(el) {
