@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.18:26:34
+// @version    2026-01-11.16:02:26
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*
@@ -76,24 +76,6 @@
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
-  }
-  function destroyIframe(iframeId) {
-    let iframe = document.getElementById(iframeId);
-    if (iframe) {
-      setTimeout(async () => {
-        try {
-          iframe.onload = null;
-          iframe.onerror = null;
-          iframe.src = "about:blank";
-          await new Promise((r) => setTimeout(r, 0));
-          iframe.remove();
-          iframe = null;
-        } catch (e) {
-          console.error("清空 iframe 失败", e);
-        }
-        console.log("✅ iframe 已完全清理并销毁");
-      }, 0);
-    }
   }
   function check18R() {
     if (document.getElementsByTagName("head")[0].getElementsByTagName("title")[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
@@ -252,22 +234,14 @@
   function doBtDownload(el) {
     let attnms = getDownloadBtTags(el);
     for (let index = 0; index < attnms.length; index++) {
-      downloadFileByIframe(attnms[index].href, attnms[index].innerText.trim());
+      downloadBTFile(attnms[index].href, attnms[index].innerText.trim());
     }
   }
-  function downloadFileByIframe(url, filename) {
-    let iframe = document.createElement("iframe");
-    iframe.id = "downloadFileByIframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+  function downloadBTFile(url, filename) {
     let link = document.createElement("a");
     link.href = url;
-    link.download = filename || url.substring(url.lastIndexOf("/") + 1);
+    link.innerText = filename;
     link.click();
-    setTimeout(() => {
-      destroyIframe("downloadFileByIframe");
-      document.body.removeChild(iframe);
-    }, 200);
   }
   function copyTitleAndDownload(el) {
     copyContext(getTitleText(el) + "\n").then();

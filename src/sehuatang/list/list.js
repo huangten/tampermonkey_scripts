@@ -1,6 +1,6 @@
 import {check18R, getInfo} from "../common.js";
 import {init, sleep, waitForElement} from "../../common/common.js";
-import {destroyIframe, Downloader} from "./download.js";
+import {destroyIframeAsync, Downloader} from "./download.js";
 
 
 const downloader = new Downloader();
@@ -12,7 +12,11 @@ downloader.setConfig({
     interval: 500,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
-        let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + '%'
+        let percent = (
+            (downloader.doneSet.size + downloader.failedSet.size)
+            /
+            (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100
+        ).toFixed(2) + '%'
         layui.element.progress('demo-filter-progress', percent);
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
@@ -36,7 +40,7 @@ async function downloadV1(task) {
     document.getElementById('downloadInfoContentId').innerText = task.title;
     // 创建 iframe
     const iframe = document.createElement("iframe");
-    const IframeId = "_iframe__" + crypto.randomUUID();
+    const IframeId = "_iframe_" + crypto.randomUUID();
     iframe.id = IframeId;
     iframe.src = task.href;
     iframe.style.display = "block";
@@ -60,12 +64,9 @@ async function downloadV1(task) {
         };
     });
 
-    // 保存内容
-    const el = iframe.contentDocument;
-    getInfo(el);
+    getInfo(iframe.contentDocument);
     await sleep(100);
-    document.getElementById(downloadWindowDivIntroId).removeChild(iframe);
-    destroyIframe(IframeId);
+    await destroyIframeAsync(IframeId);
     return true;
 }
 
@@ -131,7 +132,7 @@ function openMenuPage() {
             tabs.render({
                 elem: '#downloadWindowDivId',
                 id: 'downloadWindowDivTabsId',
-                trigger: 'mouseenter',
+                // trigger: 'mouseenter',
                 header: [
                     {title: '说明信息'}
                 ],
@@ -149,7 +150,7 @@ function openMenuPage() {
                 content: `<div id="${downloadWindowDivIntroId}" style="width: 100%;height: 100%;"></div>`,
                 mode: 'prepend',
                 done: () => {
-                   const tabs = document.getElementsByClassName('layui-tabs-item');
+                    const tabs = document.getElementsByClassName('layui-tabs-item');
                     for (let i = 0; i < tabs.length; i++) {
                         tabs[i].style.height = (window.innerHeight * 0.69) + 'px';
                     }
@@ -165,7 +166,6 @@ function openMenuPage() {
                     '      <a id="downloadInfoContentId" href="">暂无下载</a>\n' +
                     '  </div>\n' +
                     '</fieldset>' +
-
                     '<fieldset class="layui-elem-field">\n' +
                     '  <legend>进度条</legend>\n' +
                     '  <div class="layui-field-box">\n' +
@@ -174,8 +174,6 @@ function openMenuPage() {
                     '</div>' +
                     '  </div>' +
                     '</fieldset>' +
-
-
                     '</div>',
                 mode: 'prepend',
                 done: () => {
@@ -254,6 +252,7 @@ function openMenuPage() {
                     });
                 }
             })
+
             function treeCheckedDownload() {
                 let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
                 console.log(checkedData[0]);

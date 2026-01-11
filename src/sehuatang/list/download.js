@@ -122,26 +122,23 @@ export class Downloader {
     }
 }
 
-
-
-export function destroyIframe(iframeId) {
+export async function destroyIframeAsync(iframeId) {
     let iframe = document.getElementById(iframeId);
     if (iframe) {
-        setTimeout(async () => {
-            try {
+        try {
+            if (iframe) {
                 iframe.onload = null;
                 iframe.onerror = null;
-                // iframe.contentDocument.write("");
-                // iframe.contentDocument.close();
+                iframe.contentDocument.write("");
+                iframe.contentDocument.close();
                 iframe.src = "about:blank";
-                await new Promise(r => setTimeout(r, 0))
+                await sleep(0);
                 iframe.remove();
                 iframe = null;
-            } catch (e) {
-                console.error("清空 iframe 失败", e);
             }
-
-            console.log("✅ iframe 已完全清理并销毁");
-        }, 0); // 等待动画完成 0.5s
+        } catch (e) {
+            console.error("清空 iframe 失败", e);
+        }
+        console.log("✅ iframe 已完全清理并销毁");
     }
 }

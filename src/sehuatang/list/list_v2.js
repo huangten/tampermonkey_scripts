@@ -1,6 +1,6 @@
 import {check18R, getInfo} from "../common.js";
 import {init, sleep, waitForElement} from "../../common/common.js";
-import {destroyIframe, Downloader} from "./download.js";
+import {destroyIframeAsync, Downloader} from "./download.js";
 
 
 const downloader = new Downloader();
@@ -12,6 +12,8 @@ downloader.setConfig({
     interval: 500,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
+        let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + '%'
+        layui.element.progress('demo-filter-progress', percent);
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: (downloaded, failed) => {
@@ -70,10 +72,6 @@ async function ensureDownloadWindow(divId = 'downloadWindowDivId') {
 
 async function downloadV1(task) {
     const winId = await ensureDownloadWindow(divId);
-    let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + '%'
-    console.log(percent)
-    layui.element.progress('demo-filter-progress', percent);
-
     layui.layer.title(task.title, winId)
     // 创建 iframe
     const iframe = document.createElement("iframe");
@@ -85,7 +83,6 @@ async function downloadV1(task) {
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     document.getElementById(divId).appendChild(iframe)
-    // layui.layer.restore(winId);
 
     // 等待页面加载
     await new Promise((resolve, reject) => {
@@ -101,18 +98,9 @@ async function downloadV1(task) {
             }
         };
     });
-
-    // 保存内容
-    const el = iframe.contentDocument;
-
-    getInfo(el);
-
+    getInfo(iframe.contentDocument);
     await sleep(100);
-
-    document.getElementById(divId).removeChild(iframe);
-
-    // layui.layer.min(winId);
-    destroyIframe(IframeId);
+    await destroyIframeAsync(IframeId);
     return true;
 }
 

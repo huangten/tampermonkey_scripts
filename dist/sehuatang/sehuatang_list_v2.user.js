@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.18:48:14
+// @version    2026-01-11.16:02:18
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -80,108 +80,6 @@
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
-  }
-  class Downloader {
-    constructor() {
-      if (Downloader.instance) return Downloader.instance;
-      this.queue = [];
-      this.running = false;
-      this.downloaded = [];
-      this.failed = [];
-      this.pendingSet = new Set();
-      this.doneSet = new Set();
-      this.failedSet = new Set();
-      this.config = {
-        interval: 2e3,
-onTaskComplete: () => {
-        },
-onFinish: () => {
-        },
-onCatch: (err) => {
-        },
-        downloadHandler: null,
-
-retryFailed: false,
-uniqueKey: (task) => task?.href
-};
-      Downloader.instance = this;
-    }
-    static getInstance() {
-      if (!Downloader.instance) Downloader.instance = new Downloader();
-      return Downloader.instance;
-    }
-setConfig(options = {}) {
-      this.config = { ...this.config, ...options };
-    }
-add(task) {
-      const key = this.config.uniqueKey(task);
-      if (!key) return false;
-      if (this.pendingSet.has(key)) return false;
-      if (this.doneSet.has(key)) return false;
-      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
-      task.startTime = new Date();
-      this.queue.push(task);
-      this.pendingSet.add(key);
-      return true;
-    }
-clear() {
-      this.queue = [];
-      this.pendingSet.clear();
-    }
-async start() {
-      if (this.running) return;
-      if (typeof this.config.downloadHandler !== "function") {
-        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
-      }
-      this.running = true;
-      while (this.queue.length > 0) {
-        const task = this.queue.shift();
-        const key = this.config.uniqueKey(task);
-        try {
-          const success = await this.config.downloadHandler(task);
-          task.endTime = new Date();
-          this.pendingSet.delete(key);
-          if (success) {
-            this.downloaded.push(task);
-            this.doneSet.add(key);
-          } else {
-            this.failed.push(task);
-            this.failedSet.add(key);
-          }
-          this.config.onTaskComplete(task, success);
-        } catch (err) {
-          task.endTime = new Date();
-          this.pendingSet.delete(key);
-          this.failed.push(task);
-          this.failedSet.add(key);
-          this.config.onTaskComplete(task, false);
-          this.running = false;
-          this.config.onCatch(err);
-          return;
-        }
-        if (this.queue.length > 0) await sleep(this.config.interval);
-      }
-      this.running = false;
-      this.config.onFinish(this.downloaded, this.failed);
-    }
-  }
-  function destroyIframe(iframeId) {
-    let iframe = document.getElementById(iframeId);
-    if (iframe) {
-      setTimeout(async () => {
-        try {
-          iframe.onload = null;
-          iframe.onerror = null;
-          iframe.src = "about:blank";
-          await new Promise((r) => setTimeout(r, 0));
-          iframe.remove();
-          iframe = null;
-        } catch (e) {
-          console.error("清空 iframe 失败", e);
-        }
-        console.log("✅ iframe 已完全清理并销毁");
-      }, 0);
-    }
   }
   function check18R() {
     if (document.getElementsByTagName("head")[0].getElementsByTagName("title")[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
@@ -340,22 +238,14 @@ async start() {
   function doBtDownload(el) {
     let attnms = getDownloadBtTags(el);
     for (let index = 0; index < attnms.length; index++) {
-      downloadFileByIframe(attnms[index].href, attnms[index].innerText.trim());
+      downloadBTFile(attnms[index].href, attnms[index].innerText.trim());
     }
   }
-  function downloadFileByIframe(url, filename) {
-    let iframe = document.createElement("iframe");
-    iframe.id = "downloadFileByIframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+  function downloadBTFile(url, filename) {
     let link = document.createElement("a");
     link.href = url;
-    link.download = filename || url.substring(url.lastIndexOf("/") + 1);
+    link.innerText = filename;
     link.click();
-    setTimeout(() => {
-      destroyIframe("downloadFileByIframe");
-      document.body.removeChild(iframe);
-    }, 200);
   }
   function getMagnets(el) {
     const magnets = [];
@@ -383,6 +273,110 @@ async start() {
   function getPageLink(el) {
     return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
   }
+  class Downloader {
+    constructor() {
+      if (Downloader.instance) return Downloader.instance;
+      this.queue = [];
+      this.running = false;
+      this.downloaded = [];
+      this.failed = [];
+      this.pendingSet = new Set();
+      this.doneSet = new Set();
+      this.failedSet = new Set();
+      this.config = {
+        interval: 2e3,
+onTaskComplete: () => {
+        },
+onFinish: () => {
+        },
+onCatch: (err) => {
+        },
+        downloadHandler: null,
+
+retryFailed: false,
+uniqueKey: (task) => task?.href
+};
+      Downloader.instance = this;
+    }
+    static getInstance() {
+      if (!Downloader.instance) Downloader.instance = new Downloader();
+      return Downloader.instance;
+    }
+setConfig(options = {}) {
+      this.config = { ...this.config, ...options };
+    }
+add(task) {
+      const key = this.config.uniqueKey(task);
+      if (!key) return false;
+      if (this.pendingSet.has(key)) return false;
+      if (this.doneSet.has(key)) return false;
+      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
+      task.startTime = new Date();
+      this.queue.push(task);
+      this.pendingSet.add(key);
+      return true;
+    }
+clear() {
+      this.queue = [];
+      this.pendingSet.clear();
+    }
+async start() {
+      if (this.running) return;
+      if (typeof this.config.downloadHandler !== "function") {
+        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
+      }
+      this.running = true;
+      while (this.queue.length > 0) {
+        const task = this.queue.shift();
+        const key = this.config.uniqueKey(task);
+        try {
+          const success = await this.config.downloadHandler(task);
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          if (success) {
+            this.downloaded.push(task);
+            this.doneSet.add(key);
+          } else {
+            this.failed.push(task);
+            this.failedSet.add(key);
+          }
+          this.config.onTaskComplete(task, success);
+        } catch (err) {
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          this.failed.push(task);
+          this.failedSet.add(key);
+          this.config.onTaskComplete(task, false);
+          this.running = false;
+          this.config.onCatch(err);
+          return;
+        }
+        if (this.queue.length > 0) await sleep(this.config.interval);
+      }
+      this.running = false;
+      this.config.onFinish(this.downloaded, this.failed);
+    }
+  }
+  async function destroyIframeAsync(iframeId) {
+    let iframe = document.getElementById(iframeId);
+    if (iframe) {
+      try {
+        if (iframe) {
+          iframe.onload = null;
+          iframe.onerror = null;
+          iframe.contentDocument.write("");
+          iframe.contentDocument.close();
+          iframe.src = "about:blank";
+          await sleep(0);
+          iframe.remove();
+          iframe = null;
+        }
+      } catch (e) {
+        console.error("清空 iframe 失败", e);
+      }
+      console.log("✅ iframe 已完全清理并销毁");
+    }
+  }
   const downloader = new Downloader();
   let downloadWindowId = 0;
   const divId = "downloadWindowDivId";
@@ -390,6 +384,8 @@ async start() {
     interval: 500,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
+      let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
+      layui.element.progress("demo-filter-progress", percent);
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: (downloaded, failed) => {
@@ -436,9 +432,6 @@ area: ["70%", "90%"],
   }
   async function downloadV1(task) {
     const winId = await ensureDownloadWindow(divId);
-    let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
-    console.log(percent);
-    layui.element.progress("demo-filter-progress", percent);
     layui.layer.title(task.title, winId);
     const iframe = document.createElement("iframe");
     const IframeId = "_iframe__" + crypto.randomUUID();
@@ -462,11 +455,9 @@ area: ["70%", "90%"],
         }
       };
     });
-    const el = iframe.contentDocument;
-    getInfo(el);
+    getInfo(iframe.contentDocument);
     await sleep(100);
-    document.getElementById(divId).removeChild(iframe);
-    destroyIframe(IframeId);
+    await destroyIframeAsync(IframeId);
     return true;
   }
   init().then(() => {
