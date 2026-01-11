@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.22:03:21
+// @version    2026-01-11.23:09:49
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -490,7 +490,7 @@ mouseenter: function(type) {
               reloadTree();
             }
             function treeCheckedDownload() {
-              let checkedData = tree.getChecked("title");
+              let checkedData = tree.getChecked("titleList");
               if (checkedData.length === 0) {
                 layui.layer.msg("未选中任何数据");
                 return;
@@ -501,7 +501,7 @@ mouseenter: function(type) {
               downloader.start().then();
             }
             function reloadTree() {
-              tree.reload("title", { data: getChapterListTree() });
+              tree.reload("titleList", { data: getChapterListTree() });
               downloader.clear();
             }
           }

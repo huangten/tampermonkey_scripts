@@ -263,7 +263,7 @@ function ensureInfoWindowIndex() {
                     }
 
                     function treeCheckedDownload() {
-                        let checkedData = tree.getChecked('title'); // 获取选中节点的数据
+                        let checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
                         if (checkedData.length === 0) {
                             layui.layer.msg("未选中任何数据");
                             return;
@@ -275,7 +275,7 @@ function ensureInfoWindowIndex() {
                     }
 
                     function reloadTree() {
-                        tree.reload('title', {data: getChapterListTree()});
+                        tree.reload('titleList', {data: getChapterListTree()});
                         downloader.clear();
                     }
 
