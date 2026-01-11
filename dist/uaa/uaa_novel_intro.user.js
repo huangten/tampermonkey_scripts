@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:16:06
+// @version    2026-01-11.22:03:21
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -76,13 +76,28 @@
       });
     });
   }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  function waitForElement(doc, selector, timeout = 1e4) {
+    return new Promise((resolve) => {
+      const interval = 100;
+      let elapsed = 0;
+      const checker = setInterval(() => {
+        if (doc.querySelector(selector) || elapsed >= timeout) {
+          clearInterval(checker);
+          resolve();
+        }
+        elapsed += interval;
+      }, interval);
+    });
+  }
   function init() {
     return Promise.all([
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
-  var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
   function saveContentToLocal(el = document) {
     try {
       let title = getTitle(el);
@@ -169,202 +184,361 @@
   function getAuthorInfo(el = document) {
     return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
   }
-  let downloadArray = [];
-  let timer = 0;
-  _unsafeWindow.onmessage = ListenMessage;
+  class Downloader {
+    constructor() {
+      this.queue = [];
+      this.running = false;
+      this.downloaded = [];
+      this.failed = [];
+      this.pendingSet = new Set();
+      this.doneSet = new Set();
+      this.failedSet = new Set();
+      this.config = {
+        interval: 2e3,
+onTaskBefore: () => {
+        },
+onTaskComplete: () => {
+        },
+onFinish: () => {
+        },
+onCatch: (err) => {
+        },
+        downloadHandler: null,
+
+retryFailed: false,
+uniqueKey: (task) => task?.href
+};
+    }
+
+
+
+
+setConfig(options = {}) {
+      this.config = { ...this.config, ...options };
+    }
+add(task) {
+      const key = this.config.uniqueKey(task);
+      if (!key) return false;
+      if (this.pendingSet.has(key)) return false;
+      if (this.doneSet.has(key)) return false;
+      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
+      task.startTime = new Date();
+      this.queue.push(task);
+      this.pendingSet.add(key);
+      return true;
+    }
+clear() {
+      this.queue = [];
+      this.pendingSet.clear();
+    }
+async start() {
+      if (this.running) return;
+      if (typeof this.config.downloadHandler !== "function") {
+        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
+      }
+      this.running = true;
+      while (this.failed.length > 0) {
+        this.queue.push(this.failed.shift());
+      }
+      while (this.queue.length > 0) {
+        const task = this.queue.shift();
+        const key = this.config.uniqueKey(task);
+        try {
+          this.config.onTaskBefore(task);
+          const success = await this.config.downloadHandler(task);
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          if (success) {
+            this.downloaded.push(task);
+            this.doneSet.add(key);
+          } else {
+            this.failed.push(task);
+            this.failedSet.add(key);
+          }
+          this.config.onTaskComplete(task, success);
+        } catch (err) {
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          this.failed.push(task);
+          this.failedSet.add(key);
+          this.config.onTaskComplete(task, false);
+          this.running = false;
+          this.config.onCatch(err);
+          return;
+        }
+        if (this.queue.length > 0) await sleep(this.config.interval);
+      }
+      this.running = false;
+      this.config.onFinish(this.downloaded, this.failed);
+    }
+  }
+  let infoWindowIndex = 0;
+  let downloadInfoWindowIndex = 0;
+  const downloader = new Downloader();
+  const downloadInfoWindowDivId = "downloadInfoWindowDivId";
+  const infoWindowProgressFilter = "infoWindowProgressFilter";
+  downloader.setConfig({
+    interval: 2500,
+    onTaskBefore: (task) => {
+      layui.layer.title(task.title, ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
+      document.getElementById("downloadInfoContentId").innerText = task.title;
+      document.getElementById("downloadInfoContentId").href = task.href;
+    },
+    downloadHandler: async function(task) {
+      let iframe = document.createElement("iframe");
+      iframe.id = "__uaa_iframe__" + crypto.randomUUID();
+      iframe.src = task.href;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      document.getElementById(downloadInfoWindowDivId).appendChild(iframe);
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("页面加载超时")), 1e3 * 30 * 60);
+        iframe.onload = async () => {
+          try {
+            await waitForElement(iframe.contentDocument, ".line", 1e3 * 25 * 60);
+            clearTimeout(timeout);
+            resolve();
+          } catch (err) {
+            clearTimeout(timeout);
+            reject(new Error("正文元素未找到"));
+          }
+        };
+      });
+      const el = iframe.contentDocument;
+      if (getTexts(el).some((s) => s.includes("以下正文内容已隐藏")))
+        throw new Error("章节内容不完整，结束下载");
+      const success = saveContentToLocal(el);
+      await sleep(500);
+      try {
+        iframe.onload = null;
+        iframe.onerror = null;
+        iframe.contentDocument.write("");
+        iframe.contentDocument.close();
+        iframe.src = "about:blank";
+        await sleep(10);
+        iframe.remove();
+        iframe = null;
+      } catch (e) {
+        console.error("清空 iframe 失败", e);
+      }
+      console.log("✅ iframe 已完全清理并销毁");
+      return success;
+    },
+    onTaskComplete: (task, success) => {
+      let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
+      layui.element.progress(infoWindowProgressFilter, percent);
+      console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: async (downloaded, failed) => {
+      console.log("下载结束 ✅");
+      layui.layer.title("下载面板", ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
+      console.log("已下载:", downloaded.map((t) => t));
+      console.log("未下载:", failed.map((t) => t));
+      document.getElementById("downloadInfoContentId").innerText = "下载结束";
+      document.getElementById("downloadInfoContentId").href = "";
+      layui.layer.min(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
+      layui.layer.alert("下载完毕", { icon: 1, shadeClose: true });
+    },
+    onCatch: async (err) => {
+      layui.layer.min(ensureInfoWindowIndex());
+      layui.layer.restore(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
+      layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
+    }
+  });
   init().then(() => {
     run();
   }).catch((e) => {
     console.log(e);
   });
   function run() {
-    const fixbarStyle = "background-color: #ff5555;font-size: 16px;width:100px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
     layui.use(function() {
       const util = layui.util;
       util.fixbar({
         bars: [
           {
-            type: "copyBookName",
-            content: "复制书名",
-            style: fixbarStyle
+            type: "复制书名",
+            icon: "layui-icon-ok-circle"
           },
           {
-            type: "downloadAll",
-            content: "下载全部",
-            style: fixbarStyle
+            type: "下载全部",
+            icon: "layui-icon-down"
           },
           {
-            type: "clearDownloadList",
-            content: "清除待下载",
-            style: fixbarStyle
+            type: "清除未下载",
+            icon: "layui-icon-refresh"
           },
           {
-            type: "menuList",
-            content: "章节列表",
-            style: fixbarStyle
+            type: "章节列表",
+            icon: "layui-icon-list"
           }
         ],
         default: false,
-        css: { bottom: "10%", right: 0 },
+        bgcolor: "#ff5722",
+        css: { bottom: "20%", right: 0 },
         margin: 0,
+        on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
+          }
+        },
 click: function(type) {
-          if (type === "downloadAll") {
-            if (downloadArray.length !== 0) {
-              layui.layer.tips("正在下载中，请等待下载完后再继续", this, {
-                tips: 4,
-                fixed: true
-              });
-            } else {
-              downloadAll();
-            }
+          if (type === "下载全部") {
+            layui.layer.min(ensureInfoWindowIndex());
+            downloadAll();
             return;
           }
-          if (type === "copyBookName") {
+          if (type === "复制书名") {
             let bookName = document.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText;
             copyContext(bookName).then();
             return;
           }
-          if (type === "clearDownloadList") {
-            downloadArray = [];
+          if (type === "清除未下载") {
+            downloader.clear();
             return;
           }
-          if (type === "menuList") {
-            openChapterMenuPage();
+          if (type === "章节列表") {
+            openBookChapterListPage().then();
           }
         }
       });
     });
   }
-  function ListenMessage(e) {
-    if (e.data.handle === "lhd_close") {
-      layui.layer.closeAll("iframe", () => {
-        let iframeDocument = layui.layer.getChildFrame("iframe", e.data.layer_index);
-        iframeDocument.attr("src", "about:blank");
-        iframeDocument.remove();
-        iframeDocument.prevObject.attr("src", "about:blank");
-        iframeDocument.prevObject.remove();
-        iframeDocument = null;
-        let iframes = document.getElementsByTagName("iframe");
-        for (let index = 0; index < iframes.length; index++) {
-          const el = iframes[index];
-          el.src = "about:blank";
-          if (el.contentWindow) {
-            setTimeout((el2) => cycleClear(el2), 100);
-          }
-        }
-      });
-      if (timer !== 0) {
-        clearTimeout(timer);
-      }
-      if (downloadArray.length === 0) {
-        layui.layer.alert("下载完毕", { icon: 1, shadeClose: true }, function(index) {
-          layui.layer.close(index);
-        });
-        return;
-      }
-      timer = setTimeout(() => {
-        doDownload();
-      }, 1e3 * 2);
+  function ensureInfoWindowIndex() {
+    if (infoWindowIndex !== 0) {
+      return infoWindowIndex;
     }
-  }
-  function cycleClear(el) {
-    try {
-      if (el) {
-        el.contentDocument.write("");
-        el.contentWindow.document.write("");
-        el.contentWindow.close();
-        el.parentNode.removeChild(el);
-      }
-    } catch (e) {
-    }
-  }
-  function downloadAll() {
-    downloadArray = getMenuArray(getMenuTree());
-    doDownload();
-  }
-  function openChapterMenuPage() {
-    layui.layer.open({
-      type: 1,
-      title: "章节列表",
+    infoWindowIndex = layui.layer.tab({
       shadeClose: false,
-      offset: "r",
+      closeBtn: 0,
       shade: 0,
-      anim: "slideLeft",
-area: ["20%", "80%"],
-      skin: "layui-layer-win10",
-maxmin: true,
-content: `<div id='openPage'></div>`,
+      maxmin: true,
+area: ["60%", "80%"],
+      tab: [
+        {
+          title: "章节列表",
+          content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivListId"><div id="downloadWindowDivListTreeId"></div></div></div>'
+        },
+        {
+          title: "下载进度",
+          content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + infoWindowProgressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>'
+        }
+      ],
       success: function(layero, index, that) {
-        const tree = layui.tree;
-        const layer = layui.layer;
+        layui.element.render("progress", infoWindowProgressFilter);
+        layui.element.progress(infoWindowProgressFilter, "0%");
         const util = layui.util;
+        const tree = layui.tree;
+        tree.render({
+          elem: "#downloadWindowDivListTreeId",
+          data: getChapterListTree(),
+          showCheckbox: true,
+          onlyIconControl: true,
+id: "titleList",
+          isJump: false,
+click: function(obj) {
+            const data = obj.data;
+            doTreeToChapterList([data]).forEach((d) => downloader.add(d));
+            downloader.start().then();
+          }
+        });
         util.fixbar({
           bars: [
             {
-              type: "getCheckedNodeData",
+              type: "下载全部章节",
+              content: "全"
+            },
+            {
+              type: "下载选中章节",
               content: "选"
             },
             {
-              type: "clear",
+              type: "清除未下载",
               icon: "layui-icon-refresh"
             }
           ],
           default: false,
-bgcolor: "#16baaa",
-css: { bottom: "15%", right: 15 },
-          target: layero,
-click: function(type) {
-            if (type === "getCheckedNodeData") {
-              treeCheckedDownload();
-            }
-            if (type === "clear") {
-              reloadTree();
-            }
-          }
-        });
-        function treeCheckedDownload() {
-          let checkedData = tree.getChecked("title");
-          if (checkedData.length === 0) {
-            layer.msg("未选中任何数据");
-            return;
-          }
-          if (downloadArray.length !== 0) {
-            layer.msg("正在下载中，请等待下载完后再继续");
-            return;
-          }
-          downloadArray = getMenuArray(checkedData);
-          doDownload();
-        }
-        function reloadTree() {
-          tree.reload("title", {
-data: getMenuTree()
-          });
-          downloadArray = [];
-        }
-        tree.render({
-          elem: "#openPage",
-          data: getMenuTree(),
-          showCheckbox: true,
-          onlyIconControl: true,
-id: "title",
-          isJump: false,
-click: function(obj) {
-            const data = obj.data;
-            if (downloadArray.length !== 0) {
-              layui.layer.tips("正在下载中，请等待下载完后再继续", obj, {
+css: { bottom: "1%", right: 0 },
+          bgcolor: "#ffb800",
+          target: "#downloadWindowDivListId",
+
+on: {
+mouseenter: function(type) {
+              layui.layer.tips(type, this, {
                 tips: 4,
                 fixed: true
               });
+            },
+            mouseleave: function(type) {
+              layui.layer.closeAll("tips");
+            }
+          },
+          click: function(type) {
+            if (type === "下载全部章节") {
+              downloadAll();
               return;
             }
-            downloadArray = getMenuArray([data]);
-            doDownload();
+            if (type === "下载选中章节") {
+              treeCheckedDownload();
+            }
+            if (type === "清除未下载") {
+              reloadTree();
+            }
+            function treeCheckedDownload() {
+              let checkedData = tree.getChecked("title");
+              if (checkedData.length === 0) {
+                layui.layer.msg("未选中任何数据");
+                return;
+              }
+              doTreeToChapterList(checkedData).forEach((data) => {
+                downloader.add(data);
+              });
+              downloader.start().then();
+            }
+            function reloadTree() {
+              tree.reload("title", { data: getChapterListTree() });
+              downloader.clear();
+            }
           }
         });
       }
     });
+    return infoWindowIndex;
   }
-  function getMenuTree() {
+  function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId2) {
+    if (downloadInfoWindowIndex !== 0) {
+      return downloadInfoWindowIndex;
+    }
+    downloadInfoWindowIndex = layui.layer.open({
+      type: 1,
+      title: "下载面板",
+      shadeClose: false,
+      closeBtn: 0,
+      shade: 0,
+maxmin: true,
+area: ["70%", "80%"],
+      content: `<div id="${downloadInfoWindowDivId2}" style="width: 100%;height: 99%;"></div>`,
+      success: function(layero, index, that) {
+        layui.layer.min(index);
+      }
+    });
+    return downloadInfoWindowIndex;
+  }
+  async function openBookChapterListPage() {
+    ensureInfoWindowIndex();
+  }
+  function downloadAll() {
+    doTreeToChapterList(getChapterListTree()).forEach((data) => {
+      downloader.add(data);
+    });
+    downloader.start().then();
+  }
+  function getChapterListTree() {
     let menus = [];
     let lis = document.querySelectorAll(".catalog_ul > li");
     for (let index = 0; index < lis.length; index++) {
@@ -410,7 +584,7 @@ click: function(obj) {
     }
     return menus;
   }
-  function getMenuArray(trees) {
+  function doTreeToChapterList(trees) {
     let menus = [];
     for (let index = 0; index < trees.length; index++) {
       if (trees[index].children.length === 0) {
@@ -431,35 +605,6 @@ click: function(obj) {
       }
     }
     return menus;
-  }
-  function doDownload() {
-    if (downloadArray.length === 0) {
-      clearTimeout(timer);
-      return;
-    }
-    let menu = downloadArray.shift();
-    layui.layer.open({
-      type: 2,
-      title: menu.title,
-      shadeClose: false,
-      shade: 0,
-      offset: "l",
-      anim: "slideRight",
-      skin: "layui-layer-win10",
-maxmin: true,
-area: ["75%", "80%"],
-      content: menu.href,
-      success: function(layero, index, that) {
-        let iframeDocument = layui.layer.getChildFrame("html", index);
-        let iDocument = iframeDocument[0];
-        saveContentToLocal(iDocument);
-        let msg = {
-          "handle": "lhd_close",
-          "layer_index": index
-        };
-        _unsafeWindow.postMessage(msg);
-      }
-    });
   }
 
 })(saveAs);

@@ -1,5 +1,5 @@
 import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
-import {destroyIframe, downloadChapterV2, Downloader} from "./download.js";
+import {Downloader} from "./download.js";
 import {getTexts, saveContentToLocal} from "../common.js";
 
 const downloader = new Downloader();
@@ -70,9 +70,8 @@ async function downloadChapterV1(task) {
 
     layui.layer.title(task.title, winId)
     // 创建 iframe
-    const iframe = document.createElement("iframe");
-    const IframeId = "__uaa_iframe__" + crypto.randomUUID();
-    iframe.id = IframeId
+    let iframe = document.createElement("iframe");
+    iframe.id = "__uaa_iframe__" + crypto.randomUUID()
     iframe.src = task.href;
     iframe.style.width = "100%";
     iframe.style.height = "100%";
@@ -99,13 +98,20 @@ async function downloadChapterV1(task) {
     if (getTexts(el).some(s => s.includes('以下正文内容已隐藏')))
         throw new Error("章节内容不完整，结束下载");
     const success = saveContentToLocal(el);
-
     await sleep(500);
-
-    document.getElementById(divId).removeChild(iframe);
-
-    // layui.layer.min(winId);
-    destroyIframe(IframeId);
+    try {
+        iframe.onload = null;
+        iframe.onerror = null;
+        iframe.contentDocument.write("");
+        iframe.contentDocument.close();
+        iframe.src = "about:blank";
+        await sleep(10);
+        iframe.remove();
+        iframe = null;
+    } catch (e) {
+        console.error("清空 iframe 失败", e);
+    }
+    console.log("✅ iframe 已完全清理并销毁");
     return success;
 }
 
