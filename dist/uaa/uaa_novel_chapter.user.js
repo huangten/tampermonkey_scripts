@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:16:08
+// @version    2026-01-12.00:19:58
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/chapter*
@@ -179,96 +179,96 @@
     const texts = getTexts(document);
     const htmlLines = getLines(document);
     document.querySelector("body div.title_box");
-    const fixbarStyle = "background-color: #ff5555;font-size: 14px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
     layui.use(function() {
       const util = layui.util;
       util.fixbar({
         bars: [
           {
-            type: "titleText",
-            content: "获取标题文本",
-            style: fixbarStyle
+            type: "获取标题文本",
+            icon: "layui-icon-fonts-strong"
           },
           {
-            type: "titleHtml",
-            content: "获取标题HTML",
-            style: fixbarStyle
+            type: "获取标题HTML",
+            icon: "layui-icon-fonts-code"
           },
           {
-            type: "contentText",
-            content: "获取内容文本",
-            style: fixbarStyle
+            type: "获取内容文本",
+            icon: "layui-icon-tabs"
           },
           {
-            type: "contentHtml",
-            content: "获取内容HTML",
-            style: fixbarStyle
+            type: "获取内容HTML",
+            icon: "layui-icon-fonts-html"
           },
           {
-            type: "titleAndContentText",
-            content: "获取标题和内容文本",
-            style: fixbarStyle
+            type: "获取标题和内容文本",
+            icon: "layui-icon-align-center"
           },
           {
-            type: "titleAndContentHtml",
-            content: "获取标题和内容HTML",
-            style: fixbarStyle
+            type: "获取标题和内容HTML",
+            icon: "layui-icon-code-circle"
           },
           {
-            type: "saveContentToLocal",
-            content: "保存内容到本地",
-            style: fixbarStyle
+            type: "保存内容到本地",
+            icon: "layui-icon-download-circle"
           },
           {
-            type: "prev",
-            content: "上一章",
-            style: fixbarStyle
+            type: "上一章",
+            icon: "layui-icon-prev"
           },
           {
-            type: "self",
-            content: "本书",
-            style: fixbarStyle
+            type: "本书",
+            icon: "layui-icon-link"
           },
           {
-            type: "next",
-            content: "下一章",
-            style: fixbarStyle
+            type: "下一章",
+            icon: "layui-icon-next"
           }
         ],
         default: false,
         css: { bottom: "15%" },
         margin: 0,
-click: function(type) {
+on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
+          }
+        },
+        click: function(type) {
           console.log(this, type);
-          if (type === "titleText") {
+          if (type === "获取标题文本") {
             titleText();
             return;
           }
-          if (type === "titleHtml") {
+          if (type === "获取标题HTML") {
             titleHtml();
             return;
           }
-          if (type === "contentText") {
+          if (type === "获取内容文本") {
             contentText();
             return;
           }
-          if (type === "contentHtml") {
+          if (type === "获取内容HTML") {
             contentHtml();
             return;
           }
-          if (type === "titleAndContentText") {
+          if (type === "获取标题和内容文本") {
             titleAndContentText();
             return;
           }
-          if (type === "titleAndContentHtml") {
+          if (type === "获取标题和内容HTML") {
             titleAndContentHtml();
             return;
           }
-          if (type === "saveContentToLocal") {
+          if (type === "保存内容到本地") {
             saveContentToLocal(document);
             return;
           }
-          if (type === "prev") {
+          if (type === "上一章") {
             let prev = document.getElementsByClassName("bottom_box")[0].firstElementChild;
             if (prev.nodeName.indexOf("A") > -1) {
               prev.click();
@@ -276,12 +276,12 @@ click: function(type) {
             }
             return;
           }
-          if (type === "self") {
+          if (type === "本书") {
             let s = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling;
             s.click();
             return;
           }
-          if (type === "next") {
+          if (type === "下一章") {
             let next = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling.nextElementSibling;
             if (next.nodeName.indexOf("A") > -1) {
               next.click();

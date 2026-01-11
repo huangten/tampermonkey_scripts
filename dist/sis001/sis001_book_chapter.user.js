@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sis001 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:15:42
+// @version    2026-01-12.00:10:40
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sis001.com
 // @match      *://*.sis001.com/forum/thread-*-1-1.html
@@ -81,30 +81,51 @@
   function run() {
     layui.use(function() {
       const util = layui.util;
-      const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
       util.fixbar({
         bars: [
           {
-            type: "CopyContent",
-            content: "复制内容",
-            style: fixbarStyle
+            type: "复制内容",
+            icon: "layui-icon-auz"
           },
           {
-            type: "CopyContentHtml",
-            content: "复制内容HTML",
-            style: fixbarStyle
+            type: "复制内容HTML",
+            icon: "layui-icon-fonts-code"
+          },
+          {
+            type: "复制内容（第二版）",
+            icon: "layui-icon-vercode"
           }
-        ],
-        default: false,
-        css: { bottom: "21%" },
+
+
+
+],
         margin: 0,
-click: function(type) {
-          console.log(this, type);
-          if (type === "CopyContent") {
-            getPreTagContent();
+        default: false,
+        bgcolor: "#64822a",
+        css: { bottom: "20%" },
+        on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
           }
-          if (type === "CopyContentHtml") {
-            getPreTagContentHtml();
+        },
+click: function(type) {
+          if (type === "复制内容") {
+            getContent();
+          }
+          if (type === "复制内容HTML") {
+            getContentHtml();
+          }
+          if (type === "复制内容（第二版）") {
+            getContentV2();
+          }
+          if (type === "复制内容HTML（第二版）") {
+            getContentHtmlV2();
           }
         }
       });
@@ -129,11 +150,19 @@ click: function(type) {
     });
     return e1;
   }
-  function getPreTagContent(uw = _unsafeWindow) {
+  function getContent(uw = _unsafeWindow) {
     copyContext(getElement(uw).innerText).then();
   }
-  function getPreTagContentHtml(uw = _unsafeWindow) {
+  function getContentHtml(uw = _unsafeWindow) {
     copyContext(getElement(uw).innerHTML).then();
+  }
+  function getContentV2(uw = _unsafeWindow) {
+    const text = getElement(uw).innerText.replaceAll("\n", "").replaceAll("	", "\n").replaceAll("　　", "\n　　").split("\n").filter(Boolean).join("\n");
+    copyContext(text).then();
+  }
+  function getContentHtmlV2(uw = _unsafeWindow) {
+    const html = getElement(uw).innerHTML;
+    copyContext(html).then();
   }
 
 })();

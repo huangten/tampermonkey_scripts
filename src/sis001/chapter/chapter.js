@@ -1,4 +1,4 @@
-import {copyContext, init} from '../../common/common.js'
+import {copyContext, init} from '../../common/common.js';
 
 init().then(() => {
     run();
@@ -7,36 +7,57 @@ init().then(() => {
 function run() {
     layui.use(function () {
         const util = layui.util;
-        const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
         // 自定义固定条
         util.fixbar({
             bars: [
                 {
-                    type: 'CopyContent',
-                    content: '复制内容',
-                    style: fixbarStyle
-                },
-                {
-                    type: 'CopyContentHtml',
-                    content: '复制内容HTML',
-                    style: fixbarStyle
+                    type: '复制内容',
+                    icon: 'layui-icon-auz'
                 }
+                , {
+                    type: '复制内容HTML',
+                    icon: 'layui-icon-fonts-code'
+                }
+                , {
+                    type: '复制内容（第二版）',
+                    icon: 'layui-icon-vercode'
+                }
+                // , {
+                //     type: '复制内容HTML（第二版）',
+                //     icon: 'layui-icon-code-circle'
+                // }
             ],
-            default: false,
-            css: {bottom: "21%"},
             margin: 0,
+            default: false,
+            bgcolor: '#64822a',
+            css: {bottom: "20%"},
+            on: { // 任意事件 --  v2.8.0 新增
+                mouseenter: function (type) {
+                    layui.layer.tips(type, this, {
+                        tips: 4,
+                        fixed: true
+                    });
+                },
+                mouseleave: function (type) {
+                    layui.layer.closeAll('tips');
+                }
+            },
             // 点击事件
             click: function (type) {
-                console.log(this, type);
+                // console.log(this, type);
                 // layer.msg(type);
-                if (type === "CopyContent") {
-                    getPreTagContent();
-
+                if (type === "复制内容") {
+                    getContent();
                 }
-                if (type === "CopyContentHtml") {
-                    getPreTagContentHtml();
+                if (type === "复制内容HTML") {
+                    getContentHtml();
                 }
-
+                if (type === "复制内容（第二版）") {
+                    getContentV2();
+                }
+                if (type === "复制内容HTML（第二版）") {
+                    getContentHtmlV2();
+                }
             }
         });
     });
@@ -73,10 +94,24 @@ function getElement(uw) {
     return e1;
 }
 
-function getPreTagContent(uw = unsafeWindow) {
+function getContent(uw = unsafeWindow) {
     copyContext(getElement(uw).innerText).then();
 }
 
-function getPreTagContentHtml(uw = unsafeWindow) {
+function getContentHtml(uw = unsafeWindow) {
     copyContext(getElement(uw).innerHTML).then();
+}
+
+function getContentV2(uw = unsafeWindow) {
+    const text = getElement(uw).innerText
+        .replaceAll('\n', '')
+        .replaceAll('\t', '\n')
+        .replaceAll('　　', '\n　　')
+        .split('\n').filter(Boolean).join('\n');
+    copyContext(text).then();
+}
+
+function getContentHtmlV2(uw = unsafeWindow) {
+    const html = getElement(uw).innerHTML;
+    copyContext(html).then();
 }

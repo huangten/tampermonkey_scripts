@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.16:02:26
+// @version    2026-01-12.00:10:55
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*
@@ -296,45 +296,51 @@
     }, 500);
     layui.use(function() {
       const util = layui.util;
-      const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
       util.fixbar({
         bars: [
           {
-            type: "getInfo",
-            content: "下载信息和种子",
-            style: fixbarStyle
+            type: "下载信息和种子",
+            icon: "layui-icon-down"
           },
           {
-            type: "onlyCopyTitle",
-            content: "仅复制标题",
-            style: fixbarStyle
+            type: "仅复制标题",
+            icon: "layui-icon-ok"
           },
           {
-            type: "copyTitleAndDownload",
-            content: "复制标题和下载种子",
-            style: fixbarStyle
+            type: "复制标题和下载种子",
+            icon: "layui-icon-release"
           },
           {
-            type: "copyTitleAndBlockcode",
-            content: "复制标题和磁力信息",
-            style: fixbarStyle
+            type: "复制标题和磁力信息",
+            icon: "layui-icon-triangle-r"
           }
         ],
         default: false,
         css: { bottom: "21%" },
         margin: 0,
+        on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
+          }
+        },
 click: function(type) {
           console.log(this, type);
-          if (type === "getInfo") {
+          if (type === "下载信息和种子") {
             getInfo(document);
           }
-          if (type === "onlyCopyTitle") {
+          if (type === "仅复制标题") {
             copyContext(getTitleText(document).trim()).then();
           }
-          if (type === "copyTitleAndDownload") {
+          if (type === "复制标题和下载种子") {
             copyTitleAndDownload(document);
           }
-          if (type === "copyTitleAndBlockcode") {
+          if (type === "复制标题和磁力信息") {
             copyTitleAndBlockcode(document);
           }
         }

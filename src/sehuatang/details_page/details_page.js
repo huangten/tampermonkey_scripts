@@ -23,44 +23,51 @@ function run() {
         util.fixbar({
             bars: [
                 {
-                    type: 'getInfo',
-                    content: '下载信息和种子',
-                    style: fixbarStyle
+                    type: '下载信息和种子',
+                    icon: 'layui-icon-down'
                 },
                 {
-                    type: 'onlyCopyTitle',
-                    content: '仅复制标题',
-                    style: fixbarStyle
+                    type: '仅复制标题',
+                    icon: 'layui-icon-ok'
                 },
                 {
-                    type: 'copyTitleAndDownload',
-                    content: '复制标题和下载种子',
-                    style: fixbarStyle
+                    type: '复制标题和下载种子',
+                    icon: 'layui-icon-release'
                 },
                 {
-                    type: 'copyTitleAndBlockcode',
-                    content: '复制标题和磁力信息',
-                    style: fixbarStyle
+                    type: '复制标题和磁力信息',
+                    icon: 'layui-icon-triangle-r'
                 }
             ],
             default: false,
             css: {bottom: "21%"},
             margin: 0,
+            on: { // 任意事件 --  v2.8.0 新增
+                mouseenter: function (type) {
+                    layui.layer.tips(type, this, {
+                        tips: 4,
+                        fixed: true
+                    });
+                },
+                mouseleave: function (type) {
+                    layui.layer.closeAll('tips');
+                }
+            },
             // 点击事件
             click: function (type) {
                 console.log(this, type);
                 // layer.msg(type);
 
-                if (type === "getInfo") {
+                if (type === "下载信息和种子") {
                     getInfo(document);
                 }
-                if (type === "onlyCopyTitle") {
+                if (type === "仅复制标题") {
                     copyContext(getTitleText(document).trim()).then()
                 }
-                if (type === "copyTitleAndDownload") {
+                if (type === "复制标题和下载种子") {
                     copyTitleAndDownload(document);
                 }
-                if (type === "copyTitleAndBlockcode") {
+                if (type === "复制标题和磁力信息") {
                     copyTitleAndBlockcode(document);
                 }
             }

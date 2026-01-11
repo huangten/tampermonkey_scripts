@@ -93,7 +93,7 @@ function run() {
         // 自定义固定条
         util.fixbar({
             bars: [{
-                type: 'menuList',
+                type: '打开菜单面板',
                 // style: '',
                 icon: 'layui-icon-list'
             }],
@@ -101,9 +101,20 @@ function run() {
             // bgcolor:'#f9f5e5',
             css: {bottom: "20%", right: 10},
             margin: 0,
+            on: { // 任意事件 --  v2.8.0 新增
+                mouseenter: function (type) {
+                    layui.layer.tips(type, this, {
+                        tips: 4,
+                        fixed: true
+                    });
+                },
+                mouseleave: function (type) {
+                    layui.layer.closeAll('tips');
+                }
+            },
             // 点击事件
             click: function (type) {
-                if (type === "menuList") {
+                if (type === "打开菜单面板") {
                     openMenuPage();
                 }
             }
@@ -209,15 +220,15 @@ function openMenuPage() {
                     util.fixbar({
                         bars: [
                             {
-                                type: 'downloadAll',
+                                type: '下载全部',
                                 content: '全',
                             },
                             {
-                                type: 'getCheckedNodeData',
+                                type: '下载选中的',
                                 content: '选',
                             },
                             {
-                                type: 'clear',
+                                type: '清除未下载的',
                                 icon: 'layui-icon-refresh',
                             }],
                         default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
@@ -237,15 +248,15 @@ function openMenuPage() {
                         },
 
                         click: function (type) {
-                            if (type === "downloadAll") {
+                            if (type === "下载全部") {
                                 getMenuArray(getTree()).forEach(d => downloader.add(d))
                                 downloader.start().then();
                                 return
                             }
-                            if (type === "getCheckedNodeData") {
+                            if (type === "下载选中的") {
                                 treeCheckedDownload()
                             }
-                            if (type === "clear") {
+                            if (type === "清除未下载的") {
                                 reloadTree()
                             }
                         }

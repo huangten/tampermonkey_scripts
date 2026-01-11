@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sshuba 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:15:45
+// @version    2026-01-12.00:10:47
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sshuba.com
 // @match      *://sshuba.com/books/*
@@ -79,28 +79,43 @@
   function run() {
     layui.use(function() {
       const util = layui.util;
-      const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;";
       util.fixbar({
         bars: [
           {
-            type: "CopyContent",
-            content: "复制内容",
-            style: fixbarStyle
+            type: "复制内容",
+            icon: "layui-icon-auz"
           },
           {
-            type: "CopyContentHtml",
-            content: "复制内容HTML",
-            style: fixbarStyle
+            type: "复制内容HTML",
+            icon: "layui-icon-fonts-code"
           }
-        ],
+
+
+
+
+
+
+
+],
         default: false,
         css: { bottom: "21%" },
         margin: 0,
+        on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
+          }
+        },
         click: function(type) {
-          if (type === "CopyContent") {
+          if (type === "复制内容") {
             copyPreTagContent();
           }
-          if (type === "CopyContentHtml") {
+          if (type === "复制内容HTML") {
             copyPreTagContentHtml();
           }
         }

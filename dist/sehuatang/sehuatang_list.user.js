@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.16:02:22
+// @version    2026-01-12.00:11:02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -448,14 +448,25 @@ async start() {
       const util = layui.util;
       util.fixbar({
         bars: [{
-          type: "menuList",
+          type: "打开菜单面板",
 icon: "layui-icon-list"
         }],
         default: false,
 css: { bottom: "20%", right: 10 },
         margin: 0,
+        on: {
+mouseenter: function(type) {
+            layui.layer.tips(type, this, {
+              tips: 4,
+              fixed: true
+            });
+          },
+          mouseleave: function(type) {
+            layui.layer.closeAll("tips");
+          }
+        },
 click: function(type) {
-          if (type === "menuList") {
+          if (type === "打开菜单面板") {
             openMenuPage();
           }
         }
@@ -535,15 +546,15 @@ click: function(obj) {
             util.fixbar({
               bars: [
                 {
-                  type: "downloadAll",
+                  type: "下载全部",
                   content: "全"
                 },
                 {
-                  type: "getCheckedNodeData",
+                  type: "下载选中的",
                   content: "选"
                 },
                 {
-                  type: "clear",
+                  type: "清除未下载的",
                   icon: "layui-icon-refresh"
                 }
               ],
@@ -563,15 +574,15 @@ mouseenter: function(type) {
                 }
               },
               click: function(type) {
-                if (type === "downloadAll") {
+                if (type === "下载全部") {
                   getMenuArray(getTree()).forEach((d) => downloader.add(d));
                   downloader.start().then();
                   return;
                 }
-                if (type === "getCheckedNodeData") {
+                if (type === "下载选中的") {
                   treeCheckedDownload();
                 }
-                if (type === "clear") {
+                if (type === "清除未下载的") {
                   reloadTree();
                 }
               }

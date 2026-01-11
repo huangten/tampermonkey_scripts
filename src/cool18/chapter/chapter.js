@@ -13,40 +13,47 @@ function run() {
         util.fixbar({
             bars: [
                 {
-                    type: 'CopyContent',
-                    content: '复制内容',
-                    style: fixbarStyle
-                },
-                {
-                    type: 'CopyContentHtml',
-                    content: '复制内容HTML',
-                    style: fixbarStyle
-                },
-                {
-                    type: 'CopyChapter',
-                    content: '复制章节',
-                    style: fixbarStyle
-                },
-                {
-                    type: 'CopyChapterHtml',
-                    content: '复制章节HTML',
-                    style: fixbarStyle
+                    type: '复制内容',
+                    icon: 'layui-icon-auz'
+                }
+                , {
+                    type: '复制内容HTML',
+                    icon: 'layui-icon-fonts-code'
+                }
+                , {
+                    type: '复制内容（第二版）',
+                    icon: 'layui-icon-vercode'
+                }
+                , {
+                    type: '复制内容HTML（第二版）',
+                    icon: 'layui-icon-code-circle'
                 }
             ],
             default: false,
             css: {bottom: "21%"},
             margin: 0,
+            on: { // 任意事件 --  v2.8.0 新增
+                mouseenter: function (type) {
+                    layui.layer.tips(type, this, {
+                        tips: 4,
+                        fixed: true
+                    });
+                },
+                mouseleave: function (type) {
+                    layui.layer.closeAll('tips');
+                }
+            },
             click: function (type) {
-                if (type === "CopyContent") {
+                if (type === "复制内容") {
                     getPreTagContent();
                 }
-                if (type === "CopyContentHtml") {
+                if (type === "复制内容HTML") {
                     getPreTagContentHtml();
                 }
-                if (type === "CopyChapter") {
+                if (type === "复制内容（第二版）") {
                     copyChapterContent();
                 }
-                if (type === "CopyChapterHtml") {
+                if (type === "复制内容HTML（第二版）") {
                     copyChapterHtml();
                 }
             }
