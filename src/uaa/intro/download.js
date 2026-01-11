@@ -83,7 +83,7 @@ export class Downloader {
         this.running = true;
 
         while (this.failed.length > 0){
-            this.queue.push(this.failed.shift())
+            this.queue.unshift(this.failed.shift())
         }
 
         while (this.queue.length > 0) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.23:09:49
+// @version    2026-01-12.00:47:22
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -238,7 +238,7 @@ async start() {
       }
       this.running = true;
       while (this.failed.length > 0) {
-        this.queue.push(this.failed.shift());
+        this.queue.unshift(this.failed.shift());
       }
       while (this.queue.length > 0) {
         const task = this.queue.shift();
