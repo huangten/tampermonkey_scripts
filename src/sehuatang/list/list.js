@@ -137,6 +137,22 @@ function openMenuPage() {
         skin: 'layui-layer-win10', // 加上边框
         maxmin: true, //开启最大化最小化按钮
         content: '<div id="downloadWindowDivId"></div>',
+        moveOut: true,
+        btn: ['下载全部', '下载选中的', '清除未下载的'],
+        btn1: function (index, layero, that) {
+            getMenuArray(getTree()).forEach(d => downloader.add(d))
+            downloader.start().then();
+            return false;
+        },
+        btn2: function (index, layero, that) {
+            treeCheckedDownload()
+            return false;
+        },
+        btn3: function (index, layero, that) {
+            reloadTree();
+            return false;
+        },
+        btnAlign: 'c',
         success: function (layero, index, that) {
             const tabs = layui.tabs;
             // 方法渲染
@@ -150,12 +166,7 @@ function openMenuPage() {
                 body: [
                     {content: `<div></div>`}
                 ],
-                // index: 1, // 初始选中项
-                // className: 'layui-tabs-card',
-                // closable: true
-                // layui-tabs-item
             });
-
             tabs.add('downloadWindowDivTabsId', {
                 title: '下载详情',
                 content: `<div id="${downloadWindowDivIntroId}" style="width: 100%;height: 100%;"></div>`,
@@ -163,11 +174,10 @@ function openMenuPage() {
                 done: () => {
                     const tabs = document.getElementsByClassName('layui-tabs-item');
                     for (let i = 0; i < tabs.length; i++) {
-                        tabs[i].style.height = (window.innerHeight * 0.69) + 'px';
+                        tabs[i].style.height = (window.innerHeight * 0.649) + 'px';
                     }
                 }
             });
-
             tabs.add('downloadWindowDivTabsId', {
                 title: '下载进度',
                 content: '<div id="downloadWindowDivInfoId">' +
@@ -195,9 +205,7 @@ function openMenuPage() {
 
             tabs.add('downloadWindowDivTabsId', {
                 title: '番号列表',
-                content: '<div id="downloadWindowDivListId">' +
-                    '<div id="downloadWindowDivListTreeId"></div>' +
-                    '</div>',
+                content: '<div id="downloadWindowDivListTreeId"></div>',
                 mode: 'prepend',
                 done: () => {
                     const util = layui.util;
@@ -215,71 +223,25 @@ function openMenuPage() {
                             downloader.start().then();
                         }
                     });
-
-                    // 自定义固定条
-                    util.fixbar({
-                        bars: [
-                            {
-                                type: '下载全部',
-                                content: '全',
-                            },
-                            {
-                                type: '下载选中的',
-                                content: '选',
-                            },
-                            {
-                                type: '清除未下载的',
-                                icon: 'layui-icon-refresh',
-                            }],
-                        default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
-                        css: {bottom: "1%", right: 10},
-                        target: '#downloadWindowDivListId', // 插入 fixbar 节点的目标元素选择器
-                        // bgcolor: '#ba350f',
-                        on: { // 任意事件 --  v2.8.0 新增
-                            mouseenter: function (type) {
-                                layui.layer.tips(type, this, {
-                                    tips: 4,
-                                    fixed: true
-                                });
-                            },
-                            mouseleave: function (type) {
-                                layui.layer.closeAll('tips');
-                            }
-                        },
-
-                        click: function (type) {
-                            if (type === "下载全部") {
-                                getMenuArray(getTree()).forEach(d => downloader.add(d))
-                                downloader.start().then();
-                                return
-                            }
-                            if (type === "下载选中的") {
-                                treeCheckedDownload()
-                            }
-                            if (type === "清除未下载的") {
-                                reloadTree()
-                            }
-                        }
-                    });
                 }
             })
-
-            function treeCheckedDownload() {
-                let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
-                console.log(checkedData[0]);
-                if (checkedData.length === 0) {
-                    return;
-                }
-                getMenuArray(checkedData).forEach(d => downloader.add(d))
-                downloader.start().then();
-            }
-
-            function reloadTree() {
-                layui.tree.reload('titleList', {data: getTree()}); // 重载实例
-                downloader.clear();
-            }
         }
     });
+}
+
+function treeCheckedDownload() {
+    let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
+    console.log(checkedData[0]);
+    if (checkedData.length === 0) {
+        return;
+    }
+    getMenuArray(checkedData).forEach(d => downloader.add(d))
+    downloader.start().then();
+}
+
+function reloadTree() {
+    layui.tree.reload('titleList', {data: getTree()}); // 重载实例
+    downloader.clear();
 }
 
 function getTree() {

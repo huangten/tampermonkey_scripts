@@ -171,13 +171,12 @@ function ensureInfoWindowIndex() {
         shade: 0,
         maxmin: true, //开启最大化最小化按钮
         area: ['60%', '80%'],
+        moveOut: true,
         tab: [
             {
                 title: '章节列表',
                 content: '<div style="height: 100%;width: 100%;padding-top: 10px;">' +
-                    '<div id="downloadWindowDivListId">' +
                     '<div id="downloadWindowDivListTreeId"></div>' +
-                    '</div>' +
                     '</div>'
             }, {
                 title: '下载进度',
@@ -201,10 +200,26 @@ function ensureInfoWindowIndex() {
                     '</div>'
             }],
 
+        btn: ['下载全部章节', '下载选中章节', '清除未下载'],
+        btn1: function (index, layero, that) {
+            downloadAll();
+            return false;
+        },
+        btn2: function (index, layero, that) {
+            treeCheckedDownload()
+            return false;
+        },
+        btn3: function (index, layero, that) {
+            reloadTree();
+            return false;
+        },
+        btnAlign: 'c',
+        min: function (layero, index) {
+
+        },
         success: function (layero, index, that) {
             layui.element.render('progress', infoWindowProgressFilter);
             layui.element.progress(infoWindowProgressFilter, '0%');
-            const util = layui.util;
             const tree = layui.tree;
             tree.render({
                 elem: '#downloadWindowDivListTreeId',
@@ -219,71 +234,26 @@ function ensureInfoWindowIndex() {
                     downloader.start().then();
                 }
             });
-            // 自定义固定条
-            util.fixbar({
-                bars: [
-                    {
-                        type: '下载全部章节',
-                        content: '全',
-                    }, {
-                        type: '下载选中章节',
-                        content: '选',
-                    }, {
-                        type: '清除未下载',
-                        icon: 'layui-icon-refresh',
-                    }
-                ],
-                default: false, // 是否显示默认的 bar 列表 --  v2.8.0 新增
-                css: {bottom: "1%", right: 0},
-                bgcolor: '#ffb800',
-                target: '#downloadWindowDivListId', // 插入 fixbar 节点的目标元素选择器
-                // bgcolor: '#ba350f',
-                on: { // 任意事件 --  v2.8.0 新增
-                    mouseenter: function (type) {
-                        layui.layer.tips(type, this, {
-                            tips: 4,
-                            fixed: true
-                        });
-                    },
-                    mouseleave: function (type) {
-                        layui.layer.closeAll('tips');
-                    }
-                },
-
-                click: function (type) {
-                    if (type === "下载全部章节") {
-                        downloadAll();
-                        return
-                    }
-                    if (type === "下载选中章节") {
-                        treeCheckedDownload()
-                    }
-                    if (type === "清除未下载") {
-                        reloadTree()
-                    }
-
-                    function treeCheckedDownload() {
-                        let checkedData = tree.getChecked('titleList'); // 获取选中节点的数据
-                        if (checkedData.length === 0) {
-                            layui.layer.msg("未选中任何数据");
-                            return;
-                        }
-                        doTreeToChapterList(checkedData).forEach(data => {
-                            downloader.add(data);
-                        });
-                        downloader.start().then();
-                    }
-
-                    function reloadTree() {
-                        tree.reload('titleList', {data: getChapterListTree()});
-                        downloader.clear();
-                    }
-
-                }
-            });
         }
     });
     return infoWindowIndex;
+}
+
+function treeCheckedDownload() {
+    let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
+    if (checkedData.length === 0) {
+        layui.layer.msg("未选中任何数据");
+        return;
+    }
+    doTreeToChapterList(checkedData).forEach(data => {
+        downloader.add(data);
+    });
+    downloader.start().then();
+}
+
+function reloadTree() {
+    layui.tree.reload('titleList', {data: getChapterListTree()});
+    downloader.clear();
 }
 
 function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId) {
@@ -296,6 +266,7 @@ function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId) {
         shadeClose: false,
         closeBtn: 0,
         shade: 0,
+        moveOut: true,
         // skin: 'layui-layer-rim', // 加上边框
         maxmin: true, //开启最大化最小化按钮
         area: ['70%', '80%'],

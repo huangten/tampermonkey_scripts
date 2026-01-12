@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.00:11:02
+// @version    2026-01-12.15:01:27
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -488,6 +488,22 @@ click: function(type) {
       skin: "layui-layer-win10",
 maxmin: true,
 content: '<div id="downloadWindowDivId"></div>',
+      moveOut: true,
+      btn: ["下载全部", "下载选中的", "清除未下载的"],
+      btn1: function(index, layero, that) {
+        getMenuArray(getTree()).forEach((d) => downloader.add(d));
+        downloader.start().then();
+        return false;
+      },
+      btn2: function(index, layero, that) {
+        treeCheckedDownload();
+        return false;
+      },
+      btn3: function(index, layero, that) {
+        reloadTree();
+        return false;
+      },
+      btnAlign: "c",
       success: function(layero, index, that) {
         const tabs = layui.tabs;
         tabs.render({
@@ -499,10 +515,7 @@ header: [
           body: [
             { content: `<div></div>` }
           ]
-
-
-
-});
+        });
         tabs.add("downloadWindowDivTabsId", {
           title: "下载详情",
           content: `<div id="${downloadWindowDivIntroId}" style="width: 100%;height: 100%;"></div>`,
@@ -510,7 +523,7 @@ header: [
           done: () => {
             const tabs2 = document.getElementsByClassName("layui-tabs-item");
             for (let i = 0; i < tabs2.length; i++) {
-              tabs2[i].style.height = window.innerHeight * 0.69 + "px";
+              tabs2[i].style.height = window.innerHeight * 0.649 + "px";
             }
           }
         });
@@ -525,10 +538,10 @@ header: [
         });
         tabs.add("downloadWindowDivTabsId", {
           title: "番号列表",
-          content: '<div id="downloadWindowDivListId"><div id="downloadWindowDivListTreeId"></div></div>',
+          content: '<div id="downloadWindowDivListTreeId"></div>',
           mode: "prepend",
           done: () => {
-            const util = layui.util;
+            layui.util;
             const tree = layui.tree;
             tree.render({
               elem: "#downloadWindowDivListTreeId",
@@ -543,67 +556,23 @@ click: function(obj) {
                 downloader.start().then();
               }
             });
-            util.fixbar({
-              bars: [
-                {
-                  type: "下载全部",
-                  content: "全"
-                },
-                {
-                  type: "下载选中的",
-                  content: "选"
-                },
-                {
-                  type: "清除未下载的",
-                  icon: "layui-icon-refresh"
-                }
-              ],
-              default: false,
-css: { bottom: "1%", right: 10 },
-              target: "#downloadWindowDivListId",
-
-on: {
-mouseenter: function(type) {
-                  layui.layer.tips(type, this, {
-                    tips: 4,
-                    fixed: true
-                  });
-                },
-                mouseleave: function(type) {
-                  layui.layer.closeAll("tips");
-                }
-              },
-              click: function(type) {
-                if (type === "下载全部") {
-                  getMenuArray(getTree()).forEach((d) => downloader.add(d));
-                  downloader.start().then();
-                  return;
-                }
-                if (type === "下载选中的") {
-                  treeCheckedDownload();
-                }
-                if (type === "清除未下载的") {
-                  reloadTree();
-                }
-              }
-            });
           }
         });
-        function treeCheckedDownload() {
-          let checkedData = layui.tree.getChecked("titleList");
-          console.log(checkedData[0]);
-          if (checkedData.length === 0) {
-            return;
-          }
-          getMenuArray(checkedData).forEach((d) => downloader.add(d));
-          downloader.start().then();
-        }
-        function reloadTree() {
-          layui.tree.reload("titleList", { data: getTree() });
-          downloader.clear();
-        }
       }
     });
+  }
+  function treeCheckedDownload() {
+    let checkedData = layui.tree.getChecked("titleList");
+    console.log(checkedData[0]);
+    if (checkedData.length === 0) {
+      return;
+    }
+    getMenuArray(checkedData).forEach((d) => downloader.add(d));
+    downloader.start().then();
+  }
+  function reloadTree() {
+    layui.tree.reload("titleList", { data: getTree() });
+    downloader.clear();
   }
   function getTree() {
     let indexMap = new Map();

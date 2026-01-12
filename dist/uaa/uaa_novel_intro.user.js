@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.00:47:22
+// @version    2026-01-12.15:01:34
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -419,20 +419,36 @@ click: function(type) {
       shade: 0,
       maxmin: true,
 area: ["60%", "80%"],
+      moveOut: true,
       tab: [
         {
           title: "章节列表",
-          content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivListId"><div id="downloadWindowDivListTreeId"></div></div></div>'
+          content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivListTreeId"></div></div>'
         },
         {
           title: "下载进度",
           content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + infoWindowProgressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>'
         }
       ],
+      btn: ["下载全部章节", "下载选中章节", "清除未下载"],
+      btn1: function(index, layero, that) {
+        downloadAll();
+        return false;
+      },
+      btn2: function(index, layero, that) {
+        treeCheckedDownload();
+        return false;
+      },
+      btn3: function(index, layero, that) {
+        reloadTree();
+        return false;
+      },
+      btnAlign: "c",
+      min: function(layero, index) {
+      },
       success: function(layero, index, that) {
         layui.element.render("progress", infoWindowProgressFilter);
         layui.element.progress(infoWindowProgressFilter, "0%");
-        const util = layui.util;
         const tree = layui.tree;
         tree.render({
           elem: "#downloadWindowDivListTreeId",
@@ -447,68 +463,24 @@ click: function(obj) {
             downloader.start().then();
           }
         });
-        util.fixbar({
-          bars: [
-            {
-              type: "下载全部章节",
-              content: "全"
-            },
-            {
-              type: "下载选中章节",
-              content: "选"
-            },
-            {
-              type: "清除未下载",
-              icon: "layui-icon-refresh"
-            }
-          ],
-          default: false,
-css: { bottom: "1%", right: 0 },
-          bgcolor: "#ffb800",
-          target: "#downloadWindowDivListId",
-
-on: {
-mouseenter: function(type) {
-              layui.layer.tips(type, this, {
-                tips: 4,
-                fixed: true
-              });
-            },
-            mouseleave: function(type) {
-              layui.layer.closeAll("tips");
-            }
-          },
-          click: function(type) {
-            if (type === "下载全部章节") {
-              downloadAll();
-              return;
-            }
-            if (type === "下载选中章节") {
-              treeCheckedDownload();
-            }
-            if (type === "清除未下载") {
-              reloadTree();
-            }
-            function treeCheckedDownload() {
-              let checkedData = tree.getChecked("titleList");
-              if (checkedData.length === 0) {
-                layui.layer.msg("未选中任何数据");
-                return;
-              }
-              doTreeToChapterList(checkedData).forEach((data) => {
-                downloader.add(data);
-              });
-              downloader.start().then();
-            }
-            function reloadTree() {
-              tree.reload("titleList", { data: getChapterListTree() });
-              downloader.clear();
-            }
-          }
-        });
       }
     });
     return infoWindowIndex;
+  }
+  function treeCheckedDownload() {
+    let checkedData = layui.tree.getChecked("titleList");
+    if (checkedData.length === 0) {
+      layui.layer.msg("未选中任何数据");
+      return;
+    }
+    doTreeToChapterList(checkedData).forEach((data) => {
+      downloader.add(data);
+    });
+    downloader.start().then();
+  }
+  function reloadTree() {
+    layui.tree.reload("titleList", { data: getChapterListTree() });
+    downloader.clear();
   }
   function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId2) {
     if (downloadInfoWindowIndex !== 0) {
@@ -520,6 +492,7 @@ mouseenter: function(type) {
       shadeClose: false,
       closeBtn: 0,
       shade: 0,
+      moveOut: true,
 maxmin: true,
 area: ["70%", "80%"],
       content: `<div id="${downloadInfoWindowDivId2}" style="width: 100%;height: 99%;"></div>`,
