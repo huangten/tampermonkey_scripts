@@ -152,7 +152,7 @@ function openMenuPage() {
             reloadTree();
             return false;
         },
-        btnAlign: 'c',
+        // btnAlign: 'c',
         success: function (layero, index, that) {
             const tabs = layui.tabs;
             // 方法渲染

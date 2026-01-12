@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.15:01:27
+// @version    2026-01-12.15:24:00
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -503,8 +503,7 @@ content: '<div id="downloadWindowDivId"></div>',
         reloadTree();
         return false;
       },
-      btnAlign: "c",
-      success: function(layero, index, that) {
+success: function(layero, index, that) {
         const tabs = layui.tabs;
         tabs.render({
           elem: "#downloadWindowDivId",
