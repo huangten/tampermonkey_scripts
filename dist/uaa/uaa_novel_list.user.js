@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.20:00:03
+// @version    2026-01-12.21:49:26
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -708,10 +708,14 @@ async start() {
       return true;
     },
     onTaskComplete: (task, success) => {
+      document.getElementById("openNewWindowInfo").innerText = "书籍: " + task.title + " 打开完毕";
+      document.getElementById("openNewWindowInfo").href = task.href;
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
       console.log("打开结束 ✅");
+      document.getElementById("openNewWindowInfo").innerText = "书籍打开完毕";
+      document.getElementById("openNewWindowInfo").href = "javascript:void(0);";
     },
     onCatch: async (err) => {
       layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
@@ -727,9 +731,15 @@ async start() {
       return true;
     },
     onTaskComplete: (task, success) => {
+      let percent = ((exportEpubScheduler.doneSet.size + exportEpubScheduler.failedSet.size) / (exportEpubScheduler.doneSet.size + exportEpubScheduler.failedSet.size + exportEpubScheduler.pendingSet.size) * 100).toFixed(2) + "%";
+      layui.element.progress("exportProgress", percent);
+      document.getElementById("exportInfoContentId").innerText = "书籍: " + task.title + " 导出成功";
+      document.getElementById("exportInfoContentId").href = task.href;
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
+      document.getElementById("exportInfoContentId").innerText = "书籍导出完毕";
+      document.getElementById("exportInfoContentId").href = "javascript:void(0);";
       console.log("打开结束 ✅");
       layui.layer.min(openBookListWindow());
       layui.layer.msg("书籍导出完毕", { icon: 1, shadeClose: true });
@@ -764,20 +774,25 @@ click: function(type) {
     if (openBookListWindowIndex !== 0) {
       return openBookListWindowIndex;
     }
-    openBookListWindowIndex = layui.layer.open({
+    openBookListWindowIndex = layui.layer.tab({
       type: 1,
-      title: "书籍列表",
-      shadeClose: false,
+shadeClose: false,
       closeBtn: false,
-      offset: "r",
-      shade: 0,
-      anim: "slideLeft",
+shade: 0,
 area: ["60%", "80%"],
-      skin: "layui-layer-win10",
 moveOut: true,
       maxmin: true,
-content: `<div id='openPage'></div>`,
-      btn: ["全选", "1-12", "13-24", "25-36", "37-49", "打开选中书籍", "导出EPUB", "清除选中"],
+tab: [
+        {
+          title: "书籍列表",
+          content: '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="bookListWindowDiv"></div></div>'
+        },
+        {
+          title: "导出和打开新窗口信息",
+          content: '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="exportAndOpenNewWindow"><fieldset class="layui-elem-field">  <legend>打开新窗口的信息</legend>  <div class="layui-field-box">      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>当前导出</legend>  <div class="layui-field-box">      <a id="exportInfoContentId" href="">暂无导出</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>导出进度条</legend>  <div class="layui-field-box"><div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>'
+        }
+      ],
+btn: ["全选", "1-12", "13-24", "25-36", "37-49", "打开选中书籍", "导出EPUB", "清除选中"],
       btn1: function(index, layero, that) {
         const type = "全选";
         layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
@@ -826,8 +841,10 @@ content: `<div id='openPage'></div>`,
         return false;
       },
       success: function(layero, index, that) {
+        layui.element.render("progress", "exportProgress");
+        layui.element.progress("exportProgress", "0%");
         layui.tree.render({
-          elem: "#openPage",
+          elem: "#bookListWindowDiv",
           data: getMenuTree(),
           showCheckbox: true,
           onlyIconControl: true,

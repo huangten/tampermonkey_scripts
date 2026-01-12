@@ -3,7 +3,6 @@ import {buildEpub} from "../buildEpub.js";
 import {Downloader} from "../../common/downloader.js";
 
 
-
 let openBookListWindowIndex = 0;
 const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
@@ -16,10 +15,14 @@ openNewWindowScheduler.setConfig({
         return true;
     },
     onTaskComplete: (task, success) => {
+        document.getElementById('openNewWindowInfo').innerText = '书籍: ' + task.title + ' 打开完毕';
+        document.getElementById('openNewWindowInfo').href = task.href;
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
         console.log("打开结束 ✅");
+        document.getElementById('openNewWindowInfo').innerText = '书籍打开完毕';
+        document.getElementById('openNewWindowInfo').href = 'javascript:void(0);';
         // layui.layer.alert('书籍打开完毕', {icon: 1, shadeClose: true});
     },
     onCatch: async (err) => {
@@ -39,9 +42,20 @@ exportEpubScheduler.setConfig({
         return true;
     },
     onTaskComplete: (task, success) => {
+        let percent = (
+            (exportEpubScheduler.doneSet.size + exportEpubScheduler.failedSet.size)
+            /
+            (exportEpubScheduler.doneSet.size + exportEpubScheduler.failedSet.size + exportEpubScheduler.pendingSet.size)
+            * 100
+        ).toFixed(2) + '%';
+        layui.element.progress('exportProgress', percent);
+        document.getElementById('exportInfoContentId').innerText = '书籍: ' + task.title + ' 导出成功';
+        document.getElementById('exportInfoContentId').href = task.href;
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
+        document.getElementById('exportInfoContentId').innerText = '书籍导出完毕';
+        document.getElementById('exportInfoContentId').href = 'javascript:void(0);';
         console.log("打开结束 ✅");
         layui.layer.min(openBookListWindow());
         layui.layer.msg('书籍导出完毕', {icon: 1, shadeClose: true});
@@ -85,19 +99,52 @@ function openBookListWindow() {
     if (openBookListWindowIndex !== 0) {
         return openBookListWindowIndex;
     }
-    openBookListWindowIndex = layui.layer.open({
+    openBookListWindowIndex = layui.layer.tab({
         type: 1,
-        title: "书籍列表",
+        // title: "书籍列表",
         shadeClose: false,
-        closeBtn:false,
-        offset: 'r',
+        closeBtn: false,
+        // offset: 'r',
         shade: 0,
-        anim: 'slideLeft', // 从右往左
+        // anim: 'slideLeft', // 从右往左
         area: ['60%', '80%'],
-        skin: 'layui-layer-win10', // 加上边框
+        // skin: 'layui-layer-win10', // 加上边框
         moveOut: true,
         maxmin: true, //开启最大化最小化按钮
-        content: `<div id='openPage'></div>`,
+        tab: [
+            {
+                title: '书籍列表',
+                content: '<div style="height: 100%;width: 99%;padding-top: 10px;">' +
+                    '<div id="bookListWindowDiv"></div>' +
+                    '</div>'
+            }, {
+                title: '导出和打开新窗口信息',
+                content: '<div style="height: 100%;width: 99%;padding-top: 10px;">' +
+                    '<div id="exportAndOpenNewWindow">' +
+                    '<fieldset class="layui-elem-field">' +
+                    '  <legend>打开新窗口的信息</legend>' +
+                    '  <div class="layui-field-box">' +
+                    '      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>' +
+                    '  </div>' +
+                    '</fieldset>' +
+                    '<fieldset class="layui-elem-field">' +
+                    '  <legend>当前导出</legend>' +
+                    '  <div class="layui-field-box">' +
+                    '      <a id="exportInfoContentId" href="">暂无导出</a>' +
+                    '  </div>' +
+                    '</fieldset>' +
+                    '<fieldset class="layui-elem-field">' +
+                    '  <legend>导出进度条</legend>' +
+                    '  <div class="layui-field-box">' +
+                    '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress">' +
+                    ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
+                    '</div>' +
+                    '  </div>' +
+                    '</fieldset>' +
+                    '</div>' +
+                    '</div>'
+            }],
+        // content: `<div id='bookListWindowDiv'></div>`,
         btn: ['全选', '1-12', '13-24', '25-36', '37-49', '打开选中书籍', '导出EPUB', '清除选中'],
         btn1: function (index, layero, that) {
             const type = '全选';
@@ -150,8 +197,11 @@ function openBookListWindow() {
             return false;
         },
         success: function (layero, index, that) {
+            layui.element.render('progress', 'exportProgress');
+            layui.element.progress('exportProgress', '0%');
+
             layui.tree.render({
-                elem: '#openPage',
+                elem: '#bookListWindowDiv',
                 data: getMenuTree(),
                 showCheckbox: true,
                 onlyIconControl: true, // 是否仅允许节点左侧图标控制展开收缩
@@ -187,7 +237,7 @@ async function openNewWindow() {
 async function exportEpub() {
     let checkedData = layui.tree.getChecked('bookListTree'); // 获取选中节点的数据
     checkedData.reverse();
-    checkedData.forEach((date)=>{
+    checkedData.forEach((date) => {
         exportEpubScheduler.add(date);
     })
     await exportEpubScheduler.start();
