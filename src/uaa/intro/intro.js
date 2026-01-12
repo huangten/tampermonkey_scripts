@@ -46,16 +46,21 @@ downloader.setConfig({
         if (getTexts(el).some(s => s.includes('以下正文内容已隐藏')))
             throw new Error("章节内容不完整，结束下载");
         const success = saveContentToLocal(el);
-        await sleep(500);
+        await sleep(300);
+
         try {
-            iframe.onload = null;
-            iframe.onerror = null;
-            iframe.contentDocument.write("");
-            iframe.contentDocument.close();
-            iframe.src = "about:blank";
-            await sleep(10);
-            iframe.remove();
-            iframe = null;
+            await sleep(100);
+            if (iframe) {
+                iframe.onload = null;
+                iframe.onerror = null;
+                iframe.contentDocument.write("");
+                iframe.contentDocument.close();
+                iframe.src = "about:blank";
+                await sleep(50);
+                iframe.remove();
+                iframe = null;
+                await sleep(50);
+            }
         } catch (e) {
             console.error("清空 iframe 失败", e);
         }

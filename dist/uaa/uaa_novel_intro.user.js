@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.15:20:54
+// @version    2026-01-12.15:31:07
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -308,16 +308,20 @@ async start() {
       if (getTexts(el).some((s) => s.includes("以下正文内容已隐藏")))
         throw new Error("章节内容不完整，结束下载");
       const success = saveContentToLocal(el);
-      await sleep(500);
+      await sleep(300);
       try {
-        iframe.onload = null;
-        iframe.onerror = null;
-        iframe.contentDocument.write("");
-        iframe.contentDocument.close();
-        iframe.src = "about:blank";
-        await sleep(10);
-        iframe.remove();
-        iframe = null;
+        await sleep(100);
+        if (iframe) {
+          iframe.onload = null;
+          iframe.onerror = null;
+          iframe.contentDocument.write("");
+          iframe.contentDocument.close();
+          iframe.src = "about:blank";
+          await sleep(50);
+          iframe.remove();
+          iframe = null;
+          await sleep(50);
+        }
       } catch (e) {
         console.error("清空 iframe 失败", e);
       }
