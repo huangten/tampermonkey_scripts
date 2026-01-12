@@ -110,10 +110,10 @@ function run() {
             bars: [
                 {
                     type: '复制书名',
-                    icon: 'layui-icon-ok-circle'
+                    icon: 'layui-icon-success'
                 }, {
                     type: '下载全部',
-                    icon: 'layui-icon-down'
+                    icon: 'layui-icon-download-circle'
                 }, {
                     type: '清除未下载',
                     icon: 'layui-icon-refresh'
@@ -200,23 +200,20 @@ function ensureInfoWindowIndex() {
                     '</div>'
             }],
 
-        btn: ['下载全部章节', '下载选中章节', '清除未下载'],
+        btn: ['下载选中章节', '清除未下载', '下载全部章节'],
         btn1: function (index, layero, that) {
-            downloadAll();
-            return false;
-        },
-        btn2: function (index, layero, that) {
             treeCheckedDownload()
             return false;
         },
-        btn3: function (index, layero, that) {
+        btn2: function (index, layero, that) {
             reloadTree();
             return false;
         },
-        btnAlign: 'c',
-        min: function (layero, index) {
-
+        btn3: function (index, layero, that) {
+            downloadAll();
+            return false;
         },
+        // btnAlign: 'c',
         success: function (layero, index, that) {
             layui.element.render('progress', infoWindowProgressFilter);
             layui.element.progress(infoWindowProgressFilter, '0%');
