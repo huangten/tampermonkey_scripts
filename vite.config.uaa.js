@@ -108,7 +108,7 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_download', 'GM_notification'],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_download', 'GM_notification','GM_xmlhttpRequest'],
                         require: [
                             'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
                         ],

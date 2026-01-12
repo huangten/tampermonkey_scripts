@@ -1,5 +1,5 @@
 import {init,} from "../../common/common.js";
-import {buildEpub} from "./buildEpub.js";
+import {buildEpub} from "../buildEpub.js";
 import {Downloader} from "../../common/downloader.js";
 
 
@@ -8,11 +8,12 @@ let openBookListWindowIndex = 0;
 const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
     interval: 50,
-    downloadHandler: async function (task) {
+    downloadHandler: function (task) {
         const a = document.createElement('a');
         a.href = task.href;
         a.target = '_blank';
         a.click();
+        return true;
     },
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
@@ -35,6 +36,7 @@ exportEpubScheduler.setConfig({
     },
     downloadHandler: async function (task) {
         await buildEpub(task.href);
+        return true;
     },
     onTaskComplete: (task, success) => {
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);

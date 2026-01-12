@@ -1,6 +1,7 @@
 import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
 import {getTexts, saveContentToLocal} from "../common.js";
 import {Downloader} from "../../common/downloader.js";
+import {buildEpub} from "../buildEpub.js";
 
 let infoWindowIndex = 0;
 let downloadInfoWindowIndex = 0;
@@ -119,6 +120,9 @@ function run() {
                     type: '下载全部',
                     icon: 'layui-icon-download-circle'
                 }, {
+                    type: '导出本书EPUB文件',
+                    icon: 'layui-icon-release'
+                },{
                     type: '清除未下载',
                     icon: 'layui-icon-refresh'
                 }, {
@@ -151,6 +155,10 @@ function run() {
                 if (type === "复制书名") {
                     let bookName = document.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText
                     copyContext(bookName).then();
+                    return;
+                }
+                if (type === "导出本书EPUB文件") {
+                    buildEpub(document.location.href).then();
                     return;
                 }
                 if (type === "清除未下载") {
