@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.16:02:18
+// @version    2026-01-12.17:06:47
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -275,7 +275,6 @@
   }
   class Downloader {
     constructor() {
-      if (Downloader.instance) return Downloader.instance;
       this.queue = [];
       this.running = false;
       this.downloaded = [];
@@ -285,6 +284,8 @@
       this.failedSet = new Set();
       this.config = {
         interval: 2e3,
+onTaskBefore: () => {
+        },
 onTaskComplete: () => {
         },
 onFinish: () => {
@@ -296,12 +297,11 @@ onCatch: (err) => {
 retryFailed: false,
 uniqueKey: (task) => task?.href
 };
-      Downloader.instance = this;
     }
-    static getInstance() {
-      if (!Downloader.instance) Downloader.instance = new Downloader();
-      return Downloader.instance;
-    }
+
+
+
+
 setConfig(options = {}) {
       this.config = { ...this.config, ...options };
     }
@@ -326,10 +326,14 @@ async start() {
         throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
       }
       this.running = true;
+      while (this.failed.length > 0) {
+        this.queue.unshift(this.failed.shift());
+      }
       while (this.queue.length > 0) {
         const task = this.queue.shift();
         const key = this.config.uniqueKey(task);
         try {
+          this.config.onTaskBefore(task);
           const success = await this.config.downloadHandler(task);
           task.endTime = new Date();
           this.pendingSet.delete(key);

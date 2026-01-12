@@ -1,6 +1,6 @@
 import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
-import {Downloader} from "./download.js";
 import {getTexts, saveContentToLocal} from "../common.js";
+import {Downloader} from "../../common/downloader.js";
 
 const downloader = new Downloader();
 let downloadWindowId = 0

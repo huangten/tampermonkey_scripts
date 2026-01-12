@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-10.13:16:10
+// @version    2026-01-12.17:06:28
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -62,6 +62,9 @@
   const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
   function cleanText(str) {
     return str.replace(/\u00A0/g, " ").replace(INVISIBLE_RE, "");
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   function init() {
     return Promise.all([
@@ -159,124 +162,6 @@
         this.fontsCss = await this.gmFetchText("https://raw.githubusercontent.com/huangten/tampermonkey_scripts/refs/heads/master/uaa/fonts.css");
       }
       return this.fontsCss;
-    }
-  }
-  class BackgroundTabScheduler {
-    constructor({
-      interval = 1e3,
-      jitter = 600
-    } = {}) {
-      this.queue = [];
-      this.interval = interval;
-      this.jitter = jitter;
-      this.running = false;
-    }
-    enqueue(url) {
-      if (this.running) return;
-      this.queue.push(url);
-    }
-    start() {
-      if (this.running) return;
-      this.running = true;
-      this._tick().then(() => {
-      });
-    }
-    clear() {
-      if (this.running) return;
-      this.running = false;
-      this.queue = [];
-    }
-    async _tick() {
-      if (!this.queue.length) {
-        this.running = false;
-        return;
-      }
-      const url = this.queue.shift();
-      this._openInBackground(url);
-      if (!this.queue.length) {
-        layui.layer.alert(
-          "打开完毕",
-          { icon: 1, shadeClose: true },
-          function(index) {
-            layer.close(index);
-          }
-        );
-      }
-      const delay = this.interval + Math.random() * this.jitter;
-      setTimeout(() => this._tick(), delay);
-    }
-    _openInBackground(url) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.dispatchEvent(
-        new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          ctrlKey: true
-})
-      );
-    }
-  }
-  class BackgroundExportEpubScheduler {
-    constructor({
-      interval = 1e3,
-      jitter = 600
-    } = {}) {
-      this.queue = [];
-      this.interval = interval;
-      this.jitter = jitter;
-      this.running = false;
-    }
-    enqueue(url) {
-      if (this.running) return;
-      this.queue.push(url);
-    }
-    async start() {
-      if (this.running) return;
-      this.running = true;
-      if (this.running) {
-        layui.layer.msg("开始导出中，请稍等。。。");
-      }
-      await this._tick();
-    }
-    clear() {
-      if (this.running) return;
-      this.running = false;
-      this.queue = [];
-    }
-    async _tick() {
-      if (!this.queue.length) {
-        this.running = false;
-        return;
-      }
-      const url = this.queue.shift();
-      await this._openInBackground(url);
-      if (!this.queue.length) {
-        layui.layer.alert(
-          "导出完毕",
-          { icon: 1, shadeClose: true },
-          function(index) {
-            layui.layer.close(index);
-          }
-        );
-      }
-      const delay = this.interval + Math.random() * this.jitter;
-      setTimeout(() => this._tick(), delay);
-    }
-    async _openInBackground(url) {
-      await buildEpub(url).catch((reason) => {
-        console.log(reason);
-        layui.layer.alert(
-          "导出失败",
-          { icon: 1, shadeClose: true },
-          function(index) {
-            layui.layer.close(index);
-          }
-        );
-        this.clear();
-      });
     }
   }
   function fetchBookIntro(url) {
@@ -716,272 +601,344 @@ ${ncxNav.join("\n")}
 </body>
 </html>`;
   }
+  class Downloader {
+    constructor() {
+      this.queue = [];
+      this.running = false;
+      this.downloaded = [];
+      this.failed = [];
+      this.pendingSet = new Set();
+      this.doneSet = new Set();
+      this.failedSet = new Set();
+      this.config = {
+        interval: 2e3,
+onTaskBefore: () => {
+        },
+onTaskComplete: () => {
+        },
+onFinish: () => {
+        },
+onCatch: (err) => {
+        },
+        downloadHandler: null,
+
+retryFailed: false,
+uniqueKey: (task) => task?.href
+};
+    }
+
+
+
+
+setConfig(options = {}) {
+      this.config = { ...this.config, ...options };
+    }
+add(task) {
+      const key = this.config.uniqueKey(task);
+      if (!key) return false;
+      if (this.pendingSet.has(key)) return false;
+      if (this.doneSet.has(key)) return false;
+      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
+      task.startTime = new Date();
+      this.queue.push(task);
+      this.pendingSet.add(key);
+      return true;
+    }
+clear() {
+      this.queue = [];
+      this.pendingSet.clear();
+    }
+async start() {
+      if (this.running) return;
+      if (typeof this.config.downloadHandler !== "function") {
+        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
+      }
+      this.running = true;
+      while (this.failed.length > 0) {
+        this.queue.unshift(this.failed.shift());
+      }
+      while (this.queue.length > 0) {
+        const task = this.queue.shift();
+        const key = this.config.uniqueKey(task);
+        try {
+          this.config.onTaskBefore(task);
+          const success = await this.config.downloadHandler(task);
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          if (success) {
+            this.downloaded.push(task);
+            this.doneSet.add(key);
+          } else {
+            this.failed.push(task);
+            this.failedSet.add(key);
+          }
+          this.config.onTaskComplete(task, success);
+        } catch (err) {
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          this.failed.push(task);
+          this.failedSet.add(key);
+          this.config.onTaskComplete(task, false);
+          this.running = false;
+          this.config.onCatch(err);
+          return;
+        }
+        if (this.queue.length > 0) await sleep(this.config.interval);
+      }
+      this.running = false;
+      this.config.onFinish(this.downloaded, this.failed);
+    }
+  }
+  let openBookListWindowIndex = 0;
+  const openNewWindowScheduler = new Downloader();
+  openNewWindowScheduler.setConfig({
+    interval: 50,
+    downloadHandler: async function(task) {
+      const a = document.createElement("a");
+      a.href = task.href;
+      a.target = "_blank";
+      a.click();
+    },
+    onTaskComplete: (task, success) => {
+      console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: async (downloaded, failed) => {
+      console.log("打开结束 ✅");
+    },
+    onCatch: async (err) => {
+      layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
+    }
+  });
+  const exportEpubScheduler = new Downloader();
+  exportEpubScheduler.setConfig({
+    interval: 50,
+    onTaskBefore: (task) => {
+    },
+    downloadHandler: async function(task) {
+      await buildEpub(task.href);
+    },
+    onTaskComplete: (task, success) => {
+      console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
+    },
+    onFinish: async (downloaded, failed) => {
+      console.log("打开结束 ✅");
+      layui.layer.min(openBookListWindow());
+      layui.layer.msg("书籍导出完毕", { icon: 1, shadeClose: true });
+    },
+    onCatch: async (err) => {
+      layui.layer.alert("导出失败：" + err.message, { icon: 5, shadeClose: true });
+    }
+  });
   init().then(() => {
     run();
   });
   function run() {
-    const scheduler = new BackgroundTabScheduler({
-      interval: 100,
-      jitter: 100
-    });
-    const exportEpubScheduler = new BackgroundExportEpubScheduler({
-      interval: 500,
-      jitter: 100
-    });
-    const fixbarStyle = `
-                    background-color: #ff5555;
-                    font-size: 12px;
-                    width:80px;
-                    height:36px;
-                    line-height:36px;
-                    margin-bottom:6px;
-                    border-radius:10px;
-                    `;
     layui.use(function() {
-      const util = layui.util;
-      util.fixbar({
-        bars: [
-
-
-
-
-{
-            type: "bookList",
-            content: "本页书籍单",
-            style: fixbarStyle
-          }
-        ],
+      layui.util.fixbar({
+        bars: [{
+          type: "本页书籍单",
+          icon: "layui-icon-list"
+        }],
         default: false,
-        css: { bottom: "15%" },
+        bgcolor: "#ff5722",
+        css: { bottom: "15%", right: 0 },
         margin: 0,
 click: function(type) {
-          if (type === "bookList") {
-            openPage();
+          if (type === "本页书籍单") {
+            openBookListWindow();
           }
         }
       });
     });
-    function openPage() {
-      layui.layer.open({
-        type: 1,
-        title: "书籍列表",
-        shadeClose: false,
-        offset: "r",
-        shade: 0,
-        anim: "slideLeft",
-area: ["25%", "80%"],
-        skin: "layui-layer-win10",
-maxmin: true,
-content: `<div id='openPage'></div>`,
-        success: function(layero, index, that) {
-          const tree = layui.tree;
-          const layer2 = layui.layer;
-          const util = layui.util;
-          tree.render({
-            elem: "#openPage",
-            data: getMenuTree(),
-            showCheckbox: true,
-            onlyIconControl: true,
-id: "title",
-            isJump: false,
-click: function(obj) {
-              let data = obj.data;
-              let all = getMenuTreeChecked(tree, "title");
-              for (let i = 0; i < all.length; i++) {
-                if (data.id === all[i].id) {
-                  all[i].checked = !data.checked;
-                }
-              }
-              tree.reload("title", { data: all });
-            }
-          });
-          const openPagefixbarStyle = `
-                    background-color: #ff5555;
-                    font-size: 16px;
-                    width:120px;
-                    height:36px;
-                    line-height:36px;
-                    margin-bottom:6px;
-                    border-radius:10px;
-                    `;
-          util.fixbar({
-            bars: [
-              {
-                type: "全选",
-                content: "全选",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "1-12",
-                content: "选中1-12",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "13-24",
-                content: "选中13-24",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "25-36",
-                content: "选中25-36",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "37-49",
-                content: "选中37-49",
-                style: openPagefixbarStyle
-              },
-              {
-                id: "getCheckedNodeData",
-                type: "getCheckedNodeData",
-                content: "打开选中书籍",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "exportEpub",
-                content: "导出EPUB",
-                style: openPagefixbarStyle
-              },
-              {
-                type: "clear",
-                content: "清除选中",
-                style: openPagefixbarStyle
-              }
-            ],
-            default: false,
-css: { bottom: "15%", right: 30 },
-            target: layero,
-click: function(type) {
-              if (type === "getCheckedNodeData") {
-                if (scheduler.running) {
-                  layer2.msg("正在打开中，请等待打开完后再继续");
-                  return;
-                }
-                getCheckedNodeData();
-                scheduler.start();
-                return;
-              }
-              if (type === "exportEpub") {
-                if (exportEpubScheduler.running) {
-                  layer2.msg("正在导出中，请等待导出完后再继续");
-                  return;
-                }
-                exportEpub().then(() => {
-                });
-                return;
-              }
-              if (type === "clear") {
-                reloadTree();
-                scheduler.clear();
-                exportEpubScheduler.clear();
-                return;
-              }
-              tree.reload("title", { data: setMenuTreeChecked(tree, "title", type) });
-            }
-          });
-          function getCheckedNodeData() {
-            let checkedData = tree.getChecked("title");
-            checkedData.reverse();
-            for (let i = 0; i < checkedData.length; i++) {
-              scheduler.enqueue(checkedData[i].href);
-            }
-          }
-          async function exportEpub() {
-            let checkedData = tree.getChecked("title");
-            checkedData.reverse();
-            for (let i = 0; i < checkedData.length; i++) {
-              exportEpubScheduler.enqueue(checkedData[i].href);
-            }
-            await exportEpubScheduler.start();
-          }
-          function reloadTree() {
-            tree.reload("title", {
-data: getMenuTree()
-            });
-          }
-        }
-      });
+  }
+  function openBookListWindow() {
+    if (openBookListWindowIndex !== 0) {
+      return openBookListWindowIndex;
     }
-    function getMenuTree() {
-      let menus = [];
-      let lis = document.querySelectorAll(".cover_box > a");
-      for (let index = 0; index < lis.length; index++) {
-        let url = new URL(lis[index].href);
-        let params = url.searchParams;
-        menus.push({
-          "id": params.get("id"),
-          "title": lis[index].title,
-          "href": lis[index].href,
-          "spread": true,
-          "field": "",
-          "checked": false
+    openBookListWindowIndex = layui.layer.open({
+      type: 1,
+      title: "书籍列表",
+      shadeClose: false,
+      closeBtn: false,
+      offset: "r",
+      shade: 0,
+      anim: "slideLeft",
+area: ["60%", "80%"],
+      skin: "layui-layer-win10",
+moveOut: true,
+      maxmin: true,
+content: `<div id='openPage'></div>`,
+      btn: ["全选", "1-12", "13-24", "25-36", "37-49", "打开选中书籍", "导出EPUB", "清除选中"],
+      btn1: function(index, layero, that) {
+        const type = "全选";
+        layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
+        return false;
+      },
+      btn2: function(index, layero, that) {
+        const type = "1-12";
+        layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
+        return false;
+      },
+      btn3: function(index, layero, that) {
+        const type = "13-24";
+        layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
+        return false;
+      },
+      btn4: function(index, layero, that) {
+        const type = "25-36";
+        layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
+        return false;
+      },
+      btn5: function(index, layero, that) {
+        const type = "37-49";
+        layui.tree.reload("bookListTree", { data: setMenuTreeChecked(layui.tree, "bookListTree", type) });
+        return false;
+      },
+      btn6: function(index, layero, that) {
+        if (openNewWindowScheduler.running) {
+          layui.layer.msg("正在打开中，请等待打开完后再继续");
+          return;
+        }
+        openNewWindow().then();
+        return false;
+      },
+      btn7: function(index, layero, that) {
+        if (exportEpubScheduler.running) {
+          layui.layer.msg("正在导出中，请等待导出完后再继续");
+          return;
+        }
+        exportEpub().then();
+        return false;
+      },
+      btn8: function(index, layero, that) {
+        reloadTree();
+        openNewWindowScheduler.clear();
+        exportEpubScheduler.clear();
+        return false;
+      },
+      success: function(layero, index, that) {
+        layui.tree.render({
+          elem: "#openPage",
+          data: getMenuTree(),
+          showCheckbox: true,
+          onlyIconControl: true,
+id: "bookListTree",
+          isJump: false,
+click: function(obj) {
+            let data = obj.data;
+            let all = getMenuTreeChecked(layui.tree, "bookListTree");
+            for (let i = 0; i < all.length; i++) {
+              if (data.id === all[i].id) {
+                all[i].checked = !data.checked;
+              }
+            }
+            layui.tree.reload("bookListTree", { data: all });
+          }
         });
       }
-      return menus;
+    });
+    return openBookListWindowIndex;
+  }
+  async function openNewWindow() {
+    let checkedData = layui.tree.getChecked("bookListTree");
+    checkedData.reverse();
+    checkedData.forEach((data) => {
+      openNewWindowScheduler.add(data);
+    });
+    await openNewWindowScheduler.start();
+  }
+  async function exportEpub() {
+    let checkedData = layui.tree.getChecked("bookListTree");
+    checkedData.reverse();
+    checkedData.forEach((date) => {
+      exportEpubScheduler.add(date);
+    });
+    await exportEpubScheduler.start();
+  }
+  function reloadTree() {
+    layui.tree.reload("bookListTree", {
+data: getMenuTree()
+    });
+  }
+  function getMenuTree() {
+    let menus = [];
+    let lis = document.querySelectorAll(".cover_box > a");
+    for (let index = 0; index < lis.length; index++) {
+      let url = new URL(lis[index].href);
+      let params = url.searchParams;
+      menus.push({
+        "id": params.get("id"),
+        "title": lis[index].title,
+        "href": lis[index].href,
+        "spread": true,
+        "field": "",
+        "checked": false
+      });
     }
-    function setMenuTreeChecked(t, treeId, type) {
-      let all = getMenuTreeChecked(t, treeId);
-      switch (type) {
-        case "全选":
-          {
-            for (let i = 0; i < all.length; i++) {
-              all[i].checked = true;
-            }
+    return menus;
+  }
+  function setMenuTreeChecked(t, treeId, type) {
+    let all = getMenuTreeChecked(t, treeId);
+    switch (type) {
+      case "全选":
+        {
+          for (let i = 0; i < all.length; i++) {
+            all[i].checked = true;
           }
-          break;
-        case "1-12":
-          {
-            for (let i = 0; i < all.length; i++) {
-              if (i >= 0 && i < 12) {
-                all[i].checked = !all[i].checked;
-              }
-            }
-          }
-          break;
-        case "13-24":
-          {
-            for (let i = 0; i < all.length; i++) {
-              if (i >= 12 && i < 24) {
-                all[i].checked = !all[i].checked;
-              }
-            }
-          }
-          break;
-        case "25-36":
-          {
-            for (let i = 0; i < all.length; i++) {
-              if (i >= 24 && i < 36) {
-                all[i].checked = !all[i].checked;
-              }
-            }
-          }
-          break;
-        case "37-49":
-          {
-            for (let i = 0; i < all.length; i++) {
-              if (i >= 36 && i <= 48) {
-                all[i].checked = !all[i].checked;
-              }
-            }
-          }
-          break;
-      }
-      return all;
-    }
-    function getMenuTreeChecked(t, treeId) {
-      let checkeds = t.getChecked(treeId);
-      let checkedIds = [];
-      for (let i = 0; i < checkeds.length; i++) {
-        checkedIds.push(checkeds[i].id);
-      }
-      let all = getMenuTree();
-      for (let i = 0; i < all.length; i++) {
-        if (checkedIds.includes(all[i].id)) {
-          all[i].checked = true;
         }
-      }
-      return all;
+        break;
+      case "1-12":
+        {
+          for (let i = 0; i < all.length; i++) {
+            if (i >= 0 && i < 12) {
+              all[i].checked = !all[i].checked;
+            }
+          }
+        }
+        break;
+      case "13-24":
+        {
+          for (let i = 0; i < all.length; i++) {
+            if (i >= 12 && i < 24) {
+              all[i].checked = !all[i].checked;
+            }
+          }
+        }
+        break;
+      case "25-36":
+        {
+          for (let i = 0; i < all.length; i++) {
+            if (i >= 24 && i < 36) {
+              all[i].checked = !all[i].checked;
+            }
+          }
+        }
+        break;
+      case "37-49":
+        {
+          for (let i = 0; i < all.length; i++) {
+            if (i >= 36 && i <= 48) {
+              all[i].checked = !all[i].checked;
+            }
+          }
+        }
+        break;
     }
+    return all;
+  }
+  function getMenuTreeChecked(t, treeId) {
+    let checked = t.getChecked(treeId);
+    let checkedIds = [];
+    for (let i = 0; i < checked.length; i++) {
+      checkedIds.push(checked[i].id);
+    }
+    let all = getMenuTree();
+    for (let i = 0; i < all.length; i++) {
+      if (checkedIds.includes(all[i].id)) {
+        all[i].checked = true;
+      }
+    }
+    return all;
   }
 
 })(saveAs, JSZip);

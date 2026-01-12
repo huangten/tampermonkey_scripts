@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-11.22:03:25
+// @version    2026-01-12.17:06:19
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -98,94 +98,6 @@
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
-  class Downloader {
-    constructor() {
-      this.queue = [];
-      this.running = false;
-      this.downloaded = [];
-      this.failed = [];
-      this.pendingSet = new Set();
-      this.doneSet = new Set();
-      this.failedSet = new Set();
-      this.config = {
-        interval: 2e3,
-onTaskBefore: () => {
-        },
-onTaskComplete: () => {
-        },
-onFinish: () => {
-        },
-onCatch: (err) => {
-        },
-        downloadHandler: null,
-
-retryFailed: false,
-uniqueKey: (task) => task?.href
-};
-    }
-
-
-
-
-setConfig(options = {}) {
-      this.config = { ...this.config, ...options };
-    }
-add(task) {
-      const key = this.config.uniqueKey(task);
-      if (!key) return false;
-      if (this.pendingSet.has(key)) return false;
-      if (this.doneSet.has(key)) return false;
-      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
-      task.startTime = new Date();
-      this.queue.push(task);
-      this.pendingSet.add(key);
-      return true;
-    }
-clear() {
-      this.queue = [];
-      this.pendingSet.clear();
-    }
-async start() {
-      if (this.running) return;
-      if (typeof this.config.downloadHandler !== "function") {
-        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
-      }
-      this.running = true;
-      while (this.failed.length > 0) {
-        this.queue.push(this.failed.shift());
-      }
-      while (this.queue.length > 0) {
-        const task = this.queue.shift();
-        const key = this.config.uniqueKey(task);
-        try {
-          this.config.onTaskBefore(task);
-          const success = await this.config.downloadHandler(task);
-          task.endTime = new Date();
-          this.pendingSet.delete(key);
-          if (success) {
-            this.downloaded.push(task);
-            this.doneSet.add(key);
-          } else {
-            this.failed.push(task);
-            this.failedSet.add(key);
-          }
-          this.config.onTaskComplete(task, success);
-        } catch (err) {
-          task.endTime = new Date();
-          this.pendingSet.delete(key);
-          this.failed.push(task);
-          this.failedSet.add(key);
-          this.config.onTaskComplete(task, false);
-          this.running = false;
-          this.config.onCatch(err);
-          return;
-        }
-        if (this.queue.length > 0) await sleep(this.config.interval);
-      }
-      this.running = false;
-      this.config.onFinish(this.downloaded, this.failed);
-    }
-  }
   function saveContentToLocal(el = document) {
     try {
       let title = getTitle(el);
@@ -271,6 +183,94 @@ async start() {
   }
   function getAuthorInfo(el = document) {
     return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
+  }
+  class Downloader {
+    constructor() {
+      this.queue = [];
+      this.running = false;
+      this.downloaded = [];
+      this.failed = [];
+      this.pendingSet = new Set();
+      this.doneSet = new Set();
+      this.failedSet = new Set();
+      this.config = {
+        interval: 2e3,
+onTaskBefore: () => {
+        },
+onTaskComplete: () => {
+        },
+onFinish: () => {
+        },
+onCatch: (err) => {
+        },
+        downloadHandler: null,
+
+retryFailed: false,
+uniqueKey: (task) => task?.href
+};
+    }
+
+
+
+
+setConfig(options = {}) {
+      this.config = { ...this.config, ...options };
+    }
+add(task) {
+      const key = this.config.uniqueKey(task);
+      if (!key) return false;
+      if (this.pendingSet.has(key)) return false;
+      if (this.doneSet.has(key)) return false;
+      if (this.failedSet.has(key) && !this.config.retryFailed) return false;
+      task.startTime = new Date();
+      this.queue.push(task);
+      this.pendingSet.add(key);
+      return true;
+    }
+clear() {
+      this.queue = [];
+      this.pendingSet.clear();
+    }
+async start() {
+      if (this.running) return;
+      if (typeof this.config.downloadHandler !== "function") {
+        throw new Error("请先通过 setConfig 设置 downloadHandler 回调");
+      }
+      this.running = true;
+      while (this.failed.length > 0) {
+        this.queue.unshift(this.failed.shift());
+      }
+      while (this.queue.length > 0) {
+        const task = this.queue.shift();
+        const key = this.config.uniqueKey(task);
+        try {
+          this.config.onTaskBefore(task);
+          const success = await this.config.downloadHandler(task);
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          if (success) {
+            this.downloaded.push(task);
+            this.doneSet.add(key);
+          } else {
+            this.failed.push(task);
+            this.failedSet.add(key);
+          }
+          this.config.onTaskComplete(task, success);
+        } catch (err) {
+          task.endTime = new Date();
+          this.pendingSet.delete(key);
+          this.failed.push(task);
+          this.failedSet.add(key);
+          this.config.onTaskComplete(task, false);
+          this.running = false;
+          this.config.onCatch(err);
+          return;
+        }
+        if (this.queue.length > 0) await sleep(this.config.interval);
+      }
+      this.running = false;
+      this.config.onFinish(this.downloaded, this.failed);
+    }
   }
   const downloader = new Downloader();
   let downloadWindowId = 0;

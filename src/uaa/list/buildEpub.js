@@ -3,151 +3,6 @@ import {CommonRes} from "../common.js";
 import JSZip from "jszip";
 import {saveAs} from "file-saver";
 
-export class BackgroundTabScheduler {
-    constructor({
-                    interval = 1000,
-                    jitter = 600
-                } = {}) {
-        this.queue = [];
-        this.interval = interval;
-        this.jitter = jitter;
-        this.running = false;
-    }
-
-    enqueue(url) {
-        if (this.running) return;
-        this.queue.push(url);
-    }
-
-    start() {
-        // if (!userEvent || !userEvent.isTrusted) {
-        //     console.warn('必须在用户事件中启动');
-        //     return;
-        // }
-
-        if (this.running) return;
-        this.running = true;
-
-        this._tick().then(() => {
-        });
-    }
-
-    clear() {
-        if (this.running) return;
-        this.running = false;
-        this.queue = [];
-    }
-
-    async _tick() {
-        if (!this.queue.length) {
-            this.running = false;
-            return;
-        }
-
-        const url = this.queue.shift();
-        this._openInBackground(url);
-
-        // 此处为导出完成后发出通知
-        if (!this.queue.length) {
-            layui.layer.alert('打开完毕',
-                {icon: 1, shadeClose: true},
-                function (index) {
-                    layer.close(index);
-                });
-        }
-
-        const delay =
-            this.interval +
-            Math.random() * this.jitter;
-
-        setTimeout(() => this._tick(), delay);
-    }
-
-    _openInBackground(url) {
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-
-        // 不插入 DOM，降低痕迹
-        a.dispatchEvent(
-            new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                ctrlKey: true,
-                // view: window
-            })
-        );
-    }
-}
-
-
-export class BackgroundExportEpubScheduler {
-    constructor({
-                    interval = 1000, jitter = 600
-                } = {}) {
-        this.queue = [];
-        this.interval = interval;
-        this.jitter = jitter;
-        this.running = false;
-    }
-
-    enqueue(url) {
-        if (this.running) return;
-        this.queue.push(url);
-    }
-
-    async start() {
-        if (this.running) return;
-        this.running = true;
-        if (this.running) {
-            layui.layer.msg("开始导出中，请稍等。。。");
-        }
-        await this._tick();
-    }
-
-    clear() {
-        if (this.running) return;
-        this.running = false;
-        this.queue = [];
-    }
-
-    async _tick() {
-        if (!this.queue.length) {
-            this.running = false;
-            return;
-        }
-
-        const url = this.queue.shift();
-        await this._openInBackground(url);
-
-        // 此处为导出完成后发出通知
-        if (!this.queue.length) {
-            layui.layer.alert('导出完毕',
-                {icon: 1, shadeClose: true},
-                function (index) {
-                    layui.layer.close(index);
-                });
-        }
-
-        const delay = this.interval + Math.random() * this.jitter;
-
-        setTimeout(() => this._tick(), delay);
-    }
-
-    async _openInBackground(url) {
-        await buildEpub(url).catch((reason) => {
-            console.log(reason)
-            layui.layer.alert('导出失败',
-                {icon: 1, shadeClose: true},
-                function (index) {
-                    layui.layer.close(index);
-                });
-            this.clear();
-        });
-    }
-}
-
 function fetchBookIntro(url) {
     return fetch(url)
         .then(response => {
@@ -165,8 +20,7 @@ function fetchBookIntro(url) {
         });
 }
 
-
-async function buildEpub(url) {
+export async function buildEpub(url) {
     try {
         const zip = new JSZip();
 
@@ -369,7 +223,6 @@ ${ncxNav.join('\n')}
     }
 
 }
-
 
 function getChapterMenu(doc) {
     let menus = [];

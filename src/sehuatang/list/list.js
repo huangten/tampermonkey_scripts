@@ -1,6 +1,8 @@
 import {check18R, getInfo} from "../common.js";
 import {init, sleep, waitForElement} from "../../common/common.js";
-import {destroyIframeAsync, Downloader} from "./download.js";
+
+import {Downloader} from "../../common/downloader.js";
+import {destroyIframeAsync} from "./util.js";
 
 
 const downloader = new Downloader();
@@ -69,6 +71,7 @@ async function downloadV1(task) {
     await destroyIframeAsync(IframeId);
     return true;
 }
+
 
 init().then(() => {
     run();

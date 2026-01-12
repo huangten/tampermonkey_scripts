@@ -1,8 +1,9 @@
-import {sleep} from "../../common/common.js";
+import {sleep} from "./common.js";
+
 
 export class Downloader {
     constructor() {
-        if (Downloader.instance) return Downloader.instance;
+        // if (Downloader.instance) return Downloader.instance;
 
         this.queue = [];                  // 待下载任务
         this.running = false;             // 下载器是否在执行
@@ -18,12 +19,13 @@ export class Downloader {
         // 下载失败
         this.config = {
             interval: 2000,               // 任务间间隔 ms
+            onTaskBefore: () => {
+            },     // 单任务启动前回调
             onTaskComplete: () => {
             },     // 单任务完成回调
             onFinish: () => {
             },           // 全部任务完成回调
             onCatch: (err) => {
-
             },
             downloadHandler: null,      // 下载逻辑回调
             // === 新增策略 ===
@@ -31,13 +33,13 @@ export class Downloader {
             uniqueKey: task => task?.href  // 去重字段提取器
         };
 
-        Downloader.instance = this;
+        // Downloader.instance = this;
     }
 
-    static getInstance() {
-        if (!Downloader.instance) Downloader.instance = new Downloader();
-        return Downloader.instance;
-    }
+    // static getInstance() {
+    //     if (!Downloader.instance) Downloader.instance = new Downloader();
+    //     return Downloader.instance;
+    // }
 
     // 更新配置
     setConfig(options = {}) {
@@ -81,12 +83,16 @@ export class Downloader {
 
         this.running = true;
 
+        while (this.failed.length > 0){
+            this.queue.unshift(this.failed.shift())
+        }
+
         while (this.queue.length > 0) {
             const task = this.queue.shift();
 
             const key = this.config.uniqueKey(task);
-
             try {
+                this.config.onTaskBefore(task);
                 const success = await this.config.downloadHandler(task);
                 task.endTime = new Date();
 
@@ -99,7 +105,6 @@ export class Downloader {
                     this.failed.push(task);
                     this.failedSet.add(key);
                 }
-
                 this.config.onTaskComplete(task, success);
 
             } catch (err) {
@@ -119,26 +124,5 @@ export class Downloader {
 
         this.running = false;
         this.config.onFinish(this.downloaded, this.failed);
-    }
-}
-
-export async function destroyIframeAsync(iframeId) {
-    let iframe = document.getElementById(iframeId);
-    if (iframe) {
-        try {
-            if (iframe) {
-                iframe.onload = null;
-                iframe.onerror = null;
-                iframe.contentDocument.write("");
-                iframe.contentDocument.close();
-                iframe.src = "about:blank";
-                await sleep(0);
-                iframe.remove();
-                iframe = null;
-            }
-        } catch (e) {
-            console.error("清空 iframe 失败", e);
-        }
-        console.log("✅ iframe 已完全清理并销毁");
     }
 }
