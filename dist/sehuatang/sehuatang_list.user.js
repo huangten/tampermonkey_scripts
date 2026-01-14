@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-14.10:52:16
+// @version    2026-01-14.11:19:19
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -453,7 +453,8 @@ async start() {
 icon: "layui-icon-list"
         }],
         default: false,
-css: { bottom: "20%", right: 10 },
+        bgcolor: "#BA350F",
+        css: { bottom: "20%", right: 10 },
         margin: 0,
         on: {
 mouseenter: function(type) {

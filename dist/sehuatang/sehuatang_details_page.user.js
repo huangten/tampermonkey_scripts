@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.17:06:51
+// @version    2026-01-14.11:19:26
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*
@@ -300,11 +300,11 @@
         bars: [
           {
             type: "下载信息和种子",
-            icon: "layui-icon-down"
+            icon: "layui-icon-download-circle"
           },
           {
             type: "仅复制标题",
-            icon: "layui-icon-ok"
+            icon: "layui-icon-vercode"
           },
           {
             type: "复制标题和下载种子",
@@ -312,11 +312,12 @@
           },
           {
             type: "复制标题和磁力信息",
-            icon: "layui-icon-triangle-r"
+            icon: "layui-icon-ok-circle"
           }
         ],
         default: false,
         css: { bottom: "21%" },
+        bgcolor: "#BA350F",
         margin: 0,
         on: {
 mouseenter: function(type) {

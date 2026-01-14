@@ -24,11 +24,11 @@ function run() {
             bars: [
                 {
                     type: '下载信息和种子',
-                    icon: 'layui-icon-down'
+                    icon: 'layui-icon-download-circle'
                 },
                 {
                     type: '仅复制标题',
-                    icon: 'layui-icon-ok'
+                    icon: 'layui-icon-vercode'
                 },
                 {
                     type: '复制标题和下载种子',
@@ -36,11 +36,12 @@ function run() {
                 },
                 {
                     type: '复制标题和磁力信息',
-                    icon: 'layui-icon-triangle-r'
+                    icon: 'layui-icon-ok-circle'
                 }
             ],
             default: false,
             css: {bottom: "21%"},
+            bgcolor: '#BA350F',
             margin: 0,
             on: { // 任意事件 --  v2.8.0 新增
                 mouseenter: function (type) {

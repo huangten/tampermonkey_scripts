@@ -98,7 +98,7 @@ function run() {
                 icon: 'layui-icon-list'
             }],
             default: false,
-            // bgcolor:'#f9f5e5',
+            bgcolor:'#BA350F',
             css: {bottom: "20%", right: 10},
             margin: 0,
             on: { // 任意事件 --  v2.8.0 新增
