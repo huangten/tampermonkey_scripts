@@ -1,8 +1,6 @@
 import {check18R, getInfo} from "../common.js";
-import {init, sleep, waitForElement} from "../../common/common.js";
-
+import {destroyIframeElementAsync, init, sleep, waitForElement} from "../../common/common.js";
 import {Downloader} from "../../common/downloader.js";
-import {destroyIframeAsync} from "./util.js";
 
 
 const downloader = new Downloader();
@@ -42,8 +40,7 @@ async function downloadV1(task) {
     document.getElementById('downloadInfoContentId').innerText = task.title;
     // 创建 iframe
     const iframe = document.createElement("iframe");
-    const IframeId = "_iframe_" + crypto.randomUUID();
-    iframe.id = IframeId;
+    iframe.id = "_iframe_" + crypto.randomUUID();
     iframe.src = task.href;
     iframe.style.display = "block";
     iframe.style.border = "none";
@@ -68,7 +65,7 @@ async function downloadV1(task) {
 
     getInfo(iframe.contentDocument);
     await sleep(100);
-    await destroyIframeAsync(IframeId);
+    await destroyIframeElementAsync(iframe);
     return true;
 }
 

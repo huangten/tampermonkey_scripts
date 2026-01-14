@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强 V2
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.17:06:47
+// @version    2026-01-14.10:52:21
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -80,6 +80,24 @@
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
+  }
+  async function destroyIframeElementAsync(iframe) {
+    if (iframe && iframe instanceof HTMLIFrameElement) {
+      try {
+        iframe.onload = null;
+        iframe.onerror = null;
+        iframe.contentDocument.write("");
+        iframe.contentDocument.close();
+        iframe.src = "about:blank";
+        await sleep(50);
+        iframe.remove();
+        iframe = null;
+        await sleep(50);
+      } catch (e) {
+        console.error("清空 iframe 失败", e);
+      }
+      console.log("✅ iframe 已完全清理并销毁");
+    }
   }
   function check18R() {
     if (document.getElementsByTagName("head")[0].getElementsByTagName("title")[0].innerText.trim().indexOf("SEHUATANG.ORG") > -1) {
@@ -361,26 +379,6 @@ async start() {
       this.config.onFinish(this.downloaded, this.failed);
     }
   }
-  async function destroyIframeAsync(iframeId) {
-    let iframe = document.getElementById(iframeId);
-    if (iframe) {
-      try {
-        if (iframe) {
-          iframe.onload = null;
-          iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
-          iframe.src = "about:blank";
-          await sleep(0);
-          iframe.remove();
-          iframe = null;
-        }
-      } catch (e) {
-        console.error("清空 iframe 失败", e);
-      }
-      console.log("✅ iframe 已完全清理并销毁");
-    }
-  }
   const downloader = new Downloader();
   let downloadWindowId = 0;
   const divId = "downloadWindowDivId";
@@ -438,8 +436,7 @@ area: ["70%", "90%"],
     const winId = await ensureDownloadWindow(divId);
     layui.layer.title(task.title, winId);
     const iframe = document.createElement("iframe");
-    const IframeId = "_iframe__" + crypto.randomUUID();
-    iframe.id = IframeId;
+    iframe.id = "_iframe__" + crypto.randomUUID();
     iframe.src = task.href;
     iframe.style.display = "block";
     iframe.style.border = "none";
@@ -461,7 +458,7 @@ area: ["70%", "90%"],
     });
     getInfo(iframe.contentDocument);
     await sleep(100);
-    await destroyIframeAsync(IframeId);
+    await destroyIframeElementAsync(iframe);
     return true;
   }
   init().then(() => {
