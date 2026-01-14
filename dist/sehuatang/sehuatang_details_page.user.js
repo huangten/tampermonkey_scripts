@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 详情页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-14.11:19:26
+// @version    2026-01-14.11:34:15
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/thread*
@@ -12,6 +12,8 @@
 // @grant      GM_download
 // @grant      GM_getResourceText
 // @grant      GM_notification
+// @grant      GM_registerMenuCommand
+// @grant      GM_unregisterMenuCommand
 // @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
@@ -282,6 +284,7 @@
   function getPageLink(el) {
     return el.querySelector("h1.ts").nextElementSibling.querySelector("a").href;
   }
+  var _GM_registerMenuCommand = (() => typeof GM_registerMenuCommand != "undefined" ? GM_registerMenuCommand : void 0)();
   init().then(() => {
     run();
   });
@@ -294,6 +297,18 @@
     setTimeout(() => {
       check18R();
     }, 500);
+    _GM_registerMenuCommand("在 missav.ai 中打开", (event) => {
+      const a = document.createElement("a");
+      a.href = "https://missav.ai/dm45/cn/" + document.getSelection().toString().trim();
+      a.target = "_blank";
+      a.click();
+    });
+    _GM_registerMenuCommand("在 jable.tv 中打开", (event) => {
+      const a = document.createElement("a");
+      a.href = `https://jable.tv/videos/${document.getSelection().toString().trim()}/?lang=jp`;
+      a.target = "_blank";
+      a.click();
+    });
     layui.use(function() {
       const util = layui.util;
       util.fixbar({

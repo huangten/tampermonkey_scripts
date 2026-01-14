@@ -16,6 +16,19 @@ function run() {
         check18R();
     }, 500);
 
+    GM_registerMenuCommand('在 missav.ai 中打开', (event) => {
+        const a = document.createElement('a');
+        a.href = 'https://missav.ai/dm45/cn/' + document.getSelection().toString().trim();
+        a.target = '_blank';
+        a.click();
+    });
+    GM_registerMenuCommand('在 jable.tv 中打开', (event) => {
+        const a = document.createElement('a');
+        a.href = `https://jable.tv/videos/${document.getSelection().toString().trim()}/?lang=jp`;
+        a.target = '_blank';
+        a.click();
+    });
+
     layui.use(function () {
         const util = layui.util;
         const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"

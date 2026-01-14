@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-14.11:19:19
+// @version    2026-01-14.11:34:24
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -11,6 +11,8 @@
 // @grant      GM_download
 // @grant      GM_getResourceText
 // @grant      GM_notification
+// @grant      GM_registerMenuCommand
+// @grant      GM_unregisterMenuCommand
 // @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
