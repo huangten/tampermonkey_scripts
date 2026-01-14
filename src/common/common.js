@@ -94,3 +94,21 @@ export function init() {
     ]);
 }
 
+export async function destroyIframeElementAsync(iframe) {
+    if (iframe && iframe instanceof HTMLIFrameElement) {
+        try {
+            iframe.onload = null;
+            iframe.onerror = null;
+            iframe.contentDocument.write("");
+            iframe.contentDocument.close();
+            iframe.src = "about:blank";
+            await sleep(50);
+            iframe.remove();
+            iframe = null;
+            await sleep(50);
+        } catch (e) {
+            console.error("清空 iframe 失败", e);
+        }
+        console.log("✅ iframe 已完全清理并销毁");
+    }
+}

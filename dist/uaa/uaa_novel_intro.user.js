@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.20:02:49
+// @version    2026-01-14.10:38:16
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -99,6 +99,24 @@
       addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"),
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
+  }
+  async function destroyIframeElementAsync(iframe) {
+    if (iframe && iframe instanceof HTMLIFrameElement) {
+      try {
+        iframe.onload = null;
+        iframe.onerror = null;
+        iframe.contentDocument.write("");
+        iframe.contentDocument.close();
+        iframe.src = "about:blank";
+        await sleep(50);
+        iframe.remove();
+        iframe = null;
+        await sleep(50);
+      } catch (e) {
+        console.error("清空 iframe 失败", e);
+      }
+      console.log("✅ iframe 已完全清理并销毁");
+    }
   }
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
   class CommonRes {
@@ -823,6 +841,10 @@ ${ncxNav.join("\n")}
       document.getElementById("downloadInfoContentId").href = task.href;
     },
     downloadHandler: async function(task) {
+      let oldIframes = document.getElementById(downloadInfoWindowDivId).getElementsByTagName("iframe");
+      for (let i = 0; i < oldIframes.length; i++) {
+        await destroyIframeElementAsync(oldIframes[i]);
+      }
       let iframe = document.createElement("iframe");
       iframe.id = "__uaa_iframe__" + crypto.randomUUID();
       iframe.src = task.href;
@@ -847,23 +869,7 @@ ${ncxNav.join("\n")}
         throw new Error("章节内容不完整，结束下载");
       const success = saveContentToLocal(el);
       await sleep(300);
-      try {
-        await sleep(100);
-        if (iframe) {
-          iframe.onload = null;
-          iframe.onerror = null;
-          iframe.contentDocument.write("");
-          iframe.contentDocument.close();
-          iframe.src = "about:blank";
-          await sleep(50);
-          iframe.remove();
-          iframe = null;
-          await sleep(50);
-        }
-      } catch (e) {
-        console.error("清空 iframe 失败", e);
-      }
-      console.log("✅ iframe 已完全清理并销毁");
+      await destroyIframeElementAsync(iframe);
       return success;
     },
     onTaskComplete: (task, success) => {

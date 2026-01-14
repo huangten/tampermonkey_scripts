@@ -1,4 +1,4 @@
-import {cleanText, copyContext, init, sleep, waitForElement} from "../../common/common.js";
+import {cleanText, copyContext, destroyIframeElementAsync, init, sleep, waitForElement} from "../../common/common.js";
 import {getTexts, saveContentToLocal} from "../common.js";
 import {Downloader} from "../../common/downloader.js";
 import {buildEpub} from "../buildEpub.js";
@@ -18,6 +18,10 @@ downloader.setConfig({
         document.getElementById('downloadInfoContentId').href = task.href;
     },
     downloadHandler: async function (task) {
+        let oldIframes = document.getElementById(downloadInfoWindowDivId).getElementsByTagName('iframe');
+        for (let i = 0; i < oldIframes.length; i++) {
+            await destroyIframeElementAsync(oldIframes[i])
+        }
         // 创建 iframe
         let iframe = document.createElement("iframe");
         iframe.id = "__uaa_iframe__" + crypto.randomUUID()
@@ -47,24 +51,7 @@ downloader.setConfig({
             throw new Error("章节内容不完整，结束下载");
         const success = saveContentToLocal(el);
         await sleep(300);
-
-        try {
-            await sleep(100);
-            if (iframe) {
-                iframe.onload = null;
-                iframe.onerror = null;
-                iframe.contentDocument.write("");
-                iframe.contentDocument.close();
-                iframe.src = "about:blank";
-                await sleep(50);
-                iframe.remove();
-                iframe = null;
-                await sleep(50);
-            }
-        } catch (e) {
-            console.error("清空 iframe 失败", e);
-        }
-        console.log("✅ iframe 已完全清理并销毁");
+        await destroyIframeElementAsync(iframe);
         return success;
     },
     onTaskComplete: (task, success) => {
@@ -122,7 +109,7 @@ function run() {
                 }, {
                     type: '导出本书EPUB文件',
                     icon: 'layui-icon-release'
-                },{
+                }, {
                     type: '清除未下载',
                     icon: 'layui-icon-refresh'
                 }, {

@@ -1,6 +1,16 @@
 {
   "compilerOptions": {
-    "lib": ["ES2015", "ESNext"],
-    "target": "ES6"
-  }
+    "target": "ES2020", // 目标 JS 版本
+    "module": "ESNext", // 模块系统
+    "lib": ["ES2020", "DOM"], // 包含 DOM API
+    "strict": true, // 开启严格模式
+    "outDir": "./dist", // 输出目录
+    "rootDir": "./src", // 源文件目录
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowUmdGlobalAccess": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"], // 包含需要编译的源文件
+  "exclude": ["node_modules"]
 }
