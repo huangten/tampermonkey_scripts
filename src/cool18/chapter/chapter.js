@@ -85,7 +85,6 @@ function getPreTagContent() {
 }
 
 
-
 function downloadChapterContent() {
     const titleElements = document.getElementsByClassName('main-title');
     const titleContent = titleElements[0].innerText.trim();
@@ -96,7 +95,7 @@ function downloadChapterContent() {
     const contents = getPreElement().innerText.split('\n')
         .filter(Boolean).map((c) => `${c.trimEnd()}`);
     const content = bookName + '\n' + title
-        + '\n\n\n\n' + contents.join('\n')
+        + '\n\n\n\n' + contents.join('\n') + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
     saveContentToLocationTxtFile(title, content);
 }
 
@@ -132,6 +131,7 @@ function downloadChapterContentV2() {
     const content = bookName + '\n' + title
         + '\n\n\n\n' + contents.join('\n')
         // + '\n\n\n\n' + contents.map((c) => `<p>${c.trim()}</p>`).join('\n')
+        + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
     saveContentToLocationTxtFile(title, content);
 }
 
