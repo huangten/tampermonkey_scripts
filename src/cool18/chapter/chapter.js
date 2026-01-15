@@ -94,7 +94,7 @@ function downloadChapterContent() {
     // console.log(bookName)
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElement().innerText.split('\n')
-        .filter(Boolean);
+        .filter(Boolean).map((c) => `${c.trimEnd()}`);
     const content = bookName + '\n' + title
         + '\n\n\n\n' + contents.join('\n')
     saveContentToLocationTxtFile(title, content);
@@ -128,10 +128,10 @@ function downloadChapterContentV2() {
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElementV2().innerText.split('\n')
         .filter(Boolean)
-        .map((c) => `${c.replaceAll('　', '').trim()}`);
+        .map((c) => `${c.trimEnd()}`);
     const content = bookName + '\n' + title
-        + '\n\n\n\n' + contents.map((c) => '　　' + c).join('\n')
-      //   + '\n\n\n\n' + contents.map((c) => `<p>${c}</p>`).join('\n')
+        + '\n\n\n\n' + contents.join('\n')
+        // + '\n\n\n\n' + contents.map((c) => `<p>${c.trim()}</p>`).join('\n')
     saveContentToLocationTxtFile(title, content);
 }
 
