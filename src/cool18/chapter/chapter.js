@@ -131,7 +131,7 @@ function downloadChapterContentV2() {
         .map((c) => `${c.replaceAll('　', '').trim()}`);
     const content = bookName + '\n' + title
         + '\n\n\n\n' + contents.map((c) => '　　' + c).join('\n')
-        + '\n\n\n\n' + contents.map((c) => `<p>${c}</p>`).join('\n')
+      //   + '\n\n\n\n' + contents.map((c) => `<p>${c}</p>`).join('\n')
     saveContentToLocationTxtFile(title, content);
 }
 
