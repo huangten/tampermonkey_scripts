@@ -70,9 +70,13 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow','GM_notification'],
+                        require: [
+                            'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+                        ],
+                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_notification', 'GM_download'],
                         ...config.userscript
                     },
+
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
                         fileName: `${config.build.fileName}.user.js`,
