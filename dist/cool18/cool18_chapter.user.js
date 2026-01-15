@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-15.16:10:08
+// @version    2026-01-15.17:20:56
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*
@@ -232,10 +232,9 @@ mouseenter: function(type) {
   function downloadChapterContent() {
     const titleElements = document.getElementsByClassName("main-title");
     const titleContent = titleElements[0].innerText.trim();
-    const bookName = titleContent.match(/^【(.*?)】/)[1];
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElement().innerText.split("\n").filter(Boolean).map((c) => `${c.trimEnd()}`);
-    const content = bookName + "\n" + title + "\n\n\n\n" + contents.join("\n") + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    const content = title + "\n\n\n\n" + contents.join("\n") + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     saveContentToLocationTxtFile(title, content);
   }
   function getPreTagContentHtml() {
@@ -257,10 +256,9 @@ mouseenter: function(type) {
   function downloadChapterContentV2() {
     const titleElements = document.getElementsByClassName("main-title");
     const titleContent = titleElements[0].innerText.trim();
-    const bookName = titleContent.match(/^【(.*?)】/)[1];
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElementV2().innerText.split("\n").filter(Boolean).map((c) => `${c.trimEnd()}`);
-    const content = bookName + "\n" + title + "\n\n\n\n" + contents.join("\n") + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    const content = title + "\n\n\n\n" + contents.join("\n") + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     saveContentToLocationTxtFile(title, content);
   }
   function copyChapterHtml() {

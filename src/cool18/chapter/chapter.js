@@ -88,13 +88,13 @@ function getPreTagContent() {
 function downloadChapterContent() {
     const titleElements = document.getElementsByClassName('main-title');
     const titleContent = titleElements[0].innerText.trim();
-    const bookName = titleContent.match(/^【(.*?)】/)[1];
+    // const bookName = titleContent.match(/^【(.*?)】/)[1];
     // const author = titleContent.match(/(.*?)作者(.*?)/)
     // console.log(bookName)
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElement().innerText.split('\n')
         .filter(Boolean).map((c) => `${c.trimEnd()}`);
-    const content = bookName + '\n' + title
+    const content = title
         + '\n\n\n\n' + contents.join('\n') + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
     saveContentToLocationTxtFile(title, content);
 }
@@ -121,14 +121,14 @@ function copyChapterContent() {
 function downloadChapterContentV2() {
     const titleElements = document.getElementsByClassName('main-title');
     const titleContent = titleElements[0].innerText.trim();
-    const bookName = titleContent.match(/^【(.*?)】/)[1];
+    // const bookName = titleContent.match(/^【(.*?)】/)[1];
     // const author = titleContent.match(/(.*?)作者(.*?)/)
     // console.log(bookName)
     const title = titleContent.replace(/^【(.*?)】/, "$1");
     const contents = getPreElementV2().innerText.split('\n')
         .filter(Boolean)
         .map((c) => `${c.trimEnd()}`);
-    const content = bookName + '\n' + title
+    const content = title
         + '\n\n\n\n' + contents.join('\n')
         // + '\n\n\n\n' + contents.map((c) => `<p>${c.trim()}</p>`).join('\n')
         + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
