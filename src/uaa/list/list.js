@@ -14,6 +14,11 @@ openNewWindowScheduler.setConfig({
         a.click();
         return true;
     },
+    onTaskBefore: (task) => {
+        document.getElementById('openNewWindowInfo').innerText = '书籍: ' + task.title + ' 开始打开。。。';
+        document.getElementById('openNewWindowInfo').href = task.href;
+    },
+
     onTaskComplete: (task, success) => {
         document.getElementById('openNewWindowInfo').innerText = '书籍: ' + task.title + ' 打开完毕';
         document.getElementById('openNewWindowInfo').href = task.href;
@@ -36,6 +41,8 @@ const exportEpubScheduler = new Downloader();
 exportEpubScheduler.setConfig({
     interval: 50,
     onTaskBefore: (task) => {
+        document.getElementById('exportInfoContentId').innerText = '书籍: ' + task.title + ' 开始导出。。。';
+        document.getElementById('exportInfoContentId').href = task.href;
     },
     downloadHandler: async function (task) {
         await buildEpub(task.href);

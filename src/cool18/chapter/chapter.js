@@ -1,6 +1,5 @@
 import {copyContext, init} from '../../common/common.js'
 import {saveAs} from "file-saver";
-import {getAuthorInfo, getBookName2} from "../../uaa/common.js";
 
 
 init().then(() => {
