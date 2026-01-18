@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-18.14:26:50
+// @version    2026-01-18.14:31:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -701,7 +701,10 @@ async start() {
   openNewWindowScheduler.setConfig({
     interval: 0,
     downloadHandler: function(task) {
-      window.open(task.href, "_blank");
+      const a = document.createElement("a");
+      a.href = task.href;
+      a.target = "_blank";
+      a.click();
       return true;
     },
     onTaskBefore: (task) => {

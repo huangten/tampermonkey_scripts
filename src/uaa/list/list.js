@@ -8,7 +8,10 @@ const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
     interval: 0,
     downloadHandler: function (task) {
-        window.open(task.href, '_blank');
+        const a = document.createElement('a');
+        a.href = task.href;
+        a.target = '_blank';
+        a.click();
         return true;
     },
     onTaskBefore: (task) => {
