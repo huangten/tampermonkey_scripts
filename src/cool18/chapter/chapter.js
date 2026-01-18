@@ -9,8 +9,6 @@ init().then(() => {
 function run() {
     layui.use(function () {
         const util = layui.util;
-        const fixbarStyle = "background-color: #ba350f;font-size: 16px;width:160px;height:36px;line-height:36px;margin-bottom:6px;border-radius:10px;"
-        // 自定义固定条
         util.fixbar({
             bars: [
                 {

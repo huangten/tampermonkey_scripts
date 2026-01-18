@@ -6,12 +6,9 @@ import {Downloader} from "../../common/downloader.js";
 let openBookListWindowIndex = 0;
 const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
-    interval: 50,
+    interval: 0,
     downloadHandler: function (task) {
-        const a = document.createElement('a');
-        a.href = task.href;
-        a.target = '_blank';
-        a.click();
+        window.open(task.href, '_blank');
         return true;
     },
     onTaskBefore: (task) => {
