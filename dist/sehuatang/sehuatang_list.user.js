@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-14.11:34:24
+// @version    2026-01-23.18:40:43
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -385,7 +385,7 @@ async start() {
   let infoWindowIndex = 0;
   const downloadWindowDivIntroId = "downloadWindowDivIntroId";
   downloader.setConfig({
-    interval: 500,
+    interval: 0,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
       let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
@@ -403,6 +403,10 @@ async start() {
     }
   });
   async function downloadV1(task) {
+    let oldIframes = document.getElementById(downloadWindowDivIntroId).getElementsByTagName("iframe");
+    for (let i = 0; i < oldIframes.length; i++) {
+      await destroyIframeElementAsync(oldIframes[i]);
+    }
     layui.layer.title(task.title, infoWindowIndex);
     document.getElementById("downloadInfoContentId").href = task.href;
     document.getElementById("downloadInfoContentId").innerText = task.title;

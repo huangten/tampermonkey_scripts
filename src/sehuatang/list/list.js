@@ -9,7 +9,7 @@ const downloadWindowDivIntroId = 'downloadWindowDivIntroId';
 
 
 downloader.setConfig({
-    interval: 500,
+    interval: 0,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
         let percent = (
@@ -34,7 +34,11 @@ downloader.setConfig({
 
 
 async function downloadV1(task) {
-
+    let oldIframes =
+        document.getElementById(downloadWindowDivIntroId).getElementsByTagName('iframe');
+    for (let i = 0; i < oldIframes.length; i++) {
+        await destroyIframeElementAsync(oldIframes[i])
+    }
     layui.layer.title(task.title, infoWindowIndex);
     document.getElementById('downloadInfoContentId').href = task.href;
     document.getElementById('downloadInfoContentId').innerText = task.title;
@@ -98,7 +102,7 @@ function run() {
                 icon: 'layui-icon-list'
             }],
             default: false,
-            bgcolor:'#BA350F',
+            bgcolor: '#BA350F',
             css: {bottom: "20%", right: 10},
             margin: 0,
             on: { // 任意事件 --  v2.8.0 新增
