@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-14.10:38:16
+// @version    2026-01-23.18:16:12
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -440,13 +440,15 @@ async start() {
     zip.folder("META-INF").file("container.xml", createContainer());
     const o = zip.folder("OEBPS");
     const cssFolder = o.folder("Styles");
-    cssFolder.file("main.css", await CommonRes.getInstance().getMainCss());
-    cssFolder.file("fonts.css", await CommonRes.getInstance().getFontsCss());
     const imgFolder = o.folder("Images");
     let coverUrl = doc.getElementsByClassName("cover")[0].src;
-    imgFolder.file("cover.jpg", await CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl));
-    imgFolder.file("logo.webp", await CommonRes.getInstance().getLogoImg());
-    imgFolder.file("girl.jpg", await CommonRes.getInstance().getGirlImg());
+    await Promise.all([
+      CommonRes.getInstance().getMainCss().then((css) => cssFolder.file("main.css", css)),
+      CommonRes.getInstance().getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
+      CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl).then((img) => imgFolder.file("cover.jpg", img)),
+      CommonRes.getInstance().getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
+      CommonRes.getInstance().getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
+    ]);
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder("Text");
     textFolder.file(`cover.xhtml`, genCoverHtmlPage());

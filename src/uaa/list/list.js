@@ -39,7 +39,7 @@ openNewWindowScheduler.setConfig({
 const exportEpubScheduler = new Downloader();
 
 exportEpubScheduler.setConfig({
-    interval: 50,
+    interval: 0,
     onTaskBefore: (task) => {
         document.getElementById('exportInfoContentId').innerText = '书籍: ' + task.title + ' 开始导出。。。';
         document.getElementById('exportInfoContentId').href = task.href;

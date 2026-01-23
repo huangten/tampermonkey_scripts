@@ -64,19 +64,18 @@ export async function buildEpub(url) {
 
     const o = zip.folder('OEBPS');
     const cssFolder = o.folder("Styles");
-    cssFolder.file('main.css', await CommonRes.getInstance().getMainCss());
-    cssFolder.file('fonts.css', await CommonRes.getInstance().getFontsCss());
-
     const imgFolder = o.folder("Images")
 
     let coverUrl = doc.getElementsByClassName("cover")[0].src;
 
-    imgFolder.file("cover.jpg", await CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl));
+    await Promise.all([
+        CommonRes.getInstance().getMainCss().then(css => cssFolder.file('main.css', css)),
+        CommonRes.getInstance().getFontsCss().then(css => cssFolder.file('fonts.css', css)),
 
-    imgFolder.file("logo.webp", await CommonRes.getInstance().getLogoImg());
-
-    imgFolder.file("girl.jpg", await CommonRes.getInstance().getGirlImg());
-
+        CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl).then(img => imgFolder.file('cover.jpg', img)),
+        CommonRes.getInstance().getLogoImg().then(img => imgFolder.file('logo.webp', img)),
+        CommonRes.getInstance().getGirlImg().then(img => imgFolder.file('girl.jpg', img)),
+    ]);
 
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder('Text');
