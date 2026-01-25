@@ -9,7 +9,7 @@ const downloadWindowDivIntroId = 'downloadWindowDivIntroId';
 
 
 downloader.setConfig({
-    interval: 0,
+    interval: 500,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
         let percent = (

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-23.18:40:43
+// @version    2026-01-25.13:43:23
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -385,7 +385,7 @@ async start() {
   let infoWindowIndex = 0;
   const downloadWindowDivIntroId = "downloadWindowDivIntroId";
   downloader.setConfig({
-    interval: 0,
+    interval: 500,
     downloadHandler: downloadV1,
     onTaskComplete: (task, success) => {
       let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
