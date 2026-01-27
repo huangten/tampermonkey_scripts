@@ -1,16 +1,24 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-23.18:16:12
+// @version    2026-01-27.20:06:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
 // @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant      GM_addStyle
+// @grant      GM_addValueChangeListener
+// @grant      GM_deleteValues
 // @grant      GM_download
 // @grant      GM_getResourceText
+// @grant      GM_getValue
+// @grant      GM_getValues
 // @grant      GM_notification
+// @grant      GM_openInTab
+// @grant      GM_removeValueChangeListener
+// @grant      GM_setValue
+// @grant      GM_setValues
 // @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
@@ -118,6 +126,9 @@
       console.log("✅ iframe 已完全清理并销毁");
     }
   }
+  var _GM_addValueChangeListener = (() => typeof GM_addValueChangeListener != "undefined" ? GM_addValueChangeListener : void 0)();
+  var _GM_getValue = (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_setValue = (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
   class CommonRes {
     constructor() {
@@ -832,15 +843,26 @@ ${ncxNav.join("\n")}
   }
   let infoWindowIndex = 0;
   let downloadInfoWindowIndex = 0;
+  let lastDownloadTime = _GM_getValue("chapter_last_download_time", Date.now());
+  _GM_addValueChangeListener("chapter_last_download_time", (key, oldVal, newVal, remote) => {
+    if (remote) {
+      lastDownloadTime = newVal;
+    }
+  });
   const downloader = new Downloader();
   const downloadInfoWindowDivId = "downloadInfoWindowDivId";
   const infoWindowProgressFilter = "infoWindowProgressFilter";
+  const downloaderInterval = 2500;
   downloader.setConfig({
-    interval: 2500,
-    onTaskBefore: (task) => {
+    interval: downloaderInterval,
+    onTaskBefore: async (task) => {
       layui.layer.title(task.title, ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
       document.getElementById("downloadInfoContentId").innerText = task.title;
       document.getElementById("downloadInfoContentId").href = task.href;
+      let time = Date.now() - lastDownloadTime;
+      if (time < downloaderInterval) {
+        await sleep(downloaderInterval - time);
+      }
     },
     downloadHandler: async function(task) {
       let oldIframes = document.getElementById(downloadInfoWindowDivId).getElementsByTagName("iframe");
@@ -877,6 +899,8 @@ ${ncxNav.join("\n")}
     onTaskComplete: (task, success) => {
       let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
       layui.element.progress(infoWindowProgressFilter, percent);
+      lastDownloadTime = new Date(task.endTime).getTime();
+      _GM_setValue("chapter_last_download_time", lastDownloadTime);
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {

@@ -6,16 +6,30 @@ import {buildEpub} from "../buildEpub.js";
 let infoWindowIndex = 0;
 let downloadInfoWindowIndex = 0;
 
+// 最近一次下载的时间
+let lastDownloadTime = GM_getValue('chapter_last_download_time', Date.now());
+GM_addValueChangeListener("chapter_last_download_time", (key, oldVal, newVal, remote) => {
+    if (remote) {
+        lastDownloadTime = newVal;
+    }
+});
+
 const downloader = new Downloader();
 const downloadInfoWindowDivId = 'downloadInfoWindowDivId';
 const infoWindowProgressFilter = 'infoWindowProgressFilter';
 
+const downloaderInterval = 2500;
 downloader.setConfig({
-    interval: 2500,
-    onTaskBefore: (task) => {
+    interval: downloaderInterval,
+    onTaskBefore: async (task) => {
         layui.layer.title(task.title, ensureDownloadInfoWindowIndex(downloadInfoWindowDivId))
         document.getElementById('downloadInfoContentId').innerText = task.title;
         document.getElementById('downloadInfoContentId').href = task.href;
+
+        let time = Date.now() - lastDownloadTime;
+        if (time < downloaderInterval) {
+            await sleep(downloaderInterval - time);
+        }
     },
     downloadHandler: async function (task) {
         let oldIframes = document.getElementById(downloadInfoWindowDivId).getElementsByTagName('iframe');
@@ -62,7 +76,8 @@ downloader.setConfig({
             * 100
         ).toFixed(2) + '%'
         layui.element.progress(infoWindowProgressFilter, percent);
-
+        lastDownloadTime = new Date(task.endTime).getTime();
+        GM_setValue('chapter_last_download_time', lastDownloadTime);
         console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
