@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-27.20:06:52
+// @version    2026-01-27.21:15:34
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -1012,7 +1012,7 @@ area: ["60%", "80%"],
           content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + infoWindowProgressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>'
         }
       ],
-      btn: ["下载选中章节", "清除未下载", "下载全部章节"],
+      btn: ["下载选中章节", "清除未下载", "下载全部章节", "继续下载"],
       btn1: function(index, layero, that) {
         treeCheckedDownload();
         return false;
@@ -1024,6 +1024,9 @@ area: ["60%", "80%"],
       btn3: function(index, layero, that) {
         downloadAll();
         return false;
+      },
+      btn4: function(index, layero, that) {
+        downloader.start().then();
       },
 success: function(layero, index, that) {
         layui.element.render("progress", infoWindowProgressFilter);

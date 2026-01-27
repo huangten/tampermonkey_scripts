@@ -212,9 +212,10 @@ function ensureInfoWindowIndex() {
                     '</fieldset>' +
                     '</div>' +
                     '</div>'
+
             }],
 
-        btn: ['下载选中章节', '清除未下载', '下载全部章节'],
+        btn: ['下载选中章节', '清除未下载', '下载全部章节','继续下载'],
         btn1: function (index, layero, that) {
             treeCheckedDownload()
             return false;
@@ -226,6 +227,9 @@ function ensureInfoWindowIndex() {
         btn3: function (index, layero, that) {
             downloadAll();
             return false;
+        },
+        btn4: function (index, layero, that) {
+            downloader.start().then();
         },
         // btnAlign: 'c',
         success: function (layero, index, that) {
