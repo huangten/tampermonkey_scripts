@@ -130,7 +130,10 @@ export default defineConfig(({mode}) => {
                             'GM_addValueChangeListener',
                             'GM_removeValueChangeListener',
                             'GM_deleteValues',
-                            'GM_openInTab'
+                            'GM_openInTab',
+                            'GM_getTabs',
+                            'GM_getTab',
+                            'GM_saveTab'
                         ],
                         require: [
                             'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'

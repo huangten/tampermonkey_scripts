@@ -1,16 +1,27 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-23.18:16:25
+// @version    2026-01-27.22:41:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
 // @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant      GM_addStyle
+// @grant      GM_addValueChangeListener
+// @grant      GM_deleteValues
 // @grant      GM_download
 // @grant      GM_getResourceText
+// @grant      GM_getTab
+// @grant      GM_getTabs
+// @grant      GM_getValue
+// @grant      GM_getValues
 // @grant      GM_notification
+// @grant      GM_openInTab
+// @grant      GM_removeValueChangeListener
+// @grant      GM_saveTab
+// @grant      GM_setValue
+// @grant      GM_setValues
 // @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
@@ -72,6 +83,7 @@
       addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
   }
+  var _GM_openInTab = (() => typeof GM_openInTab != "undefined" ? GM_openInTab : void 0)();
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
   class CommonRes {
     constructor() {
@@ -703,10 +715,9 @@ async start() {
   openNewWindowScheduler.setConfig({
     interval: 0,
     downloadHandler: function(task) {
-      const a = document.createElement("a");
-      a.href = task.href;
-      a.target = "_blank";
-      a.click();
+      _GM_openInTab(task.href, {
+        active: false
+      });
       return true;
     },
     onTaskBefore: (task) => {

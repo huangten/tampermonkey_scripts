@@ -8,10 +8,15 @@ const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
     interval: 0,
     downloadHandler: function (task) {
-        const a = document.createElement('a');
-        a.href = task.href;
-        a.target = '_blank';
-        a.click();
+        // const a = document.createElement('a');
+        // a.href = task.href;
+        // a.target = '_blank';
+        // a.click();
+
+        GM_openInTab(task.href, {
+            active:false
+        })
+
         return true;
     },
     onTaskBefore: (task) => {
