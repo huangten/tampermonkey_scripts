@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-28.14:12:17
+// @version    2026-01-28.22:42:23
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
+// @require    https://unpkg.com/hacktimer/HackTimer.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant      GM_addStyle

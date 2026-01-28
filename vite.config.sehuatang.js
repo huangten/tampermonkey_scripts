@@ -99,6 +99,7 @@ export default defineConfig(({mode}) => {
                         grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_xmlhttpRequest', 'GM_download', 'GM_notification', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand'],
                         connect: ['*'],
                         require: [
+                            'https://unpkg.com/hacktimer/HackTimer.js',
                             'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
                         ],
                         ...config.userscript
