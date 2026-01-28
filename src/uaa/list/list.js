@@ -251,7 +251,7 @@ function openBookListWindow() {
 
 async function openNewWindow() {
     let checkedData = layui.tree.getChecked('bookListTree'); // 获取选中节点的数据
-    checkedData.reverse();
+    // checkedData.reverse();
     checkedData.forEach((data) => {
         openNewWindowScheduler.add(data);
     });
