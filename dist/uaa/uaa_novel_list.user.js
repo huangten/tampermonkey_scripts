@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-28.22:42:23
+// @version    2026-01-28.23:25:58
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -76,7 +76,20 @@
     return str.replace(/\u00A0/g, " ").replace(INVISIBLE_RE, "");
   }
   function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    let done = false;
+    let t;
+    return new Promise((resolve) => {
+      t = setTimeout(() => {
+        if (done) return;
+        done = true;
+        resolve();
+      }, ms);
+    }).finally(() => {
+      if (!done) {
+        clearTimeout(t);
+        done = true;
+      }
+    });
   }
   function init() {
     return Promise.all([

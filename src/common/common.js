@@ -70,7 +70,24 @@ export function copyContext(str) {
 
 
 export function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+
+    let done = false;
+    let t;
+
+    return new Promise(resolve => {
+        t = setTimeout(() => {
+            if (done) return;
+            done = true;
+            resolve();
+        }, ms);
+    }).finally(() => {
+        if (!done) {
+            clearTimeout(t);
+            done = true;
+        }
+    });
+
+    // return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export function waitForElement(doc, selector, timeout = 10000) {
