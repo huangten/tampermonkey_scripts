@@ -13,7 +13,7 @@ const scriptConfigs = {
             match: ['https://*.uaa.com/novel/intro*'],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
             require: [
-                'https://unpkg.com/hacktimer/HackTimer.js',
+                // 'https://unpkg.com/hacktimer/HackTimer.js',
                 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
                 'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
             ],
