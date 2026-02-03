@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-28.23:43:33
+// @version    2026-02-04.00:12:34
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -142,7 +142,6 @@
       console.log("✅ iframe 已完全清理并销毁");
     }
   }
-  var _GM_addValueChangeListener = (() => typeof GM_addValueChangeListener != "undefined" ? GM_addValueChangeListener : void 0)();
   var _GM_getValue = (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
   var _GM_setValue = (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
   var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
@@ -859,12 +858,6 @@ ${ncxNav.join("\n")}
   }
   let infoWindowIndex = 0;
   let downloadInfoWindowIndex = 0;
-  let lastDownloadTime = _GM_getValue("chapter_last_download_time", Date.now());
-  _GM_addValueChangeListener("chapter_last_download_time", (key, oldVal, newVal, remote) => {
-    if (remote) {
-      lastDownloadTime = newVal;
-    }
-  });
   const downloader = new Downloader();
   const downloadInfoWindowDivId = "downloadInfoWindowDivId";
   const infoWindowProgressFilter = "infoWindowProgressFilter";
@@ -875,7 +868,7 @@ ${ncxNav.join("\n")}
       layui.layer.title(task.title, ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
       document.getElementById("downloadInfoContentId").innerText = task.title;
       document.getElementById("downloadInfoContentId").href = task.href;
-      let time = Date.now() - lastDownloadTime;
+      let time = Date.now() - _GM_getValue("chapter_last_download_time", Date.now());
       if (time < downloaderInterval) {
         await sleep(downloaderInterval - time);
       }
@@ -915,8 +908,7 @@ ${ncxNav.join("\n")}
     onTaskComplete: (task, success) => {
       let percent = ((downloader.doneSet.size + downloader.failedSet.size) / (downloader.doneSet.size + downloader.failedSet.size + downloader.pendingSet.size) * 100).toFixed(2) + "%";
       layui.element.progress(infoWindowProgressFilter, percent);
-      lastDownloadTime = new Date(task.endTime).getTime();
-      _GM_setValue("chapter_last_download_time", lastDownloadTime);
+      _GM_setValue("chapter_last_download_time", Date.now());
       console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
     },
     onFinish: async (downloaded, failed) => {
