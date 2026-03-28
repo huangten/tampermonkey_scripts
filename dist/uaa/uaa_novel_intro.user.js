@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-02-04.00:12:34
+// @version    2026-03-28.16:09:02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -861,7 +861,7 @@ ${ncxNav.join("\n")}
   const downloader = new Downloader();
   const downloadInfoWindowDivId = "downloadInfoWindowDivId";
   const infoWindowProgressFilter = "infoWindowProgressFilter";
-  const downloaderInterval = 2500;
+  const downloaderInterval = 4500;
   downloader.setConfig({
     interval: downloaderInterval,
     onTaskBefore: async (task) => {
