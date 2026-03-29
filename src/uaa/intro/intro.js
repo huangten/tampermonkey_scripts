@@ -10,7 +10,7 @@ const downloader = new Downloader();
 const downloadInfoWindowDivId = 'downloadInfoWindowDivId';
 const infoWindowProgressFilter = 'infoWindowProgressFilter';
 
-const downloaderInterval = 3500;
+const downloaderInterval = 4500;
 downloader.setConfig({
     interval: downloaderInterval,
     onTaskBefore: async (task) => {
