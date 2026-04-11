@@ -146,7 +146,7 @@ function run() {
                     return;
                 }
                 if (type === "复制书名") {
-                    let bookName = document.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText
+                    let bookName = getBookName()
                     copyContext(bookName).then();
                     return;
                 }
@@ -253,9 +253,6 @@ function treeCheckedDownload() {
         return;
     }
     doTreeToChapterList(checkedData).forEach(data => {
-        if(data.href.trim().length === 0) {
-            return
-        }
         downloader.add(data);
     });
     downloader.start().then();
@@ -284,7 +281,6 @@ function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId) {
         success: function (layero, index, that) {
             layui.layer.setTop(layero);
             layui.layer.min(index);
-            // resolve(index);
         }
     });
     return downloadInfoWindowIndex;
@@ -296,9 +292,6 @@ async function openBookChapterListPage() {
 
 function downloadAll() {
     doTreeToChapterList(getChapterListTree()).forEach(data => {
-        if (data.href.trim().length === 0) {
-            return
-        }
         downloader.add(data);
     });
     downloader.start().then();
@@ -319,7 +312,7 @@ function getChapterListTree() {
                     "children": [],
                     "spread": true,
                     "field": "",
-                    "checked": alist[j].getElementsByTagName('span').length !== 0
+                    "checked": alist[j].innerText.indexOf("new") > 0
                 });
             }
         }
@@ -335,7 +328,7 @@ function getChapterListTree() {
                     "children": [],
                     "spread": true,
                     "field": "",
-                    "checked": alist[j].getElementsByTagName('span').length !== 0
+                    "checked": alist[j].innerText.indexOf("new") > 0
                 });
             }
             menus.push({
@@ -372,4 +365,10 @@ function doTreeToChapterList(trees) {
         }
     }
     return menus;
+}
+
+
+
+function getBookName() {
+    return document.getElementsByClassName('info_box')[0].getElementsByTagName('h1')[0].innerText.trim();
 }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-03-29.17:23:23
+// @version    2026-04-12.00:32:00
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -1037,6 +1037,7 @@ area: ["60%", "80%"],
         downloader.start().then();
       },
 success: function(layero, index, that) {
+        layui.layer.setTop(layero);
         layui.element.render("progress", infoWindowProgressFilter);
         layui.element.progress(infoWindowProgressFilter, "0%");
         const tree = layui.tree;
@@ -1064,6 +1065,9 @@ click: function(obj) {
       return;
     }
     doTreeToChapterList(checkedData).forEach((data) => {
+      if (data.href.trim().length === 0) {
+        return;
+      }
       downloader.add(data);
     });
     downloader.start().then();
@@ -1087,6 +1091,7 @@ maxmin: true,
 area: ["70%", "80%"],
       content: `<div id="${downloadInfoWindowDivId2}" style="width: 100%;height: 99%;"></div>`,
       success: function(layero, index, that) {
+        layui.layer.setTop(layero);
         layui.layer.min(index);
       }
     });
@@ -1097,6 +1102,9 @@ area: ["70%", "80%"],
   }
   function downloadAll() {
     doTreeToChapterList(getChapterListTree()).forEach((data) => {
+      if (data.href.trim().length === 0) {
+        return;
+      }
       downloader.add(data);
     });
     downloader.start().then();
@@ -1116,7 +1124,7 @@ area: ["70%", "80%"],
             "children": [],
             "spread": true,
             "field": "",
-            "checked": alist[j].innerText.indexOf("new") > 0
+            "checked": alist[j].getElementsByTagName("span").length !== 0
           });
         }
       }
@@ -1132,7 +1140,7 @@ area: ["70%", "80%"],
             "children": [],
             "spread": true,
             "field": "",
-            "checked": alist[j].innerText.indexOf("new") > 0
+            "checked": alist[j].getElementsByTagName("span").length !== 0
           });
         }
         menus.push({

@@ -8,6 +8,10 @@
     "build:uaa_novel_intro": "cross-env TARGET_SCRIPT=uaa_novel_intro vite build --config vite.config.uaa.js",
     "dev:uaa_novel_intro_v2": "cross-env TARGET_SCRIPT=uaa_novel_intro_v2 vite --config vite.config.uaa.js",
     "build:uaa_novel_intro_v2": "cross-env TARGET_SCRIPT=uaa_novel_intro_v2 vite build --config vite.config.uaa.js",
+
+    "dev:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite --config vite.config.uaa.js",
+    "build:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite build --config vite.config.uaa.js",
+
     "dev:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite --config vite.config.uaa.js",
     "build:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite build --config vite.config.uaa.js",
     "dev:uaa_novel_list": "cross-env TARGET_SCRIPT=uaa_novel_list vite --config vite.config.uaa.js",
@@ -41,6 +45,7 @@
     "@vitejs/plugin-vue": "^6.0.3",
     "cross-env": "^10.1.0",
     "dayjs": "^1.11.19",
+    "dexie": "^4.4.2",
     "eslint": "^9.39.2",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",

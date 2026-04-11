@@ -27,8 +27,7 @@ const scriptConfigs = {
             fileName: "uaa_novel_intro"
         }
     },
-
-        uaa_novel_intro_v2: {
+    uaa_novel_intro_v2: {
         entry: 'src/uaa/intro/intro_v2.js',
         userscript: {
             name: 'UAA 书籍描述页 V2 增强',
@@ -50,7 +49,29 @@ const scriptConfigs = {
             fileName: "uaa_novel_intro_v2"
         }
     },
+    uaa_novel_introV3: {
+        entry: 'src/uaa/intro/introV3.js',
+        userscript: {
+            name: 'UAA 书籍描述页 V3 增强',
+            author: 'YourName',
+            match: ['https://*.uaa.com/novel/intro*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
+            require: [
+                'https://unpkg.com/hacktimer/HackTimer.js',
+                'https://unpkg.com/dexie/dist/dexie.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+            ],
+            namespace: 'https://tampermonkey.net/',
+            version: getVersion(),
+            noframes: true,
 
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_introV3"
+        }
+    },
     uaa_novel_chapter: {
         entry: 'src/uaa/chapter/chapter.js',
         userscript: {
