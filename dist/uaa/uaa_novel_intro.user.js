@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-12.00:32:00
+// @version    2026-04-12.00:46:38
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -919,12 +919,26 @@ ${ncxNav.join("\n")}
       document.getElementById("downloadInfoContentId").innerText = "下载结束";
       document.getElementById("downloadInfoContentId").href = "";
       layui.layer.min(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
-      layui.layer.alert("下载完毕", { icon: 1, shadeClose: true });
+      layui.layer.alert("下载完毕", {
+        icon: 1,
+        shadeClose: true,
+        zIndex: layui.layer.zIndex,
+        success(layero, index) {
+          layui.layer.setTop(layero);
+        }
+      });
     },
     onCatch: async (err) => {
       layui.layer.min(ensureInfoWindowIndex());
       layui.layer.restore(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId));
-      layui.layer.alert("出现错误：" + err.message, { icon: 5, shadeClose: true });
+      layui.layer.alert("出现错误：" + err.message, {
+        icon: 5,
+        shadeClose: true,
+        zIndex: layui.layer.zIndex,
+        success(layero, index) {
+          layui.layer.setTop(layero);
+        }
+      });
     }
   });
   init().then(() => {

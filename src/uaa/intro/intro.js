@@ -84,12 +84,20 @@ downloader.setConfig({
 
         layui.layer.min(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId))
         // ✅ 全部完成 — 销毁 iframe
-        layui.layer.alert('下载完毕', {icon: 1, shadeClose: true});
+        layui.layer.alert('下载完毕', {
+            icon: 1, shadeClose: true, zIndex: layui.layer.zIndex, success(layero, index) {
+                layui.layer.setTop(layero);
+            }
+        });
     },
     onCatch: async (err) => {
         layui.layer.min(ensureInfoWindowIndex())
         layui.layer.restore(ensureDownloadInfoWindowIndex(downloadInfoWindowDivId))
-        layui.layer.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
+        layui.layer.alert('出现错误：' + err.message, {
+            icon: 5, shadeClose: true, zIndex: layui.layer.zIndex, success(layero, index) {
+                layui.layer.setTop(layero);
+            }
+        });
     }
 });
 
@@ -206,7 +214,7 @@ function ensureInfoWindowIndex() {
 
             }],
 
-        btn: ['下载选中章节', '清除未下载', '下载全部章节','继续下载'],
+        btn: ['下载选中章节', '清除未下载', '下载全部章节', '继续下载'],
         btn1: function (index, layero, that) {
             treeCheckedDownload()
             return false;
@@ -253,7 +261,7 @@ function treeCheckedDownload() {
         return;
     }
     doTreeToChapterList(checkedData).forEach(data => {
-        if(data.href.trim().length === 0) {
+        if (data.href.trim().length === 0) {
             return
         }
         downloader.add(data);
