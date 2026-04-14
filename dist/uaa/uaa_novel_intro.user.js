@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-12.00:46:38
+// @version    2026-04-14.13:23:05
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -1102,7 +1102,7 @@ click: function(obj) {
       shade: 0,
       moveOut: true,
 maxmin: true,
-area: ["70%", "80%"],
+area: ["60%", "80%"],
       content: `<div id="${downloadInfoWindowDivId2}" style="width: 100%;height: 99%;"></div>`,
       success: function(layero, index, that) {
         layui.layer.setTop(layero);

@@ -287,7 +287,7 @@ function ensureDownloadInfoWindowIndex(downloadInfoWindowDivId) {
         moveOut: true,
         // skin: 'layui-layer-rim', // 加上边框
         maxmin: true, //开启最大化最小化按钮
-        area: ['70%', '80%'],
+        area: ['60%', '80%'],
         content: `<div id="${downloadInfoWindowDivId}" style="width: 100%;height: 99%;"></div>`,
         success: function (layero, index, that) {
             layui.layer.setTop(layero);
