@@ -6,7 +6,7 @@ import {Downloader} from "../../common/downloader.js";
 let openBookListWindowIndex = 0;
 const openNewWindowScheduler = new Downloader();
 openNewWindowScheduler.setConfig({
-    interval: 4000,
+    interval: 2000,
     downloadHandler: function (task) {
         // const a = document.createElement('a');
         // a.href = task.href;
@@ -44,7 +44,7 @@ openNewWindowScheduler.setConfig({
 const exportEpubScheduler = new Downloader();
 
 exportEpubScheduler.setConfig({
-    interval: 4000,
+    interval: 2000,
     onTaskBefore: (task) => {
         document.getElementById('exportInfoContentId').innerText = '书籍: ' + task.title + ' 开始导出。。。';
         document.getElementById('exportInfoContentId').href = task.href;
