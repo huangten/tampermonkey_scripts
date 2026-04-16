@@ -2,6 +2,8 @@ import {cleanText, copyContext, destroyIframeElementAsync, init, sleep, waitForE
 import {getTexts, saveContentToLocal} from "../common.js";
 import {Downloader} from "../../common/downloader.js";
 import {buildEpub} from "../buildEpub.js";
+import {WorkerSingleton} from "./WorkerSingleton.js";
+import {DatabaseService} from "./DatabaseService.js";
 
 let infoWindowIndex = 0;
 let downloadInfoWindowIndex = 0;
@@ -9,6 +11,18 @@ let downloadInfoWindowIndex = 0;
 const downloader = new Downloader();
 const downloadInfoWindowDivId = 'downloadInfoWindowDivId';
 const infoWindowProgressFilter = 'infoWindowProgressFilter';
+
+const worker = new WorkerSingleton();
+worker.handleCallBack = function () {
+    console.log("aaaaa");
+}
+worker.start()
+
+const db = new DatabaseService();
+console.log(await db.getSystemInfo());
+
+
+
 
 const downloaderInterval = 4500;
 downloader.setConfig({
