@@ -315,12 +315,12 @@ function formatXML(xmlStr) {
 </xsl:stylesheet>
 `;
 
-    const xsltDoc = parser.parseFromString(xslt, 'application/xml');
-    const processor = new XSLTProcessor();
-    processor.importStylesheet(xsltDoc);
+    // const xsltDoc = parser.parseFromString(xslt, 'application/xml');
+    // const processor = new XSLTProcessor();
+    // processor.importStylesheet(xsltDoc);
 
-    const result = processor.transformToDocument(xml);
-    return new XMLSerializer().serializeToString(result);
+    // const result = processor.transformToDocument(xml);
+    return new XMLSerializer().serializeToString(xml);
 }
 
 function formatXHTML(xmlStr) {
@@ -345,14 +345,14 @@ function formatXHTML(xmlStr) {
 </xsl:stylesheet>
 `;
 
-    const xsltDoc = parser.parseFromString(xslt, 'application/xml');
-    const processor = new XSLTProcessor();
-    processor.importStylesheet(xsltDoc);
+    // const xsltDoc = parser.parseFromString(xslt, 'application/xml');
+    // const processor = new XSLTProcessor();
+    // processor.importStylesheet(xsltDoc);
 
-    const result = processor.transformToDocument(xml);
+    // const result = processor.transformToDocument(xml);
 
     // console.log(result)
-    return new XMLSerializer().serializeToString(result);
+    return new XMLSerializer().serializeToString(xml);
 }
 
 function serializeXML(doc) {

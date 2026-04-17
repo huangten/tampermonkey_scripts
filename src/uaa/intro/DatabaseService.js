@@ -15,7 +15,7 @@ export class DatabaseService {
         // 定义表结构
         // 语法: '主键, 索引1, 索引2...'
         this.db.version(1).stores({
-            chapters: '++id,chapterId, bookId, status, href, chapterName, booName, createTime, updateTime',
+            chapters: '++id, chapterId, bookId, status, href, chapterName, bookName, volumeName, createTime, updateTime',
             system_infos: '++id, status, lastDownloadTime, updateTime'
         });
 

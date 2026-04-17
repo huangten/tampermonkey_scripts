@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-14.13:23:05
+// @version    2026-04-17.18:42:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -649,61 +649,12 @@ ${ncxNav.join("\n")}
   function formatXML(xmlStr) {
     const parser = new DOMParser();
     const xml = parser.parseFromString(xmlStr, "application/xml");
-    const xslt = `<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml"
-  exclude-result-prefixes="xhtml">
-
-  <!-- 输出为 XML，带缩进 -->
-  <xsl:output
-    method="xml"
-    indent="yes"
-    encoding="UTF-8"/>
-
-  <!-- 去除无意义空白 -->
-  <xsl:strip-space elements="*"/>
-
-  <!-- 核心：恒等拷贝（identity transform） -->
-  <xsl:template match="@*|node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
-
-</xsl:stylesheet>
-`;
-    const xsltDoc = parser.parseFromString(xslt, "application/xml");
-    const processor = new XSLTProcessor();
-    processor.importStylesheet(xsltDoc);
-    const result = processor.transformToDocument(xml);
-    return new XMLSerializer().serializeToString(result);
+    return new XMLSerializer().serializeToString(xml);
   }
   function formatXHTML(xmlStr) {
     const parser = new DOMParser();
     const xml = parser.parseFromString(xmlStr, "application/xhtml+xml");
-    const xslt = `<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml"
-  exclude-result-prefixes="xhtml">
-
-  <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
-  <xsl:strip-space elements="*"/>
-
-  <!-- 默认拷贝 -->
-  <xsl:template match="@*|node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
-</xsl:stylesheet>
-`;
-    const xsltDoc = parser.parseFromString(xslt, "application/xml");
-    const processor = new XSLTProcessor();
-    processor.importStylesheet(xsltDoc);
-    const result = processor.transformToDocument(xml);
-    return new XMLSerializer().serializeToString(result);
+    return new XMLSerializer().serializeToString(xml);
   }
   function serializeXML(doc) {
     const xml = new XMLSerializer().serializeToString(doc);
