@@ -8,15 +8,15 @@ import {
     DOWNLOAD_INFO_WINDOW_DIV_ID,
     DOWNLOADER_INTERVAL,
     INFO_WINDOW_PROGRESS_FILTER
-} from "../intro/constants.js";
+} from "../router/introV3Constants.js";
 import { ChapterCatalogModel } from "../models/ChapterCatalogModel.js";
 import { getOrCreatePageId, getPageLabel } from "../models/PageIdentity.js";
 import { ChapterDownloadService } from "../services/ChapterDownloadService.js";
-import { DebugTableView } from "../views/DebugTableView.js";
-import { DownloadInfoWindowView } from "../views/DownloadInfoWindowView.js";
-import { renderIntroFixbar } from "../views/FixbarView.js";
-import { InfoWindowView } from "../views/InfoWindowView.js";
-import { topLayerMsg } from "../views/layerUtils.js";
+import { DebugTableView } from "../views/intro/DebugTableView.js";
+import { DownloadInfoWindowView } from "../views/intro/DownloadInfoWindowView.js";
+import { renderIntroFixbar } from "../views/intro/FixbarView.js";
+import { InfoWindowView } from "../views/intro/InfoWindowView.js";
+import { topLayerMsg } from "../views/intro/layerUtils.js";
 
 export class IntroV3Controller {
     constructor() {

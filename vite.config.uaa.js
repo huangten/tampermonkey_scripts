@@ -50,7 +50,7 @@ const scriptConfigs = {
     //     }
     // },
     uaa_novel_introV3: {
-        entry: 'src/uaa/intro/introV3.js',
+        entry: 'src/uaa/router/introV3.js',
         userscript: {
             name: 'UAA 书籍描述页 V3 增强',
             author: 'YourName',
