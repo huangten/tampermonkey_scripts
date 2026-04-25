@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.16:39:33
+// @version    2026-04-25.16:55:14
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -385,6 +385,7 @@
       CommonRes.getInstance().getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
       CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl).then((img) => imgFolder.file("cover.jpg", img)),
       CommonRes.getInstance().getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
+      CommonRes.getInstance().getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
       CommonRes.getInstance().getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
     ]);
     const manifest = [], spine = [], ncxNav = [];
@@ -474,6 +475,7 @@ ${ncxNav2}`;
         <item id="fonts.css" href="Styles/fonts.css" media-type="text/css"/>
         <item id="cover" href="Images/cover.jpg" media-type="image/jpeg"/>
         <item id="logo.webp" href="Images/logo.webp" media-type="image/webp"/>
+        <item id="line1.webp" href="Images/line1.webp" media-type="image/webp"/>
         <item id="girl.jpg" href="Images/girl.jpg" media-type="image/jpeg"/>
     </manifest>
     <spine toc="ncx">
