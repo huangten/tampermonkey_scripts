@@ -73,7 +73,7 @@ const scriptConfigs = {
         }
     },
     uaa_novel_chapter: {
-        entry: 'src/uaa/chapter/chapter.js',
+        entry: 'src/uaa/router/chapter.js',
         userscript: {
             name: 'UAA 书籍章节页 增强',
             author: 'YourName',

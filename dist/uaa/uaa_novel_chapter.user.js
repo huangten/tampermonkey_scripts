@@ -1,15 +1,27 @@
 // ==UserScript==
 // @name       UAA 书籍章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-12.17:06:23
+// @version    2026-04-25.22:04:12
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/chapter*
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @grant      GM_addStyle
+// @grant      GM_addValueChangeListener
+// @grant      GM_deleteValues
 // @grant      GM_download
 // @grant      GM_getResourceText
+// @grant      GM_getTab
+// @grant      GM_getTabs
+// @grant      GM_getValue
+// @grant      GM_getValues
 // @grant      GM_notification
+// @grant      GM_openInTab
+// @grant      GM_removeValueChangeListener
+// @grant      GM_saveTab
+// @grant      GM_setValue
+// @grant      GM_setValues
+// @grant      GM_xmlhttpRequest
 // @grant      unsafeWindow
 // @noframes
 // ==/UserScript==
@@ -168,146 +180,194 @@
   function getAuthorInfo(el = document) {
     return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
   }
+  class ChapterPageModel {
+    constructor(doc = document) {
+      this.doc = doc;
+      this.titleText = "";
+      this.texts = [];
+      this.htmlLines = [];
+    }
+    load() {
+      this.titleText = this.parseTitleText();
+      this.texts = getTexts(this.doc);
+      this.htmlLines = getLines(this.doc);
+    }
+    getTitleText() {
+      return this.titleText;
+    }
+    getTitleHtml() {
+      return "<h2>" + this.titleText + "</h2>";
+    }
+    getContentText() {
+      return this.texts.map((s) => `　　${s}`).join("\n");
+    }
+    getContentHtml() {
+      return this.htmlLines.join("\n");
+    }
+    getTitleAndContentText() {
+      return this.getTitleText() + "\n\n" + this.getContentText();
+    }
+    getTitleAndContentHtml() {
+      return this.getTitleHtml() + "\n\n" + this.getContentHtml();
+    }
+    saveToLocal() {
+      return saveContentToLocal(this.doc);
+    }
+    getPrevChapterElement() {
+      return this.getBottomBoxElement(0);
+    }
+    getBookElement() {
+      return this.getBottomBoxElement(1);
+    }
+    getNextChapterElement() {
+      return this.getBottomBoxElement(2);
+    }
+    parseTitleText() {
+      const titleBox = this.doc.getElementsByClassName("title_box")[0];
+      const level = titleBox.getElementsByTagName("p")[0] !== void 0 ? titleBox.getElementsByTagName("p")[0].innerText + " " : "";
+      return cleanText(level + titleBox.getElementsByTagName("h2")[0].innerText);
+    }
+    getBottomBoxElement(index) {
+      const bottomBox = this.doc.getElementsByClassName("bottom_box")[0];
+      if (!bottomBox) {
+        return null;
+      }
+      let el = bottomBox.firstElementChild;
+      for (let i = 0; i < index && el; i++) {
+        el = el.nextElementSibling;
+      }
+      return el;
+    }
+  }
+  class ChapterFixbarView {
+    renderFixbar({ onAction }) {
+      layui.use(() => {
+        layui.util.fixbar({
+          bars: [
+            {
+              type: "获取标题文本",
+              icon: "layui-icon-fonts-strong"
+            },
+            {
+              type: "获取标题HTML",
+              icon: "layui-icon-fonts-code"
+            },
+            {
+              type: "获取内容文本",
+              icon: "layui-icon-tabs"
+            },
+            {
+              type: "获取内容HTML",
+              icon: "layui-icon-fonts-html"
+            },
+            {
+              type: "获取标题和内容文本",
+              icon: "layui-icon-align-center"
+            },
+            {
+              type: "获取标题和内容HTML",
+              icon: "layui-icon-code-circle"
+            },
+            {
+              type: "保存内容到本地",
+              icon: "layui-icon-download-circle"
+            },
+            {
+              type: "上一章",
+              icon: "layui-icon-prev"
+            },
+            {
+              type: "本书",
+              icon: "layui-icon-link"
+            },
+            {
+              type: "下一章",
+              icon: "layui-icon-next"
+            }
+          ],
+          default: false,
+          css: { bottom: "15%" },
+          margin: 0,
+          on: {
+            mouseenter: function(type) {
+              layui.layer.tips(type, this, {
+                tips: 4,
+                fixed: true
+              });
+            },
+            mouseleave: function() {
+              layui.layer.closeAll("tips");
+            }
+          },
+          click: function(type) {
+            onAction(type);
+          }
+        });
+      });
+    }
+  }
+  class ChapterController {
+    constructor({
+      model = new ChapterPageModel(),
+      view = new ChapterFixbarView()
+    } = {}) {
+      this.model = model;
+      this.view = view;
+    }
+    init() {
+      this.model.load();
+      this.view.renderFixbar({
+        onAction: (type) => this.handleAction(type)
+      });
+    }
+    handleAction(type) {
+      console.log(type);
+      switch (type) {
+        case "获取标题文本":
+          this.copy(this.model.getTitleText());
+          break;
+        case "获取标题HTML":
+          this.copy(this.model.getTitleHtml());
+          break;
+        case "获取内容文本":
+          this.copy(this.model.getContentText());
+          break;
+        case "获取内容HTML":
+          this.copy(this.model.getContentHtml());
+          break;
+        case "获取标题和内容文本":
+          this.copy(this.model.getTitleAndContentText());
+          break;
+        case "获取标题和内容HTML":
+          this.copy(this.model.getTitleAndContentHtml());
+          break;
+        case "保存内容到本地":
+          this.model.saveToLocal();
+          break;
+        case "上一章":
+          this.clickIfLink(this.model.getPrevChapterElement());
+          break;
+        case "本书":
+          this.clickIfLink(this.model.getBookElement());
+          break;
+        case "下一章":
+          this.clickIfLink(this.model.getNextChapterElement());
+          break;
+      }
+    }
+    copy(content) {
+      copyContext(content).then();
+    }
+    clickIfLink(el) {
+      if (el && el.nodeName.indexOf("A") > -1) {
+        el.click();
+      }
+    }
+  }
   init().then(() => {
-    run();
+    new ChapterController().init();
   }).catch((e) => {
     console.log(e);
   });
-  function run() {
-    let level = document.getElementsByClassName("title_box")[0].getElementsByTagName("p")[0] !== void 0 ? document.getElementsByClassName("title_box")[0].getElementsByTagName("p")[0].innerText + " " : "";
-    const titleBox = cleanText(level + document.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
-    const texts = getTexts(document);
-    const htmlLines = getLines(document);
-    document.querySelector("body div.title_box");
-    layui.use(function() {
-      const util = layui.util;
-      util.fixbar({
-        bars: [
-          {
-            type: "获取标题文本",
-            icon: "layui-icon-fonts-strong"
-          },
-          {
-            type: "获取标题HTML",
-            icon: "layui-icon-fonts-code"
-          },
-          {
-            type: "获取内容文本",
-            icon: "layui-icon-tabs"
-          },
-          {
-            type: "获取内容HTML",
-            icon: "layui-icon-fonts-html"
-          },
-          {
-            type: "获取标题和内容文本",
-            icon: "layui-icon-align-center"
-          },
-          {
-            type: "获取标题和内容HTML",
-            icon: "layui-icon-code-circle"
-          },
-          {
-            type: "保存内容到本地",
-            icon: "layui-icon-download-circle"
-          },
-          {
-            type: "上一章",
-            icon: "layui-icon-prev"
-          },
-          {
-            type: "本书",
-            icon: "layui-icon-link"
-          },
-          {
-            type: "下一章",
-            icon: "layui-icon-next"
-          }
-        ],
-        default: false,
-        css: { bottom: "15%" },
-        margin: 0,
-on: {
-mouseenter: function(type) {
-            layui.layer.tips(type, this, {
-              tips: 4,
-              fixed: true
-            });
-          },
-          mouseleave: function(type) {
-            layui.layer.closeAll("tips");
-          }
-        },
-        click: function(type) {
-          console.log(this, type);
-          if (type === "获取标题文本") {
-            titleText();
-            return;
-          }
-          if (type === "获取标题HTML") {
-            titleHtml();
-            return;
-          }
-          if (type === "获取内容文本") {
-            contentText();
-            return;
-          }
-          if (type === "获取内容HTML") {
-            contentHtml();
-            return;
-          }
-          if (type === "获取标题和内容文本") {
-            titleAndContentText();
-            return;
-          }
-          if (type === "获取标题和内容HTML") {
-            titleAndContentHtml();
-            return;
-          }
-          if (type === "保存内容到本地") {
-            saveContentToLocal(document);
-            return;
-          }
-          if (type === "上一章") {
-            let prev = document.getElementsByClassName("bottom_box")[0].firstElementChild;
-            if (prev.nodeName.indexOf("A") > -1) {
-              prev.click();
-              return;
-            }
-            return;
-          }
-          if (type === "本书") {
-            let s = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling;
-            s.click();
-            return;
-          }
-          if (type === "下一章") {
-            let next = document.getElementsByClassName("bottom_box")[0].firstElementChild.nextElementSibling.nextElementSibling;
-            if (next.nodeName.indexOf("A") > -1) {
-              next.click();
-            }
-          }
-        }
-      });
-    });
-    function titleText() {
-      copyContext(titleBox).then();
-    }
-    function titleHtml() {
-      copyContext("<h2>" + titleBox + "</h2>").then();
-    }
-    function contentText() {
-      copyContext(texts.map((s) => `　　${s}`).join("\n")).then();
-    }
-    function contentHtml() {
-      copyContext(htmlLines.join("\n")).then();
-    }
-    function titleAndContentText() {
-      copyContext(titleBox + "\n\n" + texts.map((s) => `　　${s}`).join("\n")).then();
-    }
-    function titleAndContentHtml() {
-      copyContext("<h2>" + titleBox + "</h2>\n\n" + htmlLines.join("\n")).then();
-    }
-  }
 
 })(saveAs);
