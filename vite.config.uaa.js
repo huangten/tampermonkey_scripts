@@ -5,50 +5,6 @@ import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
-    uaa_novel_intro: {
-        entry: 'src/uaa/intro/intro.js',
-        userscript: {
-            name: 'UAA 书籍描述页 增强',
-            author: 'YourName',
-            match: ['https://*.uaa.com/novel/intro*'],
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
-            require: [
-                // 'https://unpkg.com/hacktimer/HackTimer.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
-            ],
-            namespace: 'https://tampermonkey.net/',
-            version: getVersion(),
-            noframes: true,
-
-        },
-        build: {
-            outDir: "uaa",
-            fileName: "uaa_novel_intro"
-        }
-    },
-    // uaa_novel_intro_v2: {
-    //     entry: 'src/uaa/intro/intro_v2.js',
-    //     userscript: {
-    //         name: 'UAA 书籍描述页 V2 增强',
-    //         author: 'YourName',
-    //         match: ['https://*.uaa.com/novel/intro*'],
-    //         icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
-    //         require: [
-    //             'https://unpkg.com/hacktimer/HackTimer.js',
-    //             'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-    //             'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
-    //         ],
-    //         namespace: 'https://tampermonkey.net/',
-    //         version: getVersion(),
-    //         noframes: true,
-
-    //     },
-    //     build: {
-    //         outDir: "uaa",
-    //         fileName: "uaa_novel_intro_v2"
-    //     }
-    // },
     uaa_novel_introV3: {
         entry: 'src/uaa/router/introV3.js',
         userscript: {
@@ -86,27 +42,6 @@ const scriptConfigs = {
         build: {
             outDir: "uaa",
             fileName: "uaa_novel_chapter"
-        }
-    },
-    uaa_novel_list: {
-        entry: 'src/uaa/list/list.js',
-        userscript: {
-            name: 'UAA 书籍列表页 增强',
-            author: 'YourName',
-            match: ['https://*.uaa.com/novel/list*'],
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
-            namespace: 'https://tampermonkey.net/',
-            require: [
-                'https://unpkg.com/hacktimer/HackTimer.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
-                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
-            ],
-            version: getVersion(),
-            noframes: true,
-        },
-        build: {
-            outDir: "uaa",
-            fileName: "uaa_novel_list"
         }
     },
     uaa_novel_listV2: {
