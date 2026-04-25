@@ -74,7 +74,7 @@ export class InfoWindowView {
                         '<table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table>' +
                         '</div>'
                 }],
-            btn: ['下载选中章节', '下载全部章节', '继续下载', '恢复残留'],
+            btn: ['添加选中章节', '添加全部章节', '继续下载', '恢复残留'],
             btn1: () => {
                 this.runAsync(this.onDownloadChecked);
                 return false;

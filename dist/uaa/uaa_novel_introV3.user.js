@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.16:31:55
+// @version    2026-04-25.16:39:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4701,7 +4701,7 @@ page: true,
             content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
           }
         ],
-        btn: ["下载选中章节", "下载全部章节", "继续下载", "恢复残留"],
+        btn: ["添加选中章节", "添加全部章节", "继续下载", "恢复残留"],
         btn1: () => {
           this.runAsync(this.onDownloadChecked);
           return false;
