@@ -33,7 +33,7 @@ export class InfoWindowView {
             closeBtn: 0,
             shade: 0,
             maxmin: true,
-            area: ['60%', '80%'],
+            area: ['70%', '80%'],
             moveOut: true,
             tab: [
                 {

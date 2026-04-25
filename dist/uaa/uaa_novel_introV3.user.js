@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.16:22:09
+// @version    2026-04-25.16:31:55
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4685,7 +4685,7 @@ page: true,
         closeBtn: 0,
         shade: 0,
         maxmin: true,
-        area: ["60%", "80%"],
+        area: ["70%", "80%"],
         moveOut: true,
         tab: [
           {
