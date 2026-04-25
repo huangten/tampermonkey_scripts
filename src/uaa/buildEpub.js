@@ -20,7 +20,7 @@ function fetchBookIntro(url) {
         });
 }
 
-export async function buildEpub(url) {
+export async function buildEpub(url, options = {}) {
     const zip = new JSZip();
     let doc = await fetchBookIntro(url).catch((e) => {
         // console.log(e);
@@ -56,8 +56,15 @@ export async function buildEpub(url) {
         }
     }
 
-
+    const introDoc = doc.cloneNode(true);
     let chapters = getChapterMenu(doc)
+    if (typeof options.onIntroParsed === 'function') {
+        await options.onIntroParsed({
+            url,
+            doc: introDoc,
+            chapters
+        });
+    }
 
     zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
     zip.folder('META-INF').file('container.xml', createContainer());

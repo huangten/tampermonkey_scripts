@@ -108,7 +108,29 @@ const scriptConfigs = {
             outDir: "uaa",
             fileName: "uaa_novel_list"
         }
+    },
+    uaa_novel_listV2: {
+        entry: 'src/uaa/router/listV2.js',
+        userscript: {
+            name: 'UAA 书籍列表页 V2 增强',
+            author: 'YourName',
+            match: ['https://*.uaa.com/novel/list*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
+            namespace: 'https://tampermonkey.net/',
+            require: [
+                'https://unpkg.com/hacktimer/HackTimer.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+            ],
+            version: getVersion(),
+            noframes: true,
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel_listV2"
+        }
     }
+
 };
 
 
