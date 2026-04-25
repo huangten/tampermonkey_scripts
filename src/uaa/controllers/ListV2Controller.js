@@ -26,7 +26,8 @@ export class ListV2Controller {
             total: 0,
             completed: 0,
             added: 0,
-            duplicated: 0
+            duplicated: 0,
+            chapterDbProcessed: 0
         };
 
         this.configureOpenNewWindowScheduler();
@@ -96,7 +97,11 @@ export class ListV2Controller {
         checkedBooks.reverse();
         this.resetExportScheduler(checkedBooks.length);
         this.view.resetExportProgress();
-        this.view.setChapterDbInfo(options.addChaptersToDb ? '等待章节入库' : '本次未启用章节入库');
+        if (options.addChaptersToDb) {
+            this.view.resetChapterDbHistory('等待章节入库');
+        } else {
+            this.view.setChapterDbInfo('本次未启用章节入库');
+        }
         checkedBooks.forEach(book => {
             this.exportEpubScheduler.add({
                 ...book,
@@ -110,7 +115,7 @@ export class ListV2Controller {
         this.view.reloadBookTree(this.model.getBookTree());
         this.view.resetOpenProgress();
         this.view.resetExportProgress();
-        this.view.setChapterDbInfo('暂无入库');
+        this.view.resetChapterDbHistory('暂无入库');
         this.openNewWindowScheduler.clear();
         this.exportEpubScheduler.clear();
     }
@@ -177,8 +182,9 @@ export class ListV2Controller {
             onFinish: async () => {
                 this.view.setExportInfo('书籍导出完毕', 'javascript:void(0);');
                 if (this.currentExportRun.added > 0 || this.currentExportRun.duplicated > 0) {
+                    const totalChapters = this.currentExportRun.added + this.currentExportRun.duplicated;
                     this.view.setChapterDbInfo(
-                        `章节入库完毕：新增 ${this.currentExportRun.added} 章，重复 ${this.currentExportRun.duplicated} 章`,
+                        `章节入库完毕：共计 ${totalChapters} 章，新增 ${this.currentExportRun.added} 章，共计重复 ${this.currentExportRun.duplicated} 章`,
                         'javascript:void(0);'
                     );
                 }
@@ -198,7 +204,8 @@ export class ListV2Controller {
             total,
             completed: 0,
             added: 0,
-            duplicated: 0
+            duplicated: 0,
+            chapterDbProcessed: 0
         };
         this.configureExportEpubScheduler();
     }
@@ -212,8 +219,23 @@ export class ListV2Controller {
         const result = await this.db.addChaptersIfAbsent(chapters);
         this.currentExportRun.added += result.added;
         this.currentExportRun.duplicated += result.duplicated;
-        this.view.setChapterDbInfo(
-            `书籍: ${task.title} 入库完成，新增 ${result.added} 章，重复 ${result.duplicated} 章`,
+        this.currentExportRun.chapterDbProcessed++;
+
+        this.view.appendChapterDbHistory({
+            index: this.currentExportRun.chapterDbProcessed,
+            title: task.title,
+            href: task.href,
+            added: result.added,
+            duplicated: result.duplicated
+        });
+        this.view.setChapterDbSummary({
+            processed: this.currentExportRun.chapterDbProcessed,
+            totalBooks: this.currentExportRun.total,
+            added: this.currentExportRun.added,
+            duplicated: this.currentExportRun.duplicated
+        });
+        console.log(
+            `${task.title} 章节入库完成，新增 ${result.added} 章，重复 ${result.duplicated} 章，共 ${result.added + result.duplicated} 章`,
             task.href
         );
     }

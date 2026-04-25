@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.21:06:01
+// @version    2026-04-25.21:34:39
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -4341,6 +4341,39 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
     setChapterDbInfo(text, href = "") {
       this.setAnchorText("chapterDbInfoContentId", text, href);
     }
+    resetChapterDbHistory(text = "暂无入库") {
+      this.setChapterDbInfo(text);
+      const body = document.getElementById("chapterDbHistoryBodyId");
+      if (body) {
+        body.innerHTML = "";
+      }
+    }
+    setChapterDbSummary({ processed = 0, totalBooks = 0, added = 0, duplicated = 0 } = {}) {
+      const totalChapters = added + duplicated;
+      this.setChapterDbInfo(
+        `章节入库：${processed}/${totalBooks} 本，共计 ${totalChapters} 章，新增 ${added} 章，重复 ${duplicated} 章`,
+        "javascript:void(0);"
+      );
+    }
+    appendChapterDbHistory({ index, title, href = "", added = 0, duplicated = 0 } = {}) {
+      const body = document.getElementById("chapterDbHistoryBodyId");
+      if (!body) {
+        return;
+      }
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f2f2f2;";
+      const link = document.createElement("a");
+      link.href = href || "javascript:void(0);";
+      link.textContent = `${index}. ${title}`;
+      link.style.cssText = "flex:1;min-width:0;word-break:break-all;";
+      const stats = document.createElement("span");
+      stats.textContent = `新增 ${added} 章，重复 ${duplicated} 章，共 ${added + duplicated} 章`;
+      stats.style.cssText = "white-space:nowrap;color:#666;";
+      row.appendChild(link);
+      row.appendChild(stats);
+      body.appendChild(row);
+      body.scrollTop = body.scrollHeight;
+    }
     setExportProgress(percent) {
       layui.element.progress(this.progressFilter, percent);
     }
@@ -4375,7 +4408,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="bookListWindowDiv"></div></div>';
     }
     getTaskInfoTabContent() {
-      return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="exportAndOpenNewWindow"><fieldset class="layui-elem-field">  <legend>打开新窗口的信息</legend>  <div class="layui-field-box">      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>      <div style="margin-top: 12px;" class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="openNewWindowProgress">          <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>      </div>  </div></fieldset><fieldset class="layui-elem-field">  <legend>当前导出</legend>  <div class="layui-field-box">      <a id="exportInfoContentId" href="">暂无导出</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>章节入库</legend>  <div class="layui-field-box">      <a id="chapterDbInfoContentId" href="">暂无入库</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>导出进度条</legend>  <div class="layui-field-box"><div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>';
+      return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="exportAndOpenNewWindow"><fieldset class="layui-elem-field">  <legend>打开新窗口的信息</legend>  <div class="layui-field-box">      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>      <div style="margin-top: 12px;" class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="openNewWindowProgress">          <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>      </div>  </div></fieldset><fieldset class="layui-elem-field">  <legend>当前导出</legend>  <div class="layui-field-box">      <a id="exportInfoContentId" href="">暂无导出</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>导出进度条</legend>  <div class="layui-field-box"><div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset><fieldset class="layui-elem-field">  <legend>章节入库</legend>  <div class="layui-field-box">      <a id="chapterDbInfoContentId" href="">暂无入库</a>      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;"></div>  </div></fieldset></div></div>';
     }
   }
   class ListV2Controller {
@@ -4399,7 +4432,8 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         total: 0,
         completed: 0,
         added: 0,
-        duplicated: 0
+        duplicated: 0,
+        chapterDbProcessed: 0
       };
       this.configureOpenNewWindowScheduler();
       this.configureExportEpubScheduler();
@@ -4458,7 +4492,11 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       checkedBooks.reverse();
       this.resetExportScheduler(checkedBooks.length);
       this.view.resetExportProgress();
-      this.view.setChapterDbInfo(options.addChaptersToDb ? "等待章节入库" : "本次未启用章节入库");
+      if (options.addChaptersToDb) {
+        this.view.resetChapterDbHistory("等待章节入库");
+      } else {
+        this.view.setChapterDbInfo("本次未启用章节入库");
+      }
       checkedBooks.forEach((book) => {
         this.exportEpubScheduler.add({
           ...book,
@@ -4471,7 +4509,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       this.view.reloadBookTree(this.model.getBookTree());
       this.view.resetOpenProgress();
       this.view.resetExportProgress();
-      this.view.setChapterDbInfo("暂无入库");
+      this.view.resetChapterDbHistory("暂无入库");
       this.openNewWindowScheduler.clear();
       this.exportEpubScheduler.clear();
     }
@@ -4535,8 +4573,9 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         onFinish: async () => {
           this.view.setExportInfo("书籍导出完毕", "javascript:void(0);");
           if (this.currentExportRun.added > 0 || this.currentExportRun.duplicated > 0) {
+            const totalChapters = this.currentExportRun.added + this.currentExportRun.duplicated;
             this.view.setChapterDbInfo(
-              `章节入库完毕：新增 ${this.currentExportRun.added} 章，重复 ${this.currentExportRun.duplicated} 章`,
+              `章节入库完毕：共计 ${totalChapters} 章，新增 ${this.currentExportRun.added} 章，共计重复 ${this.currentExportRun.duplicated} 章`,
               "javascript:void(0);"
             );
           }
@@ -4555,7 +4594,8 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         total,
         completed: 0,
         added: 0,
-        duplicated: 0
+        duplicated: 0,
+        chapterDbProcessed: 0
       };
       this.configureExportEpubScheduler();
     }
@@ -4565,8 +4605,22 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       const result = await this.db.addChaptersIfAbsent(chapters);
       this.currentExportRun.added += result.added;
       this.currentExportRun.duplicated += result.duplicated;
-      this.view.setChapterDbInfo(
-        `书籍: ${task.title} 入库完成，新增 ${result.added} 章，重复 ${result.duplicated} 章`,
+      this.currentExportRun.chapterDbProcessed++;
+      this.view.appendChapterDbHistory({
+        index: this.currentExportRun.chapterDbProcessed,
+        title: task.title,
+        href: task.href,
+        added: result.added,
+        duplicated: result.duplicated
+      });
+      this.view.setChapterDbSummary({
+        processed: this.currentExportRun.chapterDbProcessed,
+        totalBooks: this.currentExportRun.total,
+        added: this.currentExportRun.added,
+        duplicated: this.currentExportRun.duplicated
+      });
+      console.log(
+        `${task.title} 章节入库完成，新增 ${result.added} 章，重复 ${result.duplicated} 章，共 ${result.added + result.duplicated} 章`,
         task.href
       );
     }

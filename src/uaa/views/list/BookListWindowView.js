@@ -130,6 +130,46 @@ export class BookListWindowView {
         this.setAnchorText('chapterDbInfoContentId', text, href);
     }
 
+    resetChapterDbHistory(text = '暂无入库') {
+        this.setChapterDbInfo(text);
+        const body = document.getElementById('chapterDbHistoryBodyId');
+        if (body) {
+            body.innerHTML = '';
+        }
+    }
+
+    setChapterDbSummary({ processed = 0, totalBooks = 0, added = 0, duplicated = 0 } = {}) {
+        const totalChapters = added + duplicated;
+        this.setChapterDbInfo(
+            `章节入库：${processed}/${totalBooks} 本，共计 ${totalChapters} 章，新增 ${added} 章，重复 ${duplicated} 章`,
+            'javascript:void(0);'
+        );
+    }
+
+    appendChapterDbHistory({ index, title, href = '', added = 0, duplicated = 0 } = {}) {
+        const body = document.getElementById('chapterDbHistoryBodyId');
+        if (!body) {
+            return;
+        }
+
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f2f2f2;';
+
+        const link = document.createElement('a');
+        link.href = href || 'javascript:void(0);';
+        link.textContent = `${index}. ${title}`;
+        link.style.cssText = 'flex:1;min-width:0;word-break:break-all;';
+
+        const stats = document.createElement('span');
+        stats.textContent = `新增 ${added} 章，重复 ${duplicated} 章，共 ${added + duplicated} 章`;
+        stats.style.cssText = 'white-space:nowrap;color:#666;';
+
+        row.appendChild(link);
+        row.appendChild(stats);
+        body.appendChild(row);
+        body.scrollTop = body.scrollHeight;
+    }
+
     setExportProgress(percent) {
         layui.element.progress(this.progressFilter, percent);
     }
@@ -191,18 +231,20 @@ export class BookListWindowView {
             '      <a id="exportInfoContentId" href="">暂无导出</a>' +
             '  </div>' +
             '</fieldset>' +
-            '<fieldset class="layui-elem-field">' +
-            '  <legend>章节入库</legend>' +
-            '  <div class="layui-field-box">' +
-            '      <a id="chapterDbInfoContentId" href="">暂无入库</a>' +
-            '  </div>' +
-            '</fieldset>' +
+
             '<fieldset class="layui-elem-field">' +
             '  <legend>导出进度条</legend>' +
             '  <div class="layui-field-box">' +
             '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress">' +
             ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
             '</div>' +
+            '  </div>' +
+            '</fieldset>' +
+            '<fieldset class="layui-elem-field">' +
+            '  <legend>章节入库</legend>' +
+            '  <div class="layui-field-box">' +
+            '      <a id="chapterDbInfoContentId" href="">暂无入库</a>' +
+            '      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;"></div>' +
             '  </div>' +
             '</fieldset>' +
             '</div>' +
