@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.23:07:48
+// @version    2026-04-25.23:13:40
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4500,7 +4500,6 @@ ${input.body?.innerText || ""}`;
       const total = await this.db.countDebugRows(this.tableMode);
       const pageConfig = this.getPageConfig(total);
       const rows = await this.db.getDebugRows(this.tableMode, pageConfig.curr, pageConfig.limit);
-      console.log("DebugTableView render", { total, pageConfig, rows });
       layui.table.render({
         elem: "#" + this.tableId,
         id: this.tableId,

@@ -53,7 +53,7 @@ export class DebugTableView {
         const total = await this.db.countDebugRows(this.tableMode);
         const pageConfig = this.getPageConfig(total);
         const rows = await this.db.getDebugRows(this.tableMode, pageConfig.curr, pageConfig.limit);
-console.log('DebugTableView render', { total, pageConfig, rows });
+
         layui.table.render({
             elem: '#' + this.tableId,
             id: this.tableId,
