@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-24.22:46:56
+// @version    2026-04-25.16:22:09
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4017,6 +4017,9 @@ async markDownloadError(pageId = "") {
 async deletePendingChapters() {
       return await this.db.table("chapters").where("status").equals(0).delete();
     }
+async deleteDownloadedChapters() {
+      return await this.db.table("chapters").where("status").equals(1).delete();
+    }
 async getChapterStats() {
       const pending = await this.db.table("chapters").where("status").equals(0).count();
       const downloaded = await this.db.table("chapters").where("status").equals(1).count();
@@ -4398,6 +4401,32 @@ ${input.body?.innerText || ""}`;
       );
     }
   }
+  function topLayerMsg(content, options = { zIndex: layui.layer.zIndex }, end) {
+    if (typeof options === "function") {
+      end = options;
+      options = {};
+    }
+    const success = options.success;
+    return layui.layer.msg(content, {
+      ...options,
+      success(layero, index) {
+        layui.layer.setTop(layero);
+        success?.(layero, index);
+      }
+    }, end);
+  }
+  function topLayerConfirm(content, yes, cancel, options = { zIndex: layui.layer.zIndex }) {
+    const success = options.success;
+    return layui.layer.confirm(content, {
+      icon: 3,
+      title: "确认操作",
+      ...options,
+      success(layero, index) {
+        layui.layer.setTop(layero);
+        success?.(layero, index);
+      }
+    }, yes, cancel);
+  }
   class DebugTableView {
     constructor({ db, tableId, onRowsDeleted }) {
       this.db = db;
@@ -4406,17 +4435,10 @@ ${input.body?.innerText || ""}`;
       this.onRowsDeleted = onRowsDeleted;
     }
     bindEvents() {
-      const systemBtn = document.getElementById("debugLoadSystemInfosBtn");
       const chaptersBtn = document.getElementById("debugLoadChaptersBtn");
       const refreshBtn = document.getElementById("debugRefreshBtn");
       const deleteBtn = document.getElementById("debugDeleteRowsBtn");
-      if (systemBtn && !systemBtn.dataset.bound) {
-        systemBtn.dataset.bound = "1";
-        systemBtn.addEventListener("click", () => {
-          this.tableMode = "system_infos";
-          this.render().then();
-        });
-      }
+      const deleteDownloadedBtn = document.getElementById("debugDeleteDownloadedChaptersBtn");
       if (chaptersBtn && !chaptersBtn.dataset.bound) {
         chaptersBtn.dataset.bound = "1";
         chaptersBtn.addEventListener("click", () => {
@@ -4436,64 +4458,80 @@ ${input.body?.innerText || ""}`;
           this.deleteSelectedRows().then();
         });
       }
+      if (deleteDownloadedBtn && !deleteDownloadedBtn.dataset.bound) {
+        deleteDownloadedBtn.dataset.bound = "1";
+        deleteDownloadedBtn.addEventListener("click", () => {
+          this.deleteDownloadedChapters().then();
+        });
+      }
     }
     async render() {
       if (!document.getElementById(this.tableId)) {
         return;
       }
-      const rows = await this.db.getDebugRows(this.tableMode);
-      const cols = this.tableMode === "system_infos" ? this.getSystemInfoCols() : this.getChapterCols();
+      const rows = await this.db.getDebugRows("chapters");
       layui.table.render({
         elem: "#" + this.tableId,
         id: this.tableId,
         data: rows,
-        height: 420,
-        page: true,
-        limit: 20,
-        limits: [20, 50, 100],
+        lineStyle: null,
+        loading: true,
+        skin: "row",
+page: true,
+        limit: 10,
+        limits: [10, 20, 50, 100],
         even: true,
-        cols
+        cols: this.getChapterCols()
       });
     }
     async deleteSelectedRows() {
       const checked = layui.table.checkStatus(this.tableId).data;
       if (!checked || checked.length === 0) {
-        layui.layer.msg("未选中任何数据");
+        topLayerMsg("未选中任何数据");
         return;
       }
       const deleted = await this.db.deleteDebugRows(this.tableMode, checked.map((item) => item.id));
       await this.onRowsDeleted?.();
       await this.render();
-      layui.layer.msg(`已删除 ${deleted} 条 ${this.tableMode} 数据`);
+      topLayerMsg(`已删除 ${deleted} 条 chapters 数据`);
     }
-    getSystemInfoCols() {
-      return [[
-        { type: "checkbox", fixed: "left" },
-        { field: "id", title: "ID", width: 70, sort: true },
-        { field: "status", title: "状态", width: 80 },
-        { field: "consumerPageLabel", title: "消费页", minWidth: 180 },
-        { field: "consumerPageId", title: "消费页ID", minWidth: 220 },
-        { field: "consumerHeartbeat", title: "心跳", minWidth: 180, templet: (d) => this.formatTime(d.consumerHeartbeat) },
-        { field: "currentChapterId", title: "当前章节ID", width: 110 },
-        { field: "currentChapterHref", title: "当前章节地址", minWidth: 240 },
-        { field: "currentBookName", title: "当前书名", minWidth: 160 },
-        { field: "lastDownloadTime", title: "最后下载", minWidth: 180, templet: (d) => this.formatTime(d.lastDownloadTime) },
-        { field: "updateTime", title: "更新时间", minWidth: 180, templet: (d) => this.formatTime(d.updateTime) }
-      ]];
+    async deleteDownloadedChapters() {
+      const confirmed = await this.confirm("确定删除所有已下载章节记录吗？");
+      if (!confirmed) {
+        return;
+      }
+      const deleted = await this.db.deleteDownloadedChapters();
+      this.tableMode = "chapters";
+      await this.onRowsDeleted?.();
+      await this.render();
+      topLayerMsg(`已删除 ${deleted} 条已下载章节记录`);
     }
     getChapterCols() {
       return [[
-        { type: "checkbox", fixed: "left" },
+        { type: "checkbox" },
         { field: "id", title: "ID", width: 70, sort: true },
-        { field: "status", title: "状态", width: 80 },
-        { field: "bookName", title: "书名", minWidth: 160 },
-        { field: "volumeName", title: "卷名", minWidth: 140 },
-        { field: "chapterName", title: "章节名", minWidth: 220 },
-        { field: "href", title: "地址", minWidth: 260 },
-        { field: "chapterId", title: "章节ID", width: 110 },
-        { field: "bookId", title: "书ID", width: 110 },
-        { field: "createTime", title: "创建时间", minWidth: 180, templet: (d) => this.formatTime(d.createTime) },
-        { field: "updateTime", title: "更新时间", minWidth: 180, templet: (d) => this.formatTime(d.updateTime) }
+        {
+          field: "status",
+          title: "状态",
+          width: 80,
+          templet: (d) => {
+            if (d.status === 0) {
+              return '<span style="color: #FF5722;">待下载</span>';
+            } else if (d.status === 1) {
+              return '<span style="color: #4CAF50;">已下载</span>';
+            } else {
+              return d.status;
+            }
+          }
+        },
+        { field: "bookName", title: "书名", minwidth: 80 },
+        { field: "volumeName", title: "卷名", minwidth: 70 },
+        { field: "chapterName", title: "章节名", minwidth: 70 },
+        { field: "href", title: "地址", minwidth: 70 },
+        { field: "chapterId", title: "章节ID", minwidth: 70 },
+        { field: "bookId", title: "书ID", minwidth: 70 },
+        { field: "createTime", title: "创建时间", minwidth: 70, templet: (d) => this.formatTime(d.createTime) },
+        { field: "updateTime", title: "更新时间", minwidth: 70, templet: (d) => this.formatTime(d.updateTime) }
       ]];
     }
     formatTime(timestamp) {
@@ -4501,6 +4539,17 @@ ${input.body?.innerText || ""}`;
         return "";
       }
       return new Date(timestamp).toLocaleString();
+    }
+    confirm(message) {
+      return new Promise((resolve) => {
+        topLayerConfirm(message, (index) => {
+          layui.layer.close(index);
+          resolve(true);
+        }, (index) => {
+          layui.layer.close(index);
+          resolve(false);
+        });
+      });
     }
   }
   class DownloadInfoWindowView {
@@ -4645,11 +4694,11 @@ ${input.body?.innerText || ""}`;
           },
           {
             title: "下载进度",
-            content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset></div></div>'
+            content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend>当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend>进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset>' + this.getSystemInfoPanelHtml() + "</div></div>"
           },
           {
-            title: "数据库信息",
-            content: '<div style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugLoadSystemInfosBtn" type="button" class="layui-btn layui-btn-sm">system_infos</button>  <button id="debugLoadChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">chapters</button>  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
+            title: "书籍章节信息",
+            content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
           }
         ],
         btn: ["下载选中章节", "下载全部章节", "继续下载", "恢复残留"],
@@ -4718,6 +4767,55 @@ ${input.body?.innerText || ""}`;
         this.setCurrentDownload(stats.total === 0 ? "暂无下载" : "下载结束");
       }
     }
+    getSystemInfoPanelHtml() {
+      return '<fieldset class="layui-elem-field">\n  <legend>系统状态</legend>\n  <div class="layui-field-box">\n    <div id="systemInfoPanelId" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 12px;">' + this.getSystemInfoItemHtml("id", "ID") + this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("consumerPageLabel", "消费页") + this.getSystemInfoItemHtml("consumerPageId", "消费页ID") + this.getSystemInfoItemHtml("consumerHeartbeat", "心跳") + this.getSystemInfoItemHtml("consumerStartedAt", "消费开始") + this.getSystemInfoItemHtml("currentChapterId", "当前章节ID") + this.getSystemInfoItemHtml("currentChapterHref", "当前章节地址") + this.getSystemInfoItemHtml("currentBookName", "当前书名") + this.getSystemInfoItemHtml("lastDownloadTime", "最后下载") + this.getSystemInfoItemHtml("updateTime", "系统更新时间") + this.getSystemInfoItemHtml("displayUpdatedAt", "展示刷新时间") + "    </div>  </div>\n</fieldset>";
+    }
+    getSystemInfoItemHtml(field, label) {
+      return '<div style="min-width:0;"><div style="color:#666;font-size:12px;line-height:18px;">' + label + '</div><div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;">-</div></div>';
+    }
+    setSystemInfo(systemInfo, displayUpdatedAt = Date.now()) {
+      if (!document.getElementById("systemInfoPanelId")) {
+        return;
+      }
+      const viewModel = {
+        id: systemInfo?.id ?? "",
+        status: this.formatStatus(systemInfo?.status),
+        consumerPageLabel: systemInfo?.consumerPageLabel ?? "",
+        consumerPageId: systemInfo?.consumerPageId ?? "",
+        consumerHeartbeat: this.formatTime(systemInfo?.consumerHeartbeat),
+        consumerStartedAt: this.formatTime(systemInfo?.consumerStartedAt),
+        currentChapterId: systemInfo?.currentChapterId ?? "",
+        currentChapterHref: systemInfo?.currentChapterHref ?? "",
+        currentBookName: systemInfo?.currentBookName ?? "",
+        lastDownloadTime: this.formatTime(systemInfo?.lastDownloadTime),
+        updateTime: this.formatTime(systemInfo?.updateTime),
+        displayUpdatedAt: this.formatTime(displayUpdatedAt)
+      };
+      Object.entries(viewModel).forEach(([field, value]) => {
+        const el = document.getElementById("systemInfoValue-" + field);
+        if (el) {
+          el.textContent = value || "-";
+        }
+      });
+    }
+    formatStatus(status) {
+      switch (status) {
+        case 0:
+          return "空闲";
+        case 1:
+          return "下载中";
+        case 2:
+          return "异常";
+        default:
+          return typeof status === "undefined" ? "" : String(status);
+      }
+    }
+    formatTime(timestamp) {
+      if (!timestamp) {
+        return "";
+      }
+      return new Date(timestamp).toLocaleString();
+    }
     minimize() {
       layui.layer.min(this.ensure());
     }
@@ -4784,6 +4882,7 @@ ${input.body?.innerText || ""}`;
     }
     async onInfoWindowReady() {
       await this.updateProgress();
+      await this.updateSystemInfoPanel();
       this.debugTable.bindEvents();
       await this.debugTable.render();
     }
@@ -4794,9 +4893,10 @@ ${input.body?.innerText || ""}`;
       this.handlingWorkerMessage = true;
       try {
         const hasLease = await this.db.renewConsumerHeartbeat(this.pageId, this.pageLabel);
+        await this.updateSystemInfoPanel();
         if (!hasLease) {
           await this.stopWorker(false, false);
-          layui.layer.msg("当前页面已失去下载控制权");
+          topLayerMsg("当前页面已失去下载控制权");
           return;
         }
         const systemInfo = await this.db.getSystemInfo();
@@ -4808,17 +4908,20 @@ ${input.body?.innerText || ""}`;
           await this.updateProgress();
           return;
         }
+        await this.updateSystemInfoPanel();
         await this.downloadService.download(chapter, systemInfo.lastDownloadTime);
         const lastDownloadTime = Date.now();
         await this.db.markChapterDownloaded(chapter.id, this.pageId, lastDownloadTime);
         await this.updateProgress();
+        await this.updateSystemInfoPanel();
         const stats = await this.db.getChapterStats();
         if (stats.pending === 0) {
           this.finishDownloadWindow();
-          layui.layer.msg("章节下载完毕", { icon: 1, shadeClose: true });
+          topLayerMsg("章节下载完毕", { icon: 1, shadeClose: true });
         }
       } catch (err) {
         await this.db.markDownloadError(this.pageId);
+        await this.updateSystemInfoPanel();
         await this.stopWorker(false, false);
         this.infoWindow.minimize();
         this.downloadInfoWindow.restore();
@@ -4827,6 +4930,7 @@ ${input.body?.innerText || ""}`;
         if (this.releaseAfterCurrentTask) {
           await this.db.releaseConsumer(this.pageId);
           this.releaseAfterCurrentTask = false;
+          await this.updateSystemInfoPanel();
         }
         this.handlingWorkerMessage = false;
       }
@@ -4834,7 +4938,7 @@ ${input.body?.innerText || ""}`;
     async treeCheckedDownload() {
       const checkedData = this.infoWindow.getCheckedChapters();
       if (checkedData.length === 0) {
-        layui.layer.msg("未选中任何数据");
+        topLayerMsg("未选中任何数据");
         return;
       }
       await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
@@ -4846,13 +4950,13 @@ ${input.body?.innerText || ""}`;
       const validChapters = chapters.filter((data) => data.href && data.href.trim().length > 0);
       const result = await this.db.addChaptersIfAbsent(validChapters);
       await this.updateProgress();
-      layui.layer.msg(`已加入 ${result.added} 章，重复 ${result.duplicated} 章`);
+      topLayerMsg(`已加入 ${result.added} 章，重复 ${result.duplicated} 章`);
     }
     async clearPendingChapters() {
       await this.db.deletePendingChapters();
       this.infoWindow.reloadChapterTree();
       await this.updateProgress();
-      layui.layer.msg("未下载章节已清除");
+      topLayerMsg("未下载章节已清除");
     }
     async stopWorker(releaseConsumer = true, showMessage = true) {
       this.worker.stop();
@@ -4863,19 +4967,19 @@ ${input.body?.innerText || ""}`;
         await this.db.releaseConsumer(this.pageId);
       }
       if (showMessage) {
-        layui.layer.msg(this.handlingWorkerMessage ? "当前章节完成后暂停" : "下载系统已暂停");
+        topLayerMsg(this.handlingWorkerMessage ? "当前章节完成后暂停" : "下载系统已暂停");
       }
     }
     async startWorker() {
       const result = await this.db.tryBecomeConsumer(this.pageId, this.pageLabel);
       if (!result.acquired) {
-        layui.layer.msg("已有其他页面正在下载，请在该页面继续");
+        topLayerMsg("已有其他页面正在下载，请在该页面继续");
         return false;
       }
       this.worker.start();
       this.workerRunning = true;
       this.releaseAfterCurrentTask = false;
-      layui.layer.msg("下载系统已启动");
+      topLayerMsg("下载系统已启动");
       return true;
     }
     async resumeDownload() {
@@ -4891,11 +4995,11 @@ ${input.body?.innerText || ""}`;
       await this.updateProgress();
       await this.debugTable.render();
       if (result.recovered) {
-        layui.layer.msg("已清理过期的下载页残留");
+        topLayerMsg("已清理过期的下载页残留");
         return;
       }
       if (result.reason === "active_consumer") {
-        layui.layer.msg("当前没有可恢复的过期残留");
+        topLayerMsg("当前没有可恢复的过期残留");
       }
     }
     async updateProgress() {
@@ -4903,6 +5007,10 @@ ${input.body?.innerText || ""}`;
       const percent = stats.total === 0 ? "0%" : (stats.downloaded / stats.total * 100).toFixed(2) + "%";
       this.infoWindow.setProgress(percent);
       this.infoWindow.setIdleDownload(stats);
+    }
+    async updateSystemInfoPanel() {
+      const systemInfo = await this.db.getSystemInfo();
+      this.infoWindow.setSystemInfo(systemInfo);
     }
     finishDownloadWindow() {
       this.downloadInfoWindow.resetTitle();

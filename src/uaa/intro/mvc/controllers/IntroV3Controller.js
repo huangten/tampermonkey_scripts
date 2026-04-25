@@ -16,6 +16,7 @@ import { DebugTableView } from "../views/DebugTableView.js";
 import { DownloadInfoWindowView } from "../views/DownloadInfoWindowView.js";
 import { renderIntroFixbar } from "../views/FixbarView.js";
 import { InfoWindowView } from "../views/InfoWindowView.js";
+import { topLayerMsg } from "../views/layerUtils.js";
 
 export class IntroV3Controller {
     constructor() {
@@ -82,6 +83,7 @@ export class IntroV3Controller {
 
     async onInfoWindowReady() {
         await this.updateProgress();
+        await this.updateSystemInfoPanel();
         this.debugTable.bindEvents();
         await this.debugTable.render();
     }
@@ -94,9 +96,10 @@ export class IntroV3Controller {
         this.handlingWorkerMessage = true;
         try {
             const hasLease = await this.db.renewConsumerHeartbeat(this.pageId, this.pageLabel);
+            await this.updateSystemInfoPanel();
             if (!hasLease) {
                 await this.stopWorker(false, false);
-                layui.layer.msg("当前页面已失去下载控制权");
+                topLayerMsg("当前页面已失去下载控制权");
                 return;
             }
 
@@ -110,19 +113,22 @@ export class IntroV3Controller {
                 await this.updateProgress();
                 return;
             }
+            await this.updateSystemInfoPanel();
 
             await this.downloadService.download(chapter, systemInfo.lastDownloadTime);
             const lastDownloadTime = Date.now();
             await this.db.markChapterDownloaded(chapter.id, this.pageId, lastDownloadTime);
             await this.updateProgress();
+            await this.updateSystemInfoPanel();
 
             const stats = await this.db.getChapterStats();
             if (stats.pending === 0) {
                 this.finishDownloadWindow();
-                layui.layer.msg('章节下载完毕', { icon: 1, shadeClose: true });
+                topLayerMsg('章节下载完毕', { icon: 1, shadeClose: true });
             }
         } catch (err) {
             await this.db.markDownloadError(this.pageId);
+            await this.updateSystemInfoPanel();
             await this.stopWorker(false, false);
             this.infoWindow.minimize();
             this.downloadInfoWindow.restore();
@@ -131,6 +137,7 @@ export class IntroV3Controller {
             if (this.releaseAfterCurrentTask) {
                 await this.db.releaseConsumer(this.pageId);
                 this.releaseAfterCurrentTask = false;
+                await this.updateSystemInfoPanel();
             }
             this.handlingWorkerMessage = false;
         }
@@ -139,7 +146,7 @@ export class IntroV3Controller {
     async treeCheckedDownload() {
         const checkedData = this.infoWindow.getCheckedChapters();
         if (checkedData.length === 0) {
-            layui.layer.msg("未选中任何数据");
+            topLayerMsg("未选中任何数据");
             return;
         }
         await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
@@ -153,14 +160,14 @@ export class IntroV3Controller {
         const validChapters = chapters.filter(data => data.href && data.href.trim().length > 0);
         const result = await this.db.addChaptersIfAbsent(validChapters);
         await this.updateProgress();
-        layui.layer.msg(`已加入 ${result.added} 章，重复 ${result.duplicated} 章`);
+        topLayerMsg(`已加入 ${result.added} 章，重复 ${result.duplicated} 章`);
     }
 
     async clearPendingChapters() {
         await this.db.deletePendingChapters();
         this.infoWindow.reloadChapterTree();
         await this.updateProgress();
-        layui.layer.msg("未下载章节已清除");
+        topLayerMsg("未下载章节已清除");
     }
 
     async stopWorker(releaseConsumer = true, showMessage = true) {
@@ -172,20 +179,20 @@ export class IntroV3Controller {
             await this.db.releaseConsumer(this.pageId);
         }
         if (showMessage) {
-            layui.layer.msg(this.handlingWorkerMessage ? "当前章节完成后暂停" : "下载系统已暂停");
+            topLayerMsg(this.handlingWorkerMessage ? "当前章节完成后暂停" : "下载系统已暂停");
         }
     }
 
     async startWorker() {
         const result = await this.db.tryBecomeConsumer(this.pageId, this.pageLabel);
         if (!result.acquired) {
-            layui.layer.msg("已有其他页面正在下载，请在该页面继续");
+            topLayerMsg("已有其他页面正在下载，请在该页面继续");
             return false;
         }
         this.worker.start();
         this.workerRunning = true;
         this.releaseAfterCurrentTask = false;
-        layui.layer.msg("下载系统已启动");
+        topLayerMsg("下载系统已启动");
         return true;
     }
 
@@ -204,12 +211,12 @@ export class IntroV3Controller {
         await this.debugTable.render();
 
         if (result.recovered) {
-            layui.layer.msg("已清理过期的下载页残留");
+            topLayerMsg("已清理过期的下载页残留");
             return;
         }
 
         if (result.reason === 'active_consumer') {
-            layui.layer.msg("当前没有可恢复的过期残留");
+            topLayerMsg("当前没有可恢复的过期残留");
         }
     }
 
@@ -218,6 +225,11 @@ export class IntroV3Controller {
         const percent = stats.total === 0 ? '0%' : ((stats.downloaded / stats.total) * 100).toFixed(2) + '%';
         this.infoWindow.setProgress(percent);
         this.infoWindow.setIdleDownload(stats);
+    }
+
+    async updateSystemInfoPanel() {
+        const systemInfo = await this.db.getSystemInfo();
+        this.infoWindow.setSystemInfo(systemInfo);
     }
 
     finishDownloadWindow() {
@@ -249,4 +261,3 @@ export class IntroV3Controller {
         return String(err);
     }
 }
-

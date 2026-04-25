@@ -59,16 +59,17 @@ export class InfoWindowView {
                         '</div>' +
                         '  </div>' +
                         '</fieldset>' +
+                        this.getSystemInfoPanelHtml() +
                         '</div>' +
                         '</div>'
                 }, {
-                    title: '数据库信息',
-                    content: '<div style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;">' +
+                    title: '书籍章节信息',
+                    content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;">' +
                         '<div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">' +
-                        '  <button id="debugLoadSystemInfosBtn" type="button" class="layui-btn layui-btn-sm">system_infos</button>' +
-                        '  <button id="debugLoadChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">chapters</button>' +
+                        // '  <button id="debugLoadChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">chapters</button>' +
                         '  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>' +
                         '  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>' +
+                        '  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button>' +
                         '</div>' +
                         '<table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table>' +
                         '</div>'
@@ -146,6 +147,83 @@ export class InfoWindowView {
         }
     }
 
+    getSystemInfoPanelHtml() {
+        return '<fieldset class="layui-elem-field">\n' +
+            '  <legend>系统状态</legend>\n' +
+            '  <div class="layui-field-box">\n' +
+            '    <div id="systemInfoPanelId" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 12px;">' +
+            this.getSystemInfoItemHtml('id', 'ID') +
+            this.getSystemInfoItemHtml('status', '状态') +
+            this.getSystemInfoItemHtml('consumerPageLabel', '消费页') +
+            this.getSystemInfoItemHtml('consumerPageId', '消费页ID') +
+            this.getSystemInfoItemHtml('consumerHeartbeat', '心跳') +
+            this.getSystemInfoItemHtml('consumerStartedAt', '消费开始') +
+            this.getSystemInfoItemHtml('currentChapterId', '当前章节ID') +
+            this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址') +
+            this.getSystemInfoItemHtml('currentBookName', '当前书名') +
+            this.getSystemInfoItemHtml('lastDownloadTime', '最后下载') +
+            this.getSystemInfoItemHtml('updateTime', '系统更新时间') +
+            this.getSystemInfoItemHtml('displayUpdatedAt', '展示刷新时间') +
+            '    </div>' +
+            '  </div>\n' +
+            '</fieldset>';
+    }
+
+    getSystemInfoItemHtml(field, label) {
+        return '<div style="min-width:0;">' +
+            '<div style="color:#666;font-size:12px;line-height:18px;">' + label + '</div>' +
+            '<div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;">-</div>' +
+            '</div>';
+    }
+
+    setSystemInfo(systemInfo, displayUpdatedAt = Date.now()) {
+        if (!document.getElementById('systemInfoPanelId')) {
+            return;
+        }
+
+        const viewModel = {
+            id: systemInfo?.id ?? '',
+            status: this.formatStatus(systemInfo?.status),
+            consumerPageLabel: systemInfo?.consumerPageLabel ?? '',
+            consumerPageId: systemInfo?.consumerPageId ?? '',
+            consumerHeartbeat: this.formatTime(systemInfo?.consumerHeartbeat),
+            consumerStartedAt: this.formatTime(systemInfo?.consumerStartedAt),
+            currentChapterId: systemInfo?.currentChapterId ?? '',
+            currentChapterHref: systemInfo?.currentChapterHref ?? '',
+            currentBookName: systemInfo?.currentBookName ?? '',
+            lastDownloadTime: this.formatTime(systemInfo?.lastDownloadTime),
+            updateTime: this.formatTime(systemInfo?.updateTime),
+            displayUpdatedAt: this.formatTime(displayUpdatedAt)
+        };
+
+        Object.entries(viewModel).forEach(([field, value]) => {
+            const el = document.getElementById('systemInfoValue-' + field);
+            if (el) {
+                el.textContent = value || '-';
+            }
+        });
+    }
+
+    formatStatus(status) {
+        switch (status) {
+            case 0:
+                return '空闲';
+            case 1:
+                return '下载中';
+            case 2:
+                return '异常';
+            default:
+                return typeof status === 'undefined' ? '' : String(status);
+        }
+    }
+
+    formatTime(timestamp) {
+        if (!timestamp) {
+            return '';
+        }
+        return new Date(timestamp).toLocaleString();
+    }
+
     minimize() {
         layui.layer.min(this.ensure());
     }
@@ -154,4 +232,3 @@ export class InfoWindowView {
         Promise.resolve(handler?.()).catch(console.error);
     }
 }
-

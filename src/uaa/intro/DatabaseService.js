@@ -315,6 +315,14 @@ export class DatabaseService {
             .delete();
     }
 
+    // 清除已经下载完成的章节记录，只保留仍待下载的任务。
+    async deleteDownloadedChapters() {
+        return await this.db.table('chapters')
+            .where('status')
+            .equals(1)
+            .delete();
+    }
+
     // 统计待下载和已下载数量，用于页面进度条显示。
     async getChapterStats() {
         const pending = await this.db.table('chapters')
