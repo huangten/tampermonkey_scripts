@@ -1,5 +1,5 @@
-import { destroyIframeElementAsync, sleep, waitForElement } from "../../../../common/common.js";
-import { getTexts, saveContentToLocal } from "../../../common.js";
+import { destroyIframeElementAsync, sleep, waitForElement } from "../../common/common.js";
+import { getTexts, saveContentToLocal } from "../common.js";
 
 export class ChapterDownloadService {
     constructor({ downloadInfoWindow, infoWindow, downloaderInterval }) {

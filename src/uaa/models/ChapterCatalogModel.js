@@ -1,4 +1,4 @@
-import { cleanText } from "../../../../common/common.js";
+import { cleanText } from "../../common/common.js";
 
 export class ChapterCatalogModel {
     constructor(doc = document, location = document.location) {

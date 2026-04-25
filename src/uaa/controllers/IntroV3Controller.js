@@ -1,14 +1,14 @@
-import { copyContext } from "../../../../common/common.js";
-import { buildEpub } from "../../../buildEpub.js";
-import { DatabaseService } from "../../DatabaseService.js";
-import { WorkerSingleton } from "../../WorkerSingleton.js";
+import { copyContext } from "../../common/common.js";
+import { buildEpub } from "../buildEpub.js";
+import { DatabaseService } from "../db/DatabaseService.js";
+import { WorkerSingleton } from "../common/WorkerSingleton.js";
 import {
     CHAPTER_TREE_ID,
     DEBUG_TABLE_ID,
     DOWNLOAD_INFO_WINDOW_DIV_ID,
     DOWNLOADER_INTERVAL,
     INFO_WINDOW_PROGRESS_FILTER
-} from "../constants.js";
+} from "../intro/constants.js";
 import { ChapterCatalogModel } from "../models/ChapterCatalogModel.js";
 import { getOrCreatePageId, getPageLabel } from "../models/PageIdentity.js";
 import { ChapterDownloadService } from "../services/ChapterDownloadService.js";

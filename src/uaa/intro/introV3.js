@@ -1,5 +1,5 @@
 import { init } from "../../common/common.js";
-import { IntroV3Controller } from "./mvc/controllers/IntroV3Controller.js";
+import { IntroV3Controller } from "../controllers/IntroV3Controller.js";
 
 init().then(async () => {
     await new IntroV3Controller().init();
