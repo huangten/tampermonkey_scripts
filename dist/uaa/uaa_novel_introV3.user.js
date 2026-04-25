@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.19:55:25
+// @version    2026-04-25.23:07:48
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -345,7 +345,7 @@
       return parser.parseFromString(htmlString, "text/html");
     });
   }
-  async function buildEpub(url) {
+  async function buildEpub(url, options = {}) {
     const zip = new JSZip();
     let doc = await fetchBookIntro(url).catch((e) => {
       throw new Error(e);
@@ -373,7 +373,15 @@
         score = infoBox[i].innerText.replace("评分：", "").trim();
       }
     }
+    const introDoc = doc.cloneNode(true);
     let chapters = getChapterMenu(doc);
+    if (typeof options.onIntroParsed === "function") {
+      await options.onIntroParsed({
+        url,
+        doc: introDoc,
+        chapters
+      });
+    }
     zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
     zip.folder("META-INF").file("container.xml", createContainer());
     const o = zip.folder("OEBPS");
@@ -4031,11 +4039,24 @@ async getChapterStats() {
         total: pending + downloaded
       };
     }
-async getDebugRows(tableName) {
-      if (!this.db.tables.map((table) => table.name).includes(tableName)) {
+async getDebugRows(tableName, pageNum, pageSize) {
+      if (!this.db.tables.map((table2) => table2.name).includes(tableName)) {
         return [];
       }
-      return await this.db.table(tableName).toArray();
+      const table = this.db.table(tableName);
+      if (!pageNum || !pageSize) {
+        return await table.toArray();
+      }
+      const normalizedPageNum = Math.max(Number(pageNum) || 1, 1);
+      const normalizedPageSize = Math.max(Number(pageSize) || 10, 1);
+      const offset = (normalizedPageNum - 1) * normalizedPageSize;
+      return await table.orderBy("id").offset(offset).limit(normalizedPageSize).toArray();
+    }
+async countDebugRows(tableName) {
+      if (!this.db.tables.map((table) => table.name).includes(tableName)) {
+        return 0;
+      }
+      return await this.db.table(tableName).count();
     }
 async deleteDebugRows(tableName, ids) {
       if (!Array.isArray(ids) || ids.length === 0) {
@@ -4435,6 +4456,11 @@ ${input.body?.innerText || ""}`;
       this.tableId = tableId;
       this.tableMode = "chapters";
       this.onRowsDeleted = onRowsDeleted;
+      this.pageLimits = [10, 20, 50, 100];
+      this.pageState = {
+        curr: 1,
+        limit: this.pageLimits[0]
+      };
     }
     bindEvents() {
       const chaptersBtn = document.getElementById("debugLoadChaptersBtn");
@@ -4471,7 +4497,10 @@ ${input.body?.innerText || ""}`;
       if (!document.getElementById(this.tableId)) {
         return;
       }
-      const rows = await this.db.getDebugRows("chapters");
+      const total = await this.db.countDebugRows(this.tableMode);
+      const pageConfig = this.getPageConfig(total);
+      const rows = await this.db.getDebugRows(this.tableMode, pageConfig.curr, pageConfig.limit);
+      console.log("DebugTableView render", { total, pageConfig, rows });
       layui.table.render({
         elem: "#" + this.tableId,
         id: this.tableId,
@@ -4479,12 +4508,64 @@ ${input.body?.innerText || ""}`;
         lineStyle: null,
         loading: true,
         skin: "row",
-page: true,
-        limit: 10,
-        limits: [10, 20, 50, 100],
+page: false,
+        limit: pageConfig.limit,
         even: true,
         cols: this.getChapterCols()
       });
+      this.renderPager(pageConfig);
+    }
+    getPageConfig(total) {
+      const pageLimit = Number(this.pageState.limit);
+      const limit = this.pageLimits.includes(pageLimit) ? pageLimit : this.pageLimits[0];
+      const pages = Math.max(1, Math.ceil(total / limit));
+      const pageCurr = Math.max(Number(this.pageState.curr) || 1, 1);
+      const curr = Math.min(pageCurr, pages);
+      this.pageState.curr = curr;
+      this.pageState.limit = limit;
+      return {
+        curr,
+        limit,
+        limits: this.pageLimits,
+        count: total
+      };
+    }
+    renderPager(pageConfig) {
+      const pager = this.ensurePagerContainer();
+      if (!pager) {
+        return;
+      }
+      layui.laypage.render({
+        elem: pager,
+        count: pageConfig.count,
+        curr: pageConfig.curr,
+        limit: pageConfig.limit,
+        limits: pageConfig.limits,
+        layout: ["count", "prev", "page", "next", "limit", "skip"],
+        jump: (obj, first) => {
+          this.pageState.curr = obj.curr;
+          this.pageState.limit = obj.limit;
+          if (!first) {
+            this.render().then();
+          }
+        }
+      });
+    }
+    ensurePagerContainer() {
+      const pagerId = `${this.tableId}Pager`;
+      let pager = document.getElementById(pagerId);
+      if (pager) {
+        return pager;
+      }
+      const table = document.getElementById(this.tableId);
+      if (!table?.parentElement) {
+        return null;
+      }
+      pager = document.createElement("div");
+      pager.id = pagerId;
+      pager.style.marginTop = "8px";
+      table.parentElement.appendChild(pager);
+      return pager;
     }
     async deleteSelectedRows() {
       const checked = layui.table.checkStatus(this.tableId).data;

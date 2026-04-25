@@ -341,11 +341,31 @@ export class DatabaseService {
     }
 
     // 调试面板读取指定表数据。
-    async getDebugRows(tableName) {
+    async getDebugRows(tableName, pageNum, pageSize) {
         if (!this.db.tables.map(table => table.name).includes(tableName)) {
             return [];
         }
-        return await this.db.table(tableName).toArray();
+
+        const table = this.db.table(tableName);
+        if (!pageNum || !pageSize) {
+            return await table.toArray();
+        }
+
+        const normalizedPageNum = Math.max(Number(pageNum) || 1, 1);
+        const normalizedPageSize = Math.max(Number(pageSize) || 10, 1);
+        const offset = (normalizedPageNum - 1) * normalizedPageSize;
+        return await table.orderBy('id')
+            .offset(offset)
+            .limit(normalizedPageSize)
+            .toArray();
+    }
+
+    // 调试面板统计指定表数据总量。
+    async countDebugRows(tableName) {
+        if (!this.db.tables.map(table => table.name).includes(tableName)) {
+            return 0;
+        }
+        return await this.db.table(tableName).count();
     }
 
     // 调试面板批量删除指定表数据。

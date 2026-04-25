@@ -6,6 +6,11 @@ export class DebugTableView {
         this.tableId = tableId;
         this.tableMode = 'chapters';
         this.onRowsDeleted = onRowsDeleted;
+        this.pageLimits = [10, 20, 50, 100];
+        this.pageState = {
+            curr: 1,
+            limit: this.pageLimits[0]
+        };
     }
 
     bindEvents() {
@@ -45,8 +50,10 @@ export class DebugTableView {
         if (!document.getElementById(this.tableId)) {
             return;
         }
-        const rows = await this.db.getDebugRows('chapters');
-
+        const total = await this.db.countDebugRows(this.tableMode);
+        const pageConfig = this.getPageConfig(total);
+        const rows = await this.db.getDebugRows(this.tableMode, pageConfig.curr, pageConfig.limit);
+console.log('DebugTableView render', { total, pageConfig, rows });
         layui.table.render({
             elem: '#' + this.tableId,
             id: this.tableId,
@@ -55,12 +62,72 @@ export class DebugTableView {
             loading: true,
             skin: 'row',
             // height: '#chapterTabId',
-            page: true,
-            limit: 10,
-            limits: [10, 20, 50, 100],
+            page: false,
+            limit: pageConfig.limit,
             even: true,
             cols: this.getChapterCols()
         });
+
+        this.renderPager(pageConfig);
+    }
+
+    getPageConfig(total) {
+        const pageLimit = Number(this.pageState.limit);
+        const limit = this.pageLimits.includes(pageLimit) ? pageLimit : this.pageLimits[0];
+        const pages = Math.max(1, Math.ceil(total / limit));
+        const pageCurr = Math.max(Number(this.pageState.curr) || 1, 1);
+        const curr = Math.min(pageCurr, pages);
+
+        this.pageState.curr = curr;
+        this.pageState.limit = limit;
+        return {
+            curr,
+            limit,
+            limits: this.pageLimits,
+            count: total
+        };
+    }
+
+    renderPager(pageConfig) {
+        const pager = this.ensurePagerContainer();
+        if (!pager) {
+            return;
+        }
+
+        layui.laypage.render({
+            elem: pager,
+            count: pageConfig.count,
+            curr: pageConfig.curr,
+            limit: pageConfig.limit,
+            limits: pageConfig.limits,
+            layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'],
+            jump: (obj, first) => {
+                this.pageState.curr = obj.curr;
+                this.pageState.limit = obj.limit;
+                if (!first) {
+                    this.render().then();
+                }
+            }
+        });
+    }
+
+    ensurePagerContainer() {
+        const pagerId = `${this.tableId}Pager`;
+        let pager = document.getElementById(pagerId);
+        if (pager) {
+            return pager;
+        }
+
+        const table = document.getElementById(this.tableId);
+        if (!table?.parentElement) {
+            return null;
+        }
+
+        pager = document.createElement('div');
+        pager.id = pagerId;
+        pager.style.marginTop = '8px';
+        table.parentElement.appendChild(pager);
+        return pager;
     }
 
     async deleteSelectedRows() {

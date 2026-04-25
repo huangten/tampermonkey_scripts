@@ -1,0 +1,18 @@
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+project_doc_fallback_filenames = [
+  "AGENTS.md",
+  "README.md",
+  "CONTRIBUTING.md"
+]
+
+project_root_markers = [
+  ".git",
+  "composer.json",
+  "package.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+  "Cargo.toml",
+  "go.mod"
+]
