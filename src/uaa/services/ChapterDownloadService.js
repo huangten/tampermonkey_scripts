@@ -9,7 +9,7 @@ export class ChapterDownloadService {
     }
 
     async download(chapter, lastDownloadTime) {
-        this.downloadInfoWindow.setTitle(chapter.chapterName);
+        this.downloadInfoWindow.setTitle(chapter.bookName + " : " + chapter.chapterName);
         this.infoWindow.setCurrentDownload(chapter.chapterName, chapter.href);
 
         const time = Date.now() - lastDownloadTime;
