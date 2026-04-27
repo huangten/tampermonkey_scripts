@@ -21,7 +21,9 @@ const scriptConfigs = {
             namespace: 'https://tampermonkey.net/',
             version: getVersion(),
             noframes: true,
-
+            connect: [
+                "https://raw.githubusercontent.com"
+            ],
         },
         build: {
             outDir: "uaa",
@@ -59,6 +61,9 @@ const scriptConfigs = {
             ],
             version: getVersion(),
             noframes: true,
+            connect: [
+                "https://raw.githubusercontent.com"
+            ],
         },
         build: {
             outDir: "uaa",

@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.21:34:39
+// @version    2026-04-27.11:17:27
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
 // @require    https://unpkg.com/hacktimer/HackTimer.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
+// @connect    https://raw.githubusercontent.com
 // @grant      GM_addStyle
 // @grant      GM_addValueChangeListener
 // @grant      GM_deleteValues
@@ -3995,11 +3996,24 @@ async getChapterStats() {
         total: pending + downloaded
       };
     }
-async getDebugRows(tableName) {
-      if (!this.db.tables.map((table) => table.name).includes(tableName)) {
+async getDebugRows(tableName, pageNum, pageSize) {
+      if (!this.db.tables.map((table2) => table2.name).includes(tableName)) {
         return [];
       }
-      return await this.db.table(tableName).toArray();
+      const table = this.db.table(tableName);
+      if (!pageNum || !pageSize) {
+        return await table.toArray();
+      }
+      const normalizedPageNum = Math.max(Number(pageNum) || 1, 1);
+      const normalizedPageSize = Math.max(Number(pageSize) || 10, 1);
+      const offset = (normalizedPageNum - 1) * normalizedPageSize;
+      return await table.orderBy("id").offset(offset).limit(normalizedPageSize).toArray();
+    }
+async countDebugRows(tableName) {
+      if (!this.db.tables.map((table) => table.name).includes(tableName)) {
+        return 0;
+      }
+      return await this.db.table(tableName).count();
     }
 async deleteDebugRows(tableName, ids) {
       if (!Array.isArray(ids) || ids.length === 0) {
