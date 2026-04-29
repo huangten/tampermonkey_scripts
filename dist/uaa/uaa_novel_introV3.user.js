@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-27.11:21:08
+// @version    2026-04-29.16:18:19
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4393,7 +4393,12 @@ ${bodyText}`.slice(0, 4e3);
         "network error",
         "err_connection",
         "dns_probe"
-      ].some((keyword) => normalized.includes(keyword));
+      ].some((keyword) => {
+        if (normalized.includes(keyword)) {
+          console.warn(`检测到错误页面关键词: ${keyword}`);
+          return true;
+        }
+      });
     }
     looksLikeCfChallenge(input) {
       if (!input) {

@@ -96,6 +96,7 @@ export class ChapterDownloadService {
         }
 
         const normalized = text.toLowerCase();
+        
         return [
             '502 bad gateway',
             '503 service unavailable',
@@ -114,7 +115,12 @@ export class ChapterDownloadService {
             'network error',
             'err_connection',
             'dns_probe',
-        ].some(keyword => normalized.includes(keyword));
+        ].some(keyword => {
+            if (normalized.includes(keyword)) {
+                console.warn(`检测到错误页面关键词: ${keyword}`);
+                return true;
+            }
+        });
     }
 
     looksLikeCfChallenge(input) {
