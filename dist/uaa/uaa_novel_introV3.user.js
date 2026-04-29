@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-29.16:18:19
+// @version    2026-04-29.16:26:31
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -5006,7 +5006,10 @@ page: false,
         const stats = await this.db.getChapterStats();
         if (stats.pending === 0) {
           this.finishDownloadWindow();
-          topLayerMsg("章节下载完毕", { icon: 1, shadeClose: true });
+          topLayerMsg(
+            "章节下载完毕",
+            { icon: 1, shadeClose: true, zIndex: layui.layer.zIndex }
+          );
         }
       } catch (err) {
         await this.db.markDownloadError(this.pageId);
@@ -5014,7 +5017,10 @@ page: false,
         await this.stopWorker(false, false);
         this.infoWindow.minimize();
         this.downloadInfoWindow.restore();
-        layui.layer.alert("出现错误：" + this.getErrorMessage(err), { icon: 5, shadeClose: true });
+        topLayerMsg(
+          "出现错误：" + this.getErrorMessage(err),
+          { icon: 5, shadeClose: true, zIndex: layui.layer.zIndex }
+        );
       } finally {
         if (this.releaseAfterCurrentTask) {
           await this.db.releaseConsumer(this.pageId);

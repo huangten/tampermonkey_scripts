@@ -124,7 +124,9 @@ export class IntroV3Controller {
             const stats = await this.db.getChapterStats();
             if (stats.pending === 0) {
                 this.finishDownloadWindow();
-                topLayerMsg('章节下载完毕', { icon: 1, shadeClose: true });
+                topLayerMsg('章节下载完毕',
+                    { icon: 1, shadeClose: true, zIndex: layui.layer.zIndex }
+                );
             }
         } catch (err) {
             await this.db.markDownloadError(this.pageId);
@@ -132,7 +134,9 @@ export class IntroV3Controller {
             await this.stopWorker(false, false);
             this.infoWindow.minimize();
             this.downloadInfoWindow.restore();
-            layui.layer.alert('出现错误：' + this.getErrorMessage(err), { icon: 5, shadeClose: true });
+            topLayerMsg('出现错误：' + this.getErrorMessage(err),
+                { icon: 5, shadeClose: true, zIndex: layui.layer.zIndex }
+            );
         } finally {
             if (this.releaseAfterCurrentTask) {
                 await this.db.releaseConsumer(this.pageId);
