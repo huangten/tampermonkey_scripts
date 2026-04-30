@@ -1,3 +1,4 @@
+import { saveAs } from "file-saver";
 import { topLayerConfirm, topLayerMsg } from "./layerUtils.js";
 
 export class DebugTableView {
@@ -16,6 +17,7 @@ export class DebugTableView {
     bindEvents() {
         const chaptersBtn = document.getElementById('debugLoadChaptersBtn');
         const refreshBtn = document.getElementById('debugRefreshBtn');
+        const exportChaptersBtn = document.getElementById('debugExportChaptersBtn');
         const deleteBtn = document.getElementById('debugDeleteRowsBtn');
         const deleteDownloadedBtn = document.getElementById('debugDeleteDownloadedChaptersBtn');
 
@@ -30,6 +32,12 @@ export class DebugTableView {
             refreshBtn.dataset.bound = '1';
             refreshBtn.addEventListener('click', () => {
                 this.render().then();
+            });
+        }
+        if (exportChaptersBtn && !exportChaptersBtn.dataset.bound) {
+            exportChaptersBtn.dataset.bound = '1';
+            exportChaptersBtn.addEventListener('click', () => {
+                this.exportChapters().then();
             });
         }
         if (deleteBtn && !deleteBtn.dataset.bound) {
@@ -140,6 +148,74 @@ export class DebugTableView {
         await this.onRowsDeleted?.();
         await this.render();
         topLayerMsg(`已删除 ${deleted} 条 chapters 数据`);
+    }
+
+    async exportChapters() {
+        const rows = await this.db.getDebugRows('chapters');
+        if (!rows || rows.length === 0) {
+            topLayerMsg('chapters 表暂无数据可导出');
+            return;
+        }
+
+        try {
+            const sql = this.buildChaptersInsertSql(rows);
+            const blob = new Blob([sql], { type: "application/sql;charset=utf-8" });
+            saveAs(blob, this.getChaptersExportFileName());
+            topLayerMsg(`已导出 ${rows.length} 条 chapters 数据`);
+        } catch (e) {
+            console.error('导出 chapters 数据失败', e);
+            topLayerMsg('导出 chapters 数据失败');
+        }
+    }
+
+    buildChaptersInsertSql(rows) {
+        const columns = [
+            'id',
+            'chapterId',
+            'bookId',
+            'status',
+            'href',
+            'chapterName',
+            'bookName',
+            'volumeName',
+            'createTime',
+            'updateTime'
+        ];
+        const columnSql = columns.join(', ');
+
+        return rows.map(row => {
+            const valueSql = columns.map(column => this.toSqlValue(row[column])).join(', ');
+            return `INSERT INTO chapters (${columnSql}) VALUES (${valueSql});`;
+        }).join('\n') + '\n';
+    }
+
+    toSqlValue(value) {
+        if (value === null || typeof value === 'undefined') {
+            return 'NULL';
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return String(value);
+        }
+        if (typeof value === 'boolean') {
+            return value ? '1' : '0';
+        }
+        return `'${String(value).replace(/'/g, "''")}'`;
+    }
+
+    getChaptersExportFileName() {
+        const now = new Date();
+        const pad = value => String(value).padStart(2, '0');
+        const date = [
+            now.getFullYear(),
+            pad(now.getMonth() + 1),
+            pad(now.getDate())
+        ].join('');
+        const time = [
+            pad(now.getHours()),
+            pad(now.getMinutes()),
+            pad(now.getSeconds())
+        ].join('');
+        return `chapters_${date}_${time}.sql`;
     }
 
     async deleteDownloadedChapters() {
