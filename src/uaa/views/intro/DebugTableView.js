@@ -21,6 +21,7 @@ export class DebugTableView {
         const deleteBtn = document.getElementById('debugDeleteRowsBtn');
         const deleteDownloadedBtn = document.getElementById('debugDeleteDownloadedChaptersBtn');
         const deletePendingByBookIdBtn = document.getElementById('debugDeletePendingByBookIdBtn');
+        const deleteByBookIdBtn = document.getElementById('debugDeleteByBookIdBtn');
 
         if (chaptersBtn && !chaptersBtn.dataset.bound) {
             chaptersBtn.dataset.bound = '1';
@@ -57,6 +58,12 @@ export class DebugTableView {
             deletePendingByBookIdBtn.dataset.bound = '1';
             deletePendingByBookIdBtn.addEventListener('click', () => {
                 this.deletePendingChaptersByBookId().then();
+            });
+        }
+        if (deleteByBookIdBtn && !deleteByBookIdBtn.dataset.bound) {
+            deleteByBookIdBtn.dataset.bound = '1';
+            deleteByBookIdBtn.addEventListener('click', () => {
+                this.deleteChaptersByBookId().then();
             });
         }
     }
@@ -257,6 +264,28 @@ export class DebugTableView {
         await this.onRowsDeleted?.();
         await this.render();
         topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条未下载章节记录`);
+    }
+
+    async deleteChaptersByBookId() {
+        const bookId = await this.promptBookId();
+        if (bookId === null) {
+            return;
+        }
+        if (!bookId) {
+            topLayerMsg('bookId 不能为空');
+            return;
+        }
+
+        const confirmed = await this.confirm(`确定删除 bookId=${bookId} 的所有章节记录吗？已下载章节也会删除。`);
+        if (!confirmed) {
+            return;
+        }
+
+        const deleted = await this.db.deleteChaptersByBookId(bookId);
+        this.tableMode = 'chapters';
+        await this.onRowsDeleted?.();
+        await this.render();
+        topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条章节记录`);
     }
 
     getChapterCols() {

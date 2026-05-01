@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-01.12:59:53
+// @version    2026-05-01.16:41:28
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -4041,6 +4041,18 @@ async deletePendingChaptersByBookId(bookId) {
       }
       return await this.db.table("chapters").where("bookId").anyOf(bookIds).and((chapter) => chapter.status === 0).delete();
     }
+async deleteChaptersByBookId(bookId) {
+      const normalizedBookId = String(bookId ?? "").trim();
+      if (!normalizedBookId) {
+        return 0;
+      }
+      const bookIds = [normalizedBookId];
+      const numberBookId = Number(normalizedBookId);
+      if (Number.isFinite(numberBookId)) {
+        bookIds.push(numberBookId);
+      }
+      return await this.db.table("chapters").where("bookId").anyOf(bookIds).delete();
+    }
 async deleteDownloadedChapters() {
       return await this.db.table("chapters").where("status").equals(1).delete();
     }
@@ -4488,6 +4500,7 @@ ${input.body?.innerText || ""}`;
       const deleteBtn = document.getElementById("debugDeleteRowsBtn");
       const deleteDownloadedBtn = document.getElementById("debugDeleteDownloadedChaptersBtn");
       const deletePendingByBookIdBtn = document.getElementById("debugDeletePendingByBookIdBtn");
+      const deleteByBookIdBtn = document.getElementById("debugDeleteByBookIdBtn");
       if (chaptersBtn && !chaptersBtn.dataset.bound) {
         chaptersBtn.dataset.bound = "1";
         chaptersBtn.addEventListener("click", () => {
@@ -4523,6 +4536,12 @@ ${input.body?.innerText || ""}`;
         deletePendingByBookIdBtn.dataset.bound = "1";
         deletePendingByBookIdBtn.addEventListener("click", () => {
           this.deletePendingChaptersByBookId().then();
+        });
+      }
+      if (deleteByBookIdBtn && !deleteByBookIdBtn.dataset.bound) {
+        deleteByBookIdBtn.dataset.bound = "1";
+        deleteByBookIdBtn.addEventListener("click", () => {
+          this.deleteChaptersByBookId().then();
         });
       }
     }
@@ -4701,6 +4720,25 @@ page: false,
       await this.onRowsDeleted?.();
       await this.render();
       topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条未下载章节记录`);
+    }
+    async deleteChaptersByBookId() {
+      const bookId = await this.promptBookId();
+      if (bookId === null) {
+        return;
+      }
+      if (!bookId) {
+        topLayerMsg("bookId 不能为空");
+        return;
+      }
+      const confirmed = await this.confirm(`确定删除 bookId=${bookId} 的所有章节记录吗？已下载章节也会删除。`);
+      if (!confirmed) {
+        return;
+      }
+      const deleted = await this.db.deleteChaptersByBookId(bookId);
+      this.tableMode = "chapters";
+      await this.onRowsDeleted?.();
+      await this.render();
+      topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条章节记录`);
     }
     getChapterCols() {
       return [[
@@ -4924,7 +4962,7 @@ page: false,
           },
           {
             title: "书籍章节信息",
-            content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
+            content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
           }
         ],
         btn: ["添加选中章节", "添加全部章节", "继续下载", "恢复残留"],

@@ -335,6 +335,25 @@ export class DatabaseService {
             .delete();
     }
 
+    // 按书籍 ID 清除章节记录，不区分是否已下载。
+    async deleteChaptersByBookId(bookId) {
+        const normalizedBookId = String(bookId ?? '').trim();
+        if (!normalizedBookId) {
+            return 0;
+        }
+
+        const bookIds = [normalizedBookId];
+        const numberBookId = Number(normalizedBookId);
+        if (Number.isFinite(numberBookId)) {
+            bookIds.push(numberBookId);
+        }
+
+        return await this.db.table('chapters')
+            .where('bookId')
+            .anyOf(bookIds)
+            .delete();
+    }
+
     // 清除已经下载完成的章节记录，只保留仍待下载的任务。
     async deleteDownloadedChapters() {
         return await this.db.table('chapters')
