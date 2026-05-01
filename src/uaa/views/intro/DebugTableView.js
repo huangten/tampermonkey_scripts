@@ -20,6 +20,7 @@ export class DebugTableView {
         const exportChaptersBtn = document.getElementById('debugExportChaptersBtn');
         const deleteBtn = document.getElementById('debugDeleteRowsBtn');
         const deleteDownloadedBtn = document.getElementById('debugDeleteDownloadedChaptersBtn');
+        const deletePendingByBookIdBtn = document.getElementById('debugDeletePendingByBookIdBtn');
 
         if (chaptersBtn && !chaptersBtn.dataset.bound) {
             chaptersBtn.dataset.bound = '1';
@@ -50,6 +51,12 @@ export class DebugTableView {
             deleteDownloadedBtn.dataset.bound = '1';
             deleteDownloadedBtn.addEventListener('click', () => {
                 this.deleteDownloadedChapters().then();
+            });
+        }
+        if (deletePendingByBookIdBtn && !deletePendingByBookIdBtn.dataset.bound) {
+            deletePendingByBookIdBtn.dataset.bound = '1';
+            deletePendingByBookIdBtn.addEventListener('click', () => {
+                this.deletePendingChaptersByBookId().then();
             });
         }
     }
@@ -230,6 +237,28 @@ export class DebugTableView {
         topLayerMsg(`已删除 ${deleted} 条已下载章节记录`);
     }
 
+    async deletePendingChaptersByBookId() {
+        const bookId = await this.promptBookId();
+        if (bookId === null) {
+            return;
+        }
+        if (!bookId) {
+            topLayerMsg('bookId 不能为空');
+            return;
+        }
+
+        const confirmed = await this.confirm(`确定删除 bookId=${bookId} 的未下载章节记录吗？`);
+        if (!confirmed) {
+            return;
+        }
+
+        const deleted = await this.db.deletePendingChaptersByBookId(bookId);
+        this.tableMode = 'chapters';
+        await this.onRowsDeleted?.();
+        await this.render();
+        topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条未下载章节记录`);
+    }
+
     getChapterCols() {
         return [[
             { type: 'checkbox'},
@@ -270,6 +299,38 @@ export class DebugTableView {
             }, index => {
                 layui.layer.close(index);
                 resolve(false);
+            });
+        });
+    }
+
+    promptBookId() {
+        return new Promise(resolve => {
+            let resolved = false;
+            const finish = value => {
+                if (resolved) {
+                    return;
+                }
+                resolved = true;
+                resolve(value);
+            };
+
+            layui.layer.prompt({
+                title: '请输入 bookId',
+                zIndex: layui.layer.zIndex,
+                formType: 0,
+                success(layero) {
+                    layui.layer.setTop(layero);
+                },
+                cancel(index) {
+                    layui.layer.close(index);
+                    finish(null);
+                },
+                end() {
+                    finish(null);
+                }
+            }, (value, index) => {
+                layui.layer.close(index);
+                finish(String(value ?? '').trim());
             });
         });
     }
