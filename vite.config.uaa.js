@@ -22,8 +22,8 @@ const scriptConfigs = {
             version: getVersion(),
             noframes: true,
             connect: [
-                "https://raw.githubusercontent.com",
-                "https://cdn.uameta.ai",
+                "githubusercontent.com",
+                "uameta.ai",
             ],
         },
         build: {
@@ -63,8 +63,8 @@ const scriptConfigs = {
             version: getVersion(),
             noframes: true,
             connect: [
-                "https://raw.githubusercontent.com",
-                "https://cdn.uameta.ai",
+                "githubusercontent.com",
+                "uameta.ai",
             ],
         },
         build: {
