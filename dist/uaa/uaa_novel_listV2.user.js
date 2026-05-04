@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-04.15:50:35
+// @version    2026-05-04.16:00:47
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -356,7 +356,7 @@ async start() {
     ]);
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder("Text");
-    textFolder.file(`cover.xhtml`, genCoverHtmlPageV2());
+    textFolder.file(`cover.xhtml`, genCoverHtmlPage());
     manifest.push(`<item id="cover.xhtml" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>`);
     spine.push(`<itemref idref="cover.xhtml"  properties="duokan-page-fullscreen"/>`);
     ncxNav.push(`<navPoint id="cover.xhtml" playOrder="10000">
@@ -531,9 +531,18 @@ ${ncxNav.join("\n")}
     const xml = parser.parseFromString(xmlStr, "application/xml");
     return new XMLSerializer().serializeToString(xml);
   }
+  function formatXHTML(xmlStr) {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlStr, "application/xhtml+xml");
+    return new XMLSerializer().serializeToString(xml);
+  }
   function serializeXML(doc) {
     const xml = new XMLSerializer().serializeToString(doc);
     return '<?xml version="1.0" encoding="utf-8"?>\n' + formatXML(xml);
+  }
+  function serializeXHTML(doc) {
+    const xml = new XMLSerializer().serializeToString(doc);
+    return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n' + formatXHTML(xml);
   }
   function createContainer() {
     const doc = document.implementation.createDocument(
@@ -552,21 +561,30 @@ ${ncxNav.join("\n")}
     container.appendChild(rootfiles);
     return serializeXML(doc);
   }
-  function genCoverHtmlPageV2() {
-    const htmlStr = `<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-  <title>Cover</title>
-</head>
-
-<body>
-  <div style="height: 100vh;text-align: center;padding: 0pt;margin: 0pt;"><svg xmlns="http://www.w3.org/2000/svg" height="100%" preserveAspectRatio="xMidYMid meet" version="1.1" viewBox="0 0 913 1280" width="100%" xmlns:xlink="http://www.w3.org/1999/xlink"><image width="913" height="1280" xlink:href="../Images/cover.jpg"/></svg></div>
-</body>
-</html>
-`;
-    return htmlStr;
+  function genCoverHtmlPage() {
+    const doc = document.implementation.createDocument(
+      null,
+      "html",
+      null
+    );
+    const html = doc.documentElement;
+    html.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    html.setAttribute("xmlns:epub", "http://www.idpf.org/2007/ops");
+    const head = doc.createElement("head");
+    const title = doc.createElement("title");
+    title.textContent = "Cover";
+    head.appendChild(title);
+    const body = doc.createElement("body");
+    const div = doc.createElement("div");
+    div.setAttribute("style", "text-align: center;padding: 0pt;margin: 0pt;");
+    const img = doc.createElement("img");
+    img.setAttribute("width", "100%");
+    img.setAttribute("src", "../Images/cover.jpg");
+    div.appendChild(img);
+    body.appendChild(div);
+    html.appendChild(head);
+    html.appendChild(body);
+    return serializeXHTML(doc);
   }
   function genFyHtmlPage(book = {
     name: "书名",

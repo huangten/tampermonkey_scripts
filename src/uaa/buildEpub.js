@@ -89,7 +89,7 @@ export async function buildEpub(url, options = {}) {
     const textFolder = o.folder('Text');
 
     // cover.xhtml
-    textFolder.file(`cover.xhtml`, genCoverHtmlPageV2());
+    textFolder.file(`cover.xhtml`, genCoverHtmlPage());
     manifest.push(`<item id="cover.xhtml" href="Text/cover.xhtml" media-type="application/xhtml+xml"/>`);
     spine.push(`<itemref idref="cover.xhtml"  properties="duokan-page-fullscreen"/>`);
     ncxNav.push(`<navPoint id="cover.xhtml" playOrder="10000">
