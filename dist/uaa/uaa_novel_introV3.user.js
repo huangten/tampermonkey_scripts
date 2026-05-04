@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-04.17:01:52
+// @version    2026-05-04.18:32:45
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -3964,6 +3964,74 @@ async addChaptersIfAbsent(chapters) {
       }
       return { added, duplicated };
     }
+async importChapters(chapters) {
+      const result = {
+        added: 0,
+        updated: 0,
+        skipped: 0,
+        invalid: 0
+      };
+      if (!Array.isArray(chapters)) {
+        return result;
+      }
+      await this.db.transaction("rw", this.db.table("chapters"), async () => {
+        for (const chapter of chapters) {
+          const data = this.normalizeChapterForImport(chapter);
+          if (!data) {
+            result.invalid++;
+            continue;
+          }
+          const exist = await this.db.table("chapters").where("href").equals(data.href).first();
+          if (!exist) {
+            data.status = typeof data.status === "undefined" ? 0 : data.status;
+            await this.db.table("chapters").add(data);
+            result.added++;
+            continue;
+          }
+          if (typeof data.status !== "undefined" && exist.status !== data.status) {
+            await this.db.table("chapters").update(exist.id, {
+              status: data.status,
+              updateTime: data.updateTime ?? Date.now()
+            });
+            result.updated++;
+            continue;
+          }
+          result.skipped++;
+        }
+      });
+      return result;
+    }
+    normalizeChapterForImport(chapter) {
+      if (!chapter?.href) {
+        return null;
+      }
+      const now = Date.now();
+      const data = {
+        chapterId: chapter.chapterId ?? "",
+        bookId: chapter.bookId ?? "",
+        status: this.normalizeChapterStatus(chapter.status),
+        href: String(chapter.href).trim(),
+        chapterName: chapter.chapterName ?? "",
+        bookName: chapter.bookName ?? "",
+        volumeName: chapter.volumeName ?? "",
+        createTime: Number(chapter.createTime) || now,
+        updateTime: Number(chapter.updateTime) || now
+      };
+      if (!data.href) {
+        return null;
+      }
+      return data;
+    }
+    normalizeChapterStatus(status) {
+      if (status === null || typeof status === "undefined") {
+        return void 0;
+      }
+      const numberStatus = Number(status);
+      if (Number.isFinite(numberStatus)) {
+        return numberStatus;
+      }
+      return void 0;
+    }
 async claimNextChapterForDownload(pageId) {
       await this.getSystemInfo();
       return await this.db.transaction("rw", this.db.table("system_infos"), this.db.table("chapters"), async () => {
@@ -4481,6 +4549,8 @@ ${input.body?.innerText || ""}`;
       const chaptersBtn = document.getElementById("debugLoadChaptersBtn");
       const refreshBtn = document.getElementById("debugRefreshBtn");
       const exportChaptersBtn = document.getElementById("debugExportChaptersBtn");
+      const exportChaptersJsonBtn = document.getElementById("debugExportChaptersJsonBtn");
+      const importChaptersJsonBtn = document.getElementById("debugImportChaptersJsonBtn");
       const deleteBtn = document.getElementById("debugDeleteRowsBtn");
       const deleteDownloadedBtn = document.getElementById("debugDeleteDownloadedChaptersBtn");
       const deletePendingByBookIdBtn = document.getElementById("debugDeletePendingByBookIdBtn");
@@ -4502,6 +4572,18 @@ ${input.body?.innerText || ""}`;
         exportChaptersBtn.dataset.bound = "1";
         exportChaptersBtn.addEventListener("click", () => {
           this.exportChapters().then();
+        });
+      }
+      if (exportChaptersJsonBtn && !exportChaptersJsonBtn.dataset.bound) {
+        exportChaptersJsonBtn.dataset.bound = "1";
+        exportChaptersJsonBtn.addEventListener("click", () => {
+          this.exportChaptersJson().then();
+        });
+      }
+      if (importChaptersJsonBtn && !importChaptersJsonBtn.dataset.bound) {
+        importChaptersJsonBtn.dataset.bound = "1";
+        importChaptersJsonBtn.addEventListener("click", () => {
+          this.importChaptersJson().then();
         });
       }
       if (deleteBtn && !deleteBtn.dataset.bound) {
@@ -4629,6 +4711,97 @@ page: false,
         topLayerMsg("导出 chapters 数据失败");
       }
     }
+    async exportChaptersJson() {
+      const rows = await this.db.getDebugRows("chapters");
+      if (!rows || rows.length === 0) {
+        topLayerMsg("chapters 表暂无数据可导出");
+        return;
+      }
+      try {
+        const json = JSON.stringify(rows, null, 2);
+        const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+        fileSaver.saveAs(blob, this.getChaptersJsonExportFileName());
+        topLayerMsg(`已导出 ${rows.length} 条 chapters JSON 数据`);
+      } catch (e) {
+        console.error("导出 chapters JSON 数据失败", e);
+        topLayerMsg("导出 chapters JSON 数据失败");
+      }
+    }
+    async importChaptersJson() {
+      const file = await this.pickJsonFile();
+      if (!file) {
+        return;
+      }
+      try {
+        const text = await this.readFileText(file);
+        const rows = this.parseChaptersJson(text);
+        if (!rows || rows.length === 0) {
+          topLayerMsg("未读取到可导入的 chapters 数据");
+          return;
+        }
+        const confirmed = await this.confirm(`确定导入 ${rows.length} 条 chapters JSON 数据吗？导入时会忽略 id，已存在章节只按需更新状态。`);
+        if (!confirmed) {
+          return;
+        }
+        const result = await this.db.importChapters(rows);
+        this.tableMode = "chapters";
+        await this.onRowsDeleted?.();
+        await this.render();
+        topLayerMsg(`导入完成：新增 ${result.added}，更新状态 ${result.updated}，跳过 ${result.skipped}，无效 ${result.invalid}`);
+      } catch (e) {
+        console.error("导入 chapters JSON 数据失败", e);
+        topLayerMsg("导入 chapters JSON 数据失败：" + this.getErrorMessage(e));
+      }
+    }
+    parseChaptersJson(text) {
+      const json = JSON.parse(text);
+      if (Array.isArray(json)) {
+        return json;
+      }
+      if (Array.isArray(json?.chapters)) {
+        return json.chapters;
+      }
+      return null;
+    }
+    pickJsonFile() {
+      return new Promise((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json,application/json";
+        input.style.display = "none";
+        let resolved = false;
+        const finish = (file) => {
+          if (resolved) {
+            return;
+          }
+          resolved = true;
+          window.removeEventListener("focus", onFocus);
+          input.remove();
+          resolve(file);
+        };
+        const onFocus = () => {
+          setTimeout(() => {
+            if (!input.files || input.files.length === 0) {
+              finish(null);
+            }
+          }, 300);
+        };
+        input.addEventListener("change", () => {
+          finish(input.files?.[0] ?? null);
+        }, { once: true });
+        window.addEventListener("focus", onFocus, { once: true });
+        document.body.appendChild(input);
+        input.click();
+      });
+    }
+    readFileText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(reader.error ?? new Error("读取文件失败"));
+        reader.readAsText(file, "utf-8");
+      });
+    }
     buildChaptersInsertSql(rows) {
       const columns = [
         "id",
@@ -4674,6 +4847,21 @@ page: false,
         pad(now.getSeconds())
       ].join("");
       return `chapters_${date}_${time}.sql`;
+    }
+    getChaptersJsonExportFileName() {
+      const now = new Date();
+      const pad = (value) => String(value).padStart(2, "0");
+      const date = [
+        now.getFullYear(),
+        pad(now.getMonth() + 1),
+        pad(now.getDate())
+      ].join("");
+      const time = [
+        pad(now.getHours()),
+        pad(now.getMinutes()),
+        pad(now.getSeconds())
+      ].join("");
+      return `chapters_${date}_${time}.json`;
     }
     async deleteDownloadedChapters() {
       const confirmed = await this.confirm("确定删除所有已下载章节记录吗？");
@@ -4798,6 +4986,12 @@ page: false,
           finish(String(value ?? "").trim());
         });
       });
+    }
+    getErrorMessage(err) {
+      if (err instanceof Error) {
+        return err.message;
+      }
+      return String(err);
     }
   }
   class DownloadInfoWindowView {
@@ -4946,7 +5140,7 @@ page: false,
           },
           {
             title: "书籍章节信息",
-            content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
+            content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;"><div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>  <button id="debugExportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters JSON</button>  <button id="debugImportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-warm">上传 chapters JSON</button>  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button></div><table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table></div>'
           }
         ],
         btn: ["添加选中章节", "添加全部章节", "继续下载", "恢复残留"],

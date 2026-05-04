@@ -69,6 +69,8 @@ export class InfoWindowView {
                         // '  <button id="debugLoadChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">chapters</button>' +
                         '  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>' +
                         '  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>' +
+                        '  <button id="debugExportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters JSON</button>' +
+                        '  <button id="debugImportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-warm">上传 chapters JSON</button>' +
                         '  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>' +
                         '  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>' +
                         '  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>' +

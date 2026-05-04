@@ -243,6 +243,90 @@ export class DatabaseService {
         return {added, duplicated};
     }
 
+    // 导入 chapters 备份数据；id 使用当前库自增值，已存在章节只按需同步状态。
+    async importChapters(chapters) {
+        const result = {
+            added: 0,
+            updated: 0,
+            skipped: 0,
+            invalid: 0
+        };
+        if (!Array.isArray(chapters)) {
+            return result;
+        }
+
+        await this.db.transaction('rw', this.db.table('chapters'), async () => {
+            for (const chapter of chapters) {
+                const data = this.normalizeChapterForImport(chapter);
+                if (!data) {
+                    result.invalid++;
+                    continue;
+                }
+
+                const exist = await this.db.table('chapters')
+                    .where('href')
+                    .equals(data.href)
+                    .first();
+
+                if (!exist) {
+                    data.status = typeof data.status === 'undefined' ? 0 : data.status;
+                    await this.db.table('chapters').add(data);
+                    result.added++;
+                    continue;
+                }
+
+                if (typeof data.status !== 'undefined' && exist.status !== data.status) {
+                    await this.db.table('chapters').update(exist.id, {
+                        status: data.status,
+                        updateTime: data.updateTime ?? Date.now()
+                    });
+                    result.updated++;
+                    continue;
+                }
+
+                result.skipped++;
+            }
+        });
+
+        return result;
+    }
+
+    normalizeChapterForImport(chapter) {
+        if (!chapter?.href) {
+            return null;
+        }
+
+        const now = Date.now();
+        const data = {
+            chapterId: chapter.chapterId ?? '',
+            bookId: chapter.bookId ?? '',
+            status: this.normalizeChapterStatus(chapter.status),
+            href: String(chapter.href).trim(),
+            chapterName: chapter.chapterName ?? '',
+            bookName: chapter.bookName ?? '',
+            volumeName: chapter.volumeName ?? '',
+            createTime: Number(chapter.createTime) || now,
+            updateTime: Number(chapter.updateTime) || now
+        };
+
+        if (!data.href) {
+            return null;
+        }
+
+        return data;
+    }
+
+    normalizeChapterStatus(status) {
+        if (status === null || typeof status === 'undefined') {
+            return undefined;
+        }
+        const numberStatus = Number(status);
+        if (Number.isFinite(numberStatus)) {
+            return numberStatus;
+        }
+        return undefined;
+    }
+
     // 抢占下一条待下载章节；只有全局状态为空闲时才会把系统状态切到下载中。
     async claimNextChapterForDownload(pageId) {
         await this.getSystemInfo();
