@@ -71,13 +71,17 @@ export class InfoWindowView {
                         '  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>' +
                         '  <button id="debugExportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters JSON</button>' +
                         '  <button id="debugImportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-warm">上传 chapters JSON</button>' +
+                        '</div>' +
+                        '<div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">' +
                         '  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>' +
                         '  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>' +
                         '  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>' +
                         '  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button>' +
-                        '</div>' +
+                        '</div>' + 
                         '<table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table>' +
                         '</div>'
+                        
+                        
                 }],
             btn: ['添加选中章节', '添加全部章节', '继续下载', '恢复残留'],
             btn1: () => {
