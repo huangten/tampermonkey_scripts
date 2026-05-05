@@ -66,13 +66,10 @@ export class InfoWindowView {
                     title: '书籍章节信息',
                     content: '<div id="chapterTabId" style="height: 100%;width: 100%;padding: 10px;box-sizing: border-box;">' +
                         '<div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">' +
-                        // '  <button id="debugLoadChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">chapters</button>' +
                         '  <button id="debugRefreshBtn" type="button" class="layui-btn layui-btn-sm layui-btn-primary">刷新</button>' +
                         '  <button id="debugExportChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters SQL</button>' +
                         '  <button id="debugExportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-normal">导出 chapters JSON</button>' +
                         '  <button id="debugImportChaptersJsonBtn" type="button" class="layui-btn layui-btn-sm layui-btn-warm">上传 chapters JSON</button>' +
-                        '</div>' +
-                        '<div style="margin-bottom: 10px;display: flex;gap: 8px;flex-wrap: wrap;">' +
                         '  <button id="debugDeleteRowsBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除选中</button>' +
                         '  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>' +
                         '  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>' +
