@@ -12,5 +12,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"], // 包含需要编译的源文件
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules","dist"]
 }
