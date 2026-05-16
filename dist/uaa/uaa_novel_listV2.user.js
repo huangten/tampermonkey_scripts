@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-04.17:02:01
+// @version    2026-05-16.18:41:48
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -322,7 +322,7 @@ async start() {
         lastUpdateTime = infoBox[i].innerText.replace("最新：", "").trim();
       }
       if (infoBox[i].innerText.trim().includes("作者：")) {
-        author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", "").trim()));
+        author = infoBox[i].getElementsByTagName("a")[0].innerText.trim();
       }
       if (infoBox[i].innerText.trim().includes("题材：")) {
         type = infoBox[i].innerText.replace("题材：", "").split(" ").map((str) => str.trim()).filter((str) => str.length > 0);
@@ -3919,6 +3919,74 @@ async addChaptersIfAbsent(chapters) {
         }
       }
       return { added, duplicated };
+    }
+async importChapters(chapters) {
+      const result = {
+        added: 0,
+        updated: 0,
+        skipped: 0,
+        invalid: 0
+      };
+      if (!Array.isArray(chapters)) {
+        return result;
+      }
+      await this.db.transaction("rw", this.db.table("chapters"), async () => {
+        for (const chapter of chapters) {
+          const data = this.normalizeChapterForImport(chapter);
+          if (!data) {
+            result.invalid++;
+            continue;
+          }
+          const exist = await this.db.table("chapters").where("href").equals(data.href).first();
+          if (!exist) {
+            data.status = typeof data.status === "undefined" ? 0 : data.status;
+            await this.db.table("chapters").add(data);
+            result.added++;
+            continue;
+          }
+          if (typeof data.status !== "undefined" && exist.status !== data.status) {
+            await this.db.table("chapters").update(exist.id, {
+              status: data.status,
+              updateTime: data.updateTime ?? Date.now()
+            });
+            result.updated++;
+            continue;
+          }
+          result.skipped++;
+        }
+      });
+      return result;
+    }
+    normalizeChapterForImport(chapter) {
+      if (!chapter?.href) {
+        return null;
+      }
+      const now = Date.now();
+      const data = {
+        chapterId: chapter.chapterId ?? "",
+        bookId: chapter.bookId ?? "",
+        status: this.normalizeChapterStatus(chapter.status),
+        href: String(chapter.href).trim(),
+        chapterName: chapter.chapterName ?? "",
+        bookName: chapter.bookName ?? "",
+        volumeName: chapter.volumeName ?? "",
+        createTime: Number(chapter.createTime) || now,
+        updateTime: Number(chapter.updateTime) || now
+      };
+      if (!data.href) {
+        return null;
+      }
+      return data;
+    }
+    normalizeChapterStatus(status) {
+      if (status === null || typeof status === "undefined") {
+        return void 0;
+      }
+      const numberStatus = Number(status);
+      if (Number.isFinite(numberStatus)) {
+        return numberStatus;
+      }
+      return void 0;
     }
 async claimNextChapterForDownload(pageId) {
       await this.getSystemInfo();
