@@ -47,6 +47,7 @@ export async function buildEpub(url, options = {}) {
         }
         if (infoBox[i].innerText.trim().includes("作者：")) {
             author = escapeHtml(cleanText(infoBox[i].getElementsByTagName("a")[0].innerText.trim()));
+            author = author.replace(/\s+/g, ' ');
             // author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", '').trim()));
         }
         if (infoBox[i].innerText.trim().includes("题材：")) {
