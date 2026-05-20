@@ -1,51 +1,4 @@
 export function HackTimer() {
-    if (!/MSIE 10/i.test(navigator.userAgent)) {
-        try {
-            var blob = new Blob(["\
-var fakeIdToId = {};\
-onmessage = function (event) {\
-	var data = event.data,\
-		name = data.name,\
-		fakeId = data.fakeId,\
-		time;\
-	if(data.hasOwnProperty('time')) {\
-		time = data.time;\
-	}\
-	switch (name) {\
-		case 'setInterval':\
-			fakeIdToId[fakeId] = setInterval(function () {\
-				postMessage({fakeId: fakeId});\
-			}, time);\
-			break;\
-		case 'clearInterval':\
-			if (fakeIdToId.hasOwnProperty (fakeId)) {\
-				clearInterval(fakeIdToId[fakeId]);\
-				delete fakeIdToId[fakeId];\
-			}\
-			break;\
-		case 'setTimeout':\
-			fakeIdToId[fakeId] = setTimeout(function () {\
-				postMessage({fakeId: fakeId});\
-				if (fakeIdToId.hasOwnProperty (fakeId)) {\
-					delete fakeIdToId[fakeId];\
-				}\
-			}, time);\
-			break;\
-		case 'clearTimeout':\
-			if (fakeIdToId.hasOwnProperty (fakeId)) {\
-				clearTimeout(fakeIdToId[fakeId]);\
-				delete fakeIdToId[fakeId];\
-			}\
-			break;\
-	}\
-}\
-"]);
-            // Obtain a blob URL reference to our worker 'file'.
-            workerScript = window.URL.createObjectURL(blob);
-        } catch (error) {
-            /* Blob is not supported, use external script instead */
-        }
-    }
     var worker,
         fakeIdToCallback = {},
         lastFakeId = 0,
@@ -63,7 +16,47 @@ onmessage = function (event) {\
             return lastFakeId;
         }
         try {
-            worker = new Worker(workerScript);
+            let workerCode = `
+var fakeIdToId = {};
+onmessage = function (event) {
+	var data = event.data,
+		name = data.name,
+		fakeId = data.fakeId,
+		time;
+	if(data.hasOwnProperty('time')) {
+		time = data.time;
+	}
+	switch (name) {
+		case 'setInterval':
+			fakeIdToId[fakeId] = setInterval(function () {
+				postMessage({fakeId: fakeId});
+			}, time);
+			break;
+		case 'clearInterval':
+			if (fakeIdToId.hasOwnProperty (fakeId)) {
+				clearInterval(fakeIdToId[fakeId]);
+				delete fakeIdToId[fakeId];
+			}
+			break;
+		case 'setTimeout':
+			fakeIdToId[fakeId] = setTimeout(function () {
+				postMessage({fakeId: fakeId});
+				if (fakeIdToId.hasOwnProperty (fakeId)) {
+					delete fakeIdToId[fakeId];
+				}
+			}, time);
+			break;
+		case 'clearTimeout':
+			if (fakeIdToId.hasOwnProperty (fakeId)) {
+				clearTimeout(fakeIdToId[fakeId]);
+				delete fakeIdToId[fakeId];
+			}
+			break;
+	}
+}`;
+
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            worker = new Worker(URL.createObjectURL(blob));
             window.setInterval = function (callback, time /* , parameters */) {
                 var fakeId = getFakeId();
                 fakeIdToCallback[fakeId] = {

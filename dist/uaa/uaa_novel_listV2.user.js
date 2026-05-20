@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-20.23:00:19
+// @version    2026-05-20.23:14:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -4729,13 +4729,6 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
     }
   }
   function HackTimer() {
-    if (!/MSIE 10/i.test(navigator.userAgent)) {
-      try {
-        var blob = new Blob(["var fakeIdToId = {};onmessage = function (event) {	var data = event.data,		name = data.name,		fakeId = data.fakeId,		time;	if(data.hasOwnProperty('time')) {		time = data.time;	}	switch (name) {		case 'setInterval':			fakeIdToId[fakeId] = setInterval(function () {				postMessage({fakeId: fakeId});			}, time);			break;		case 'clearInterval':			if (fakeIdToId.hasOwnProperty (fakeId)) {				clearInterval(fakeIdToId[fakeId]);				delete fakeIdToId[fakeId];			}			break;		case 'setTimeout':			fakeIdToId[fakeId] = setTimeout(function () {				postMessage({fakeId: fakeId});				if (fakeIdToId.hasOwnProperty (fakeId)) {					delete fakeIdToId[fakeId];				}			}, time);			break;		case 'clearTimeout':			if (fakeIdToId.hasOwnProperty (fakeId)) {				clearTimeout(fakeIdToId[fakeId]);				delete fakeIdToId[fakeId];			}			break;	}}"]);
-        workerScript = window.URL.createObjectURL(blob);
-      } catch (error) {
-      }
-    }
     var worker, fakeIdToCallback = {}, lastFakeId = 0, maxFakeId = 2147483647, logPrefix = "HackTimer.js by turuslan: ";
     if (typeof Worker !== "undefined") {
       let getFakeId = function() {
@@ -4749,7 +4742,46 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         return lastFakeId;
       };
       try {
-        worker = new Worker(workerScript);
+        let workerCode = `
+var fakeIdToId = {};
+onmessage = function (event) {
+	var data = event.data,
+		name = data.name,
+		fakeId = data.fakeId,
+		time;
+	if(data.hasOwnProperty('time')) {
+		time = data.time;
+	}
+	switch (name) {
+		case 'setInterval':
+			fakeIdToId[fakeId] = setInterval(function () {
+				postMessage({fakeId: fakeId});
+			}, time);
+			break;
+		case 'clearInterval':
+			if (fakeIdToId.hasOwnProperty (fakeId)) {
+				clearInterval(fakeIdToId[fakeId]);
+				delete fakeIdToId[fakeId];
+			}
+			break;
+		case 'setTimeout':
+			fakeIdToId[fakeId] = setTimeout(function () {
+				postMessage({fakeId: fakeId});
+				if (fakeIdToId.hasOwnProperty (fakeId)) {
+					delete fakeIdToId[fakeId];
+				}
+			}, time);
+			break;
+		case 'clearTimeout':
+			if (fakeIdToId.hasOwnProperty (fakeId)) {
+				clearTimeout(fakeIdToId[fakeId]);
+				delete fakeIdToId[fakeId];
+			}
+			break;
+	}
+}`;
+        const blob = new Blob([workerCode], { type: "application/javascript" });
+        worker = new Worker(URL.createObjectURL(blob));
         window.setInterval = function(callback, time) {
           var fakeId = getFakeId();
           fakeIdToCallback[fakeId] = {
