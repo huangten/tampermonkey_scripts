@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-17.09:49:38
+// @version    2026-05-20.23:00:19
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
-// @require    https://unpkg.com/hacktimer/HackTimer.js
 // @require    https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
 // @connect    githubusercontent.com
@@ -4729,7 +4728,107 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       return (this.currentOpenRun.completed / this.currentOpenRun.total * 100).toFixed(2) + "%";
     }
   }
+  function HackTimer() {
+    if (!/MSIE 10/i.test(navigator.userAgent)) {
+      try {
+        var blob = new Blob(["var fakeIdToId = {};onmessage = function (event) {	var data = event.data,		name = data.name,		fakeId = data.fakeId,		time;	if(data.hasOwnProperty('time')) {		time = data.time;	}	switch (name) {		case 'setInterval':			fakeIdToId[fakeId] = setInterval(function () {				postMessage({fakeId: fakeId});			}, time);			break;		case 'clearInterval':			if (fakeIdToId.hasOwnProperty (fakeId)) {				clearInterval(fakeIdToId[fakeId]);				delete fakeIdToId[fakeId];			}			break;		case 'setTimeout':			fakeIdToId[fakeId] = setTimeout(function () {				postMessage({fakeId: fakeId});				if (fakeIdToId.hasOwnProperty (fakeId)) {					delete fakeIdToId[fakeId];				}			}, time);			break;		case 'clearTimeout':			if (fakeIdToId.hasOwnProperty (fakeId)) {				clearTimeout(fakeIdToId[fakeId]);				delete fakeIdToId[fakeId];			}			break;	}}"]);
+        workerScript = window.URL.createObjectURL(blob);
+      } catch (error) {
+      }
+    }
+    var worker, fakeIdToCallback = {}, lastFakeId = 0, maxFakeId = 2147483647, logPrefix = "HackTimer.js by turuslan: ";
+    if (typeof Worker !== "undefined") {
+      let getFakeId = function() {
+        do {
+          if (lastFakeId == maxFakeId) {
+            lastFakeId = 0;
+          } else {
+            lastFakeId++;
+          }
+        } while (fakeIdToCallback.hasOwnProperty(lastFakeId));
+        return lastFakeId;
+      };
+      try {
+        worker = new Worker(workerScript);
+        window.setInterval = function(callback, time) {
+          var fakeId = getFakeId();
+          fakeIdToCallback[fakeId] = {
+            callback,
+            parameters: Array.prototype.slice.call(arguments, 2)
+          };
+          worker.postMessage({
+            name: "setInterval",
+            fakeId,
+            time
+          });
+          return fakeId;
+        };
+        window.clearInterval = function(fakeId) {
+          if (fakeIdToCallback.hasOwnProperty(fakeId)) {
+            delete fakeIdToCallback[fakeId];
+            worker.postMessage({
+              name: "clearInterval",
+              fakeId
+            });
+          }
+        };
+        window.setTimeout = function(callback, time) {
+          var fakeId = getFakeId();
+          fakeIdToCallback[fakeId] = {
+            callback,
+            parameters: Array.prototype.slice.call(arguments, 2),
+            isTimeout: true
+          };
+          worker.postMessage({
+            name: "setTimeout",
+            fakeId,
+            time
+          });
+          return fakeId;
+        };
+        window.clearTimeout = function(fakeId) {
+          if (fakeIdToCallback.hasOwnProperty(fakeId)) {
+            delete fakeIdToCallback[fakeId];
+            worker.postMessage({
+              name: "clearTimeout",
+              fakeId
+            });
+          }
+        };
+        worker.onmessage = function(event) {
+          var data = event.data, fakeId = data.fakeId, request, parameters, callback;
+          if (fakeIdToCallback.hasOwnProperty(fakeId)) {
+            request = fakeIdToCallback[fakeId];
+            callback = request.callback;
+            parameters = request.parameters;
+            if (request.hasOwnProperty("isTimeout") && request.isTimeout) {
+              delete fakeIdToCallback[fakeId];
+            }
+          }
+          if (typeof callback === "string") {
+            try {
+              callback = new Function(callback);
+            } catch (error) {
+              console.log(logPrefix + "Error parsing callback code string: ", error);
+            }
+          }
+          if (typeof callback === "function") {
+            callback.apply(window, parameters);
+          }
+        };
+        worker.onerror = function(event) {
+          console.log(event);
+        };
+      } catch (error) {
+        console.log(logPrefix + "Initialisation failed");
+        console.error(error);
+      }
+    } else {
+      console.log(logPrefix + "Initialisation failed - HTML5 Web Worker is not supported");
+    }
+  }
   init().then(() => {
+    HackTimer();
     new ListV2Controller().init();
   }).catch((e) => {
     console.log(e);
