@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-20.23:14:52
+// @version    2026-05-24.21:16:45
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -321,7 +321,8 @@ async start() {
         lastUpdateTime = infoBox[i].innerText.replace("最新：", "").trim();
       }
       if (infoBox[i].innerText.trim().includes("作者：")) {
-        author = escapeHtml(cleanText(infoBox[i].getElementsByTagName("a")[0].innerText.trim()));
+        let a = infoBox[i].getElementsByTagName("a");
+        author = escapeHtml(cleanText(a[0].textContent.trim()));
         author = author.replace(/\s+/g, " ");
       }
       if (infoBox[i].innerText.trim().includes("题材：")) {
