@@ -47,7 +47,7 @@ export async function buildEpub(url, options = {}) {
         }
         if (infoBox[i].innerText.trim().includes("作者：")) {
             let a = infoBox[i].getElementsByTagName("a");
-            author = escapeHtml(cleanText(a[0].textContent.trim()));
+            author = escapeHtml(cleanText(a[0]?.innerText.trim()));
             author = author.replace(/\s+/g, ' ');
             // author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", '').trim()));
         }

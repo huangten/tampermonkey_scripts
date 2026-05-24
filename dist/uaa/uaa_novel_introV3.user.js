@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-24.21:16:38
+// @version    2026-05-24.21:21:50
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -367,7 +367,7 @@
       }
       if (infoBox[i].innerText.trim().includes("作者：")) {
         let a = infoBox[i].getElementsByTagName("a");
-        author = escapeHtml(cleanText(a[0].textContent.trim()));
+        author = escapeHtml(cleanText(a[0]?.innerText.trim()));
         author = author.replace(/\s+/g, " ");
       }
       if (infoBox[i].innerText.trim().includes("题材：")) {
