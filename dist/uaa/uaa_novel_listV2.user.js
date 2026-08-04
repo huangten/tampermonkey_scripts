@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-24.21:29:41
+// @version    2026-08-04.19:22:47
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -348,14 +348,23 @@ async start() {
     const cssFolder = o.folder("Styles");
     const imgFolder = o.folder("Images");
     let coverUrl = doc.getElementsByClassName("cover")[0].src;
+    const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
     await Promise.all([
       CommonRes.getInstance().getMainCss().then((css) => cssFolder.file("main.css", css)),
       CommonRes.getInstance().getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
-      CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl).then((img) => imgFolder.file("cover.jpg", img)),
+      coverImagePromise.then((img) => imgFolder.file("cover.jpg", img)),
       CommonRes.getInstance().getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
       CommonRes.getInstance().getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
       CommonRes.getInstance().getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
     ]);
+    if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
+      const coverImage = await coverImagePromise;
+      console.log("coverImage.type:", coverImage.type);
+      if (coverImage.type === "application/octet-stream") {
+        const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split("/").pop());
+        fileSaver.saveAs(coverImage, coverFileName);
+      }
+    }
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder("Text");
     textFolder.file(`cover.xhtml`, genCoverHtmlPageV2());
@@ -4365,7 +4374,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
             content: this.getTaskInfoTabContent()
           }
         ],
-        btn: ["全选", "1-12", "13-24", "25-36", "37-49", "打开选中书籍", "导出EPUB", "导出EPUB+入库", "清除选中"],
+        btn: ["全选", "1-12", "13-24", "25-36", "37-49", "打开选中书籍", "导出EPUB", "导出EPUB+入库", "导出EPUB+入库+封面", "清除选中"],
         btn1: () => this.handleSelectRange(options, "全选"),
         btn2: () => this.handleSelectRange(options, "1-12"),
         btn3: () => this.handleSelectRange(options, "13-24"),
@@ -4384,6 +4393,10 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
           return false;
         },
         btn9: () => {
+          options.onExportAndAddChapterAndCover();
+          return false;
+        },
+        btn10: () => {
           options.onClearSelected();
           return false;
         },
@@ -4543,6 +4556,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         onOpenSelected: () => this.openSelectedBooks(),
         onExportSelected: () => this.exportSelectedBooks(),
         onExportAndAddChapters: () => this.exportSelectedBooks({ addChaptersToDb: true }),
+        onExportAndAddChapterAndCover: () => this.exportSelectedBooks({ addChaptersToDb: true, SaveCover: true }),
         onClearSelected: () => this.clearSelected(),
         onBookClick: (book) => this.toggleBook(book)
       });
@@ -4593,7 +4607,8 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       checkedBooks.forEach((book) => {
         this.exportEpubScheduler.add({
           ...book,
-          addChaptersToDb: options.addChaptersToDb === true
+          addChaptersToDb: options.addChaptersToDb === true,
+          SaveCover: Object.hasOwn(options, "SaveCover") ? options.SaveCover === true : false
         });
       });
       await this.exportEpubScheduler.start();
@@ -4653,7 +4668,8 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
                 return;
               }
               await this.addBookChaptersToDb(task, doc, url);
-            }
+            },
+            SaveCover: task.SaveCover
           });
           return true;
         },

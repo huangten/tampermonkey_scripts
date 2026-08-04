@@ -47,6 +47,7 @@ export class ListV2Controller {
             onOpenSelected: () => this.openSelectedBooks(),
             onExportSelected: () => this.exportSelectedBooks(),
             onExportAndAddChapters: () => this.exportSelectedBooks({ addChaptersToDb: true }),
+            onExportAndAddChapterAndCover: () => this.exportSelectedBooks({ addChaptersToDb: true, SaveCover: true }),
             onClearSelected: () => this.clearSelected(),
             onBookClick: (book) => this.toggleBook(book)
         });
@@ -105,7 +106,8 @@ export class ListV2Controller {
         checkedBooks.forEach(book => {
             this.exportEpubScheduler.add({
                 ...book,
-                addChaptersToDb: options.addChaptersToDb === true
+                addChaptersToDb: options.addChaptersToDb === true,
+                SaveCover: Object.hasOwn(options, 'SaveCover') ? options.SaveCover === true : false
             });
         });
         await this.exportEpubScheduler.start();
@@ -169,7 +171,8 @@ export class ListV2Controller {
                             return;
                         }
                         await this.addBookChaptersToDb(task, doc, url);
-                    }
+                    },
+                    SaveCover: task.SaveCover
                 });
                 return true;
             },

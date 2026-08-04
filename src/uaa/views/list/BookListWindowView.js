@@ -50,7 +50,7 @@ export class BookListWindowView {
                     content: this.getTaskInfoTabContent()
                 }
             ],
-            btn: ['全选', '1-12', '13-24', '25-36', '37-49', '打开选中书籍', '导出EPUB', '导出EPUB+入库', '清除选中'],
+            btn: ['全选', '1-12', '13-24', '25-36', '37-49', '打开选中书籍', '导出EPUB', '导出EPUB+入库','导出EPUB+入库+封面', '清除选中'],
             btn1: () => this.handleSelectRange(options, '全选'),
             btn2: () => this.handleSelectRange(options, '1-12'),
             btn3: () => this.handleSelectRange(options, '13-24'),
@@ -69,6 +69,10 @@ export class BookListWindowView {
                 return false;
             },
             btn9: () => {
+                options.onExportAndAddChapterAndCover();
+                return false;
+            },
+            btn10: () => {
                 options.onClearSelected();
                 return false;
             },
