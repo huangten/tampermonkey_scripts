@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-05-24.21:29:34
+// @version    2026-08-04.19:29:29
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -393,14 +393,23 @@
     const cssFolder = o.folder("Styles");
     const imgFolder = o.folder("Images");
     let coverUrl = doc.getElementsByClassName("cover")[0].src;
+    const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
     await Promise.all([
       CommonRes.getInstance().getMainCss().then((css) => cssFolder.file("main.css", css)),
       CommonRes.getInstance().getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
-      CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl).then((img) => imgFolder.file("cover.jpg", img)),
+      coverImagePromise.then((img) => imgFolder.file("cover.jpg", img)),
       CommonRes.getInstance().getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
       CommonRes.getInstance().getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
       CommonRes.getInstance().getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
     ]);
+    if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
+      const coverImage = await coverImagePromise;
+      console.log("coverImage.type:", coverImage.type);
+      if (coverImage.type === "application/octet-stream") {
+        const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split("/").pop());
+        fileSaver.saveAs(coverImage, coverFileName);
+      }
+    }
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder("Text");
     textFolder.file(`cover.xhtml`, genCoverHtmlPageV2());
