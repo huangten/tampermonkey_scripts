@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.17:45:55
+// @version    2026-08-19.19:09:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -31,7 +31,7 @@
 // @noframes
 // ==/UserScript==
 
-(function (fileSaver, JSZip) {
+(function (JSZip, fileSaver) {
   'use strict';
 
   function addCss(id, src) {
@@ -77,10 +77,6 @@
   const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
   function cleanText(str) {
     return str.replace(/\u00A0/g, " ").replace(INVISIBLE_RE, "");
-  }
-  function getFileNameFromPath(filePath) {
-    const parts = filePath.split(/[\\/]/);
-    return parts[parts.length - 1];
   }
   function copyContext(str) {
     return new Promise((resolve, reject) => {
@@ -249,123 +245,6 @@
       }
       return this.fontsCss;
     }
-  }
-  function saveContentToLocal(el = document) {
-    try {
-      const title = getChapterTitleText(el);
-      const bookName = getBookName(el);
-      const authorInfo = "作者：" + getAuthorInfo(el);
-      const texts = getTexts(el).map((s) => `　　${s}`).join("\n");
-      const htmlLines = getLines(el).join("\n");
-      const separator = "\n\n=============================================\n";
-      const content = [
-        "book name:\n" + bookName,
-        "author:\n" + authorInfo,
-        "title:\n" + title,
-        "text:\n" + texts,
-        "html:\n" + htmlLines
-      ].join(separator);
-      try {
-        !!new Blob();
-        fileSaver.saveAs(
-          new Blob([content], { type: "text/plain;charset=utf-8" }),
-          [bookName, authorInfo, title].join(" ") + ".txt"
-        );
-      } catch (e) {
-        console.log(e);
-      }
-    } catch (e) {
-      console.error("保存失败", e);
-      return false;
-    }
-    return true;
-  }
-  function getChapterTitleText(el = document) {
-    const titleBox = el.getElementsByClassName("reader-content")[0];
-    const level = titleBox.getElementsByClassName("reader-vol")[0] !== void 0 ? titleBox.getElementsByClassName("reader-vol")[0].innerText + " " : "";
-    const title = titleBox.getElementsByTagName("h1")[0] !== void 0 ? titleBox.getElementsByTagName("h1")[0].innerText : "";
-    return cleanText(level + title);
-  }
-  function getChapterLines(el = document) {
-    const contentBox = el.getElementsByClassName("reader-content")[0];
-    if (!contentBox) {
-      return [];
-    }
-    const contentBody = contentBox.getElementsByClassName("reader-body")[0];
-    if (!contentBody) {
-      return [];
-    }
-    let lines = contentBody.getElementsByTagName("p");
-    return Array.from(lines);
-  }
-  function getTexts(el = document) {
-    const lines = getChapterLines(el);
-    let texts = [];
-    for (let i = 0; i < lines.length; i++) {
-      let elements = lines[i].getElementsByTagName("button");
-      if (elements.length > 0) {
-        for (let j = elements.length - 1; j >= 0; j--) {
-          elements[j].parentNode.removeChild(elements[j]);
-        }
-      }
-      let imgElement = lines[i].getElementsByTagName("img");
-      if (imgElement.length > 0) {
-        for (let j = 0; j < imgElement.length; j++) {
-          texts.push(`【image_src】: ${imgElement[j].src},${getFileNameFromPath(imgElement[j].src)}`);
-        }
-      }
-      if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
-        continue;
-      }
-      let t = cleanText(lines[i].innerText.trim());
-      if (t.length === 0) {
-        continue;
-      }
-      texts.push(t);
-    }
-    return texts;
-  }
-  function getLines(el = document) {
-    let lines = getChapterLines(el);
-    let htmlLines = [];
-    for (let i = 0; i < lines.length; i++) {
-      let elements = lines[i].getElementsByTagName("button");
-      if (elements.length > 0) {
-        for (let j = elements.length - 1; j >= 0; j--) {
-          elements[j].parentNode.removeChild(elements[j]);
-        }
-      }
-      let imgElement = lines[i].getElementsByTagName("img");
-      if (imgElement.length > 0) {
-        for (let j = 0; j < imgElement.length; j++) {
-          htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
-        }
-      }
-      if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
-        continue;
-      }
-      let t = cleanText(lines[i].innerText.trim());
-      if (t.length === 0) {
-        continue;
-      }
-      htmlLines.push(`<p>${t}</p>`);
-    }
-    return htmlLines;
-  }
-  function getBookName(el = document) {
-    return cleanText(el.getElementById("readerBook")?.innerText.trim());
-  }
-  function getAuthorInfo(el = document) {
-    const metaBox = el.getElementsByClassName("reader-meta")[0];
-    if (!metaBox) {
-      return "";
-    }
-    const meta = metaBox.innerHTML.trim();
-    const authorMatch = meta.match(/(.*?) 著 ·/);
-    if (authorMatch && authorMatch[1]) {
-      return cleanText(authorMatch[1].trim());
-    }
-    return "";
   }
   class ChapterCatalogModel {
     constructor(doc = document, location2 = document.location) {
@@ -4426,7 +4305,186 @@ start() {
         span.remove();
       }
     }
-    return `${bookName} [${pageId.slice(0, 8)}]`;
+    const name = bookName?.innerText.trim() || "未知书籍";
+    return `${name} [${pageId.slice(0, 8)}]`;
+  }
+  class ChapterPageModel {
+    constructor(doc = document) {
+      this.doc = doc;
+      this.titleText = "";
+      this.texts = [];
+      this.htmlLines = [];
+    }
+    load() {
+      this.titleText = this.getChapterTitleText();
+      this.texts = this.getTexts();
+      this.htmlLines = this.getLines();
+    }
+    getTitleText() {
+      return this.titleText;
+    }
+    getTitleHtml() {
+      return "<h2>" + this.titleText + "</h2>";
+    }
+    getContentText() {
+      return this.texts.map((s) => `　　${s}`).join("\n");
+    }
+    getContentHtml() {
+      return this.htmlLines.join("\n");
+    }
+    getTitleAndContentText() {
+      return this.getTitleText() + "\n\n" + this.getContentText();
+    }
+    getTitleAndContentHtml() {
+      return this.getTitleHtml() + "\n\n" + this.getContentHtml();
+    }
+    saveToLocal() {
+      return this.saveContentToLocal(this.doc);
+    }
+    getPrevChapterElement() {
+      return this.getBottomBoxElement("prev");
+    }
+    getBookElement() {
+      const topBox = this.doc.getElementsByClassName("reader-top")[0];
+      if (!topBox) {
+        return null;
+      }
+      this.doc.getElementById("readerBook")?.click();
+    }
+    getNextChapterElement() {
+      return this.getBottomBoxElement("next");
+    }
+    getBottomBoxElement(index) {
+      const bottomBox = this.doc.getElementsByClassName("reader-bottom")[0];
+      if (!bottomBox) {
+        return null;
+      }
+      const buttons = bottomBox.getElementsByTagName("button");
+      for (const button of buttons) {
+        const attribute = button.getAttribute("data-reader-action");
+        if (attribute === index) {
+          return button?.click();
+        }
+      }
+      return null;
+    }
+    saveContentToLocal() {
+      try {
+        const title = this.getChapterTitleText();
+        const bookName = this.getBookName();
+        const authorInfo = "作者：" + this.getAuthorInfo();
+        const texts = this.getTexts().map((s) => `　　${s}`).join("\n");
+        const htmlLines = this.getLines().join("\n");
+        const separator = "\n\n=============================================\n";
+        const content = [
+          "book name:\n" + bookName,
+          "author:\n" + authorInfo,
+          "title:\n" + title,
+          "text:\n" + texts,
+          "html:\n" + htmlLines
+        ].join(separator);
+        try {
+          !!new Blob();
+          fileSaver.saveAs(
+            new Blob([content], { type: "text/plain;charset=utf-8" }),
+            [bookName, authorInfo, title].join(" ") + ".txt"
+          );
+        } catch (e) {
+          console.log(e);
+        }
+      } catch (e) {
+        console.error("保存失败", e);
+        return false;
+      }
+      return true;
+    }
+    getChapterTitleText() {
+      const titleBox = this.doc.getElementsByClassName("reader-content")[0];
+      const level = titleBox.getElementsByClassName("reader-vol")[0] !== void 0 ? titleBox.getElementsByClassName("reader-vol")[0].innerText + " " : "";
+      const title = titleBox.getElementsByTagName("h1")[0] !== void 0 ? titleBox.getElementsByTagName("h1")[0].innerText : "";
+      return cleanText(level + title);
+    }
+    getChapterLines() {
+      const contentBox = this.doc.getElementsByClassName("reader-content")[0];
+      if (!contentBox) {
+        return [];
+      }
+      const contentBody = contentBox.getElementsByClassName("reader-body")[0];
+      if (!contentBody) {
+        return [];
+      }
+      let lines = contentBody.getElementsByTagName("p");
+      return Array.from(lines);
+    }
+    getTexts() {
+      const lines = this.getChapterLines();
+      let texts = [];
+      for (let i = 0; i < lines.length; i++) {
+        let elements = lines[i].getElementsByTagName("button");
+        if (elements.length > 0) {
+          for (let j = elements.length - 1; j >= 0; j--) {
+            elements[j].parentNode.removeChild(elements[j]);
+          }
+        }
+        let imgElement = lines[i].getElementsByTagName("img");
+        if (imgElement.length > 0) {
+          for (let j = 0; j < imgElement.length; j++) {
+            texts.push(`【image_src】: ${imgElement[j].src},${getFileNameFromPath(imgElement[j].src)}`);
+          }
+        }
+        if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
+          continue;
+        }
+        let t = cleanText(lines[i].innerText.trim());
+        if (t.length === 0) {
+          continue;
+        }
+        texts.push(t);
+      }
+      return texts;
+    }
+    getLines() {
+      let lines = this.getChapterLines();
+      let htmlLines = [];
+      for (let i = 0; i < lines.length; i++) {
+        let elements = lines[i].getElementsByTagName("button");
+        if (elements.length > 0) {
+          for (let j = elements.length - 1; j >= 0; j--) {
+            elements[j].parentNode.removeChild(elements[j]);
+          }
+        }
+        let imgElement = lines[i].getElementsByTagName("img");
+        if (imgElement.length > 0) {
+          for (let j = 0; j < imgElement.length; j++) {
+            htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
+          }
+        }
+        if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
+          continue;
+        }
+        let t = cleanText(lines[i].innerText.trim());
+        if (t.length === 0) {
+          continue;
+        }
+        htmlLines.push(`<p>${t}</p>`);
+      }
+      return htmlLines;
+    }
+    getBookName() {
+      return cleanText(this.doc.getElementById("readerBook")?.innerText.trim());
+    }
+    getAuthorInfo() {
+      const metaBox = this.doc.getElementsByClassName("reader-meta")[0];
+      if (!metaBox) {
+        return "";
+      }
+      const meta = metaBox.innerHTML.trim();
+      const authorMatch = meta.match(/(.*?) 著 ·/);
+      if (authorMatch && authorMatch[1]) {
+        return cleanText(authorMatch[1].trim());
+      }
+      return "";
+    }
   }
   class ChapterDownloadService {
     constructor({ downloadInfoWindow, infoWindow, downloaderInterval }) {
@@ -4456,12 +4514,13 @@ start() {
       iframe.style.height = "100%";
       container.appendChild(iframe);
       await this.waitForChapterLoad(iframe, chapter);
-      const el = iframe.contentDocument;
-      this.assertChapterDocumentHealth(el, chapter);
-      if (getTexts(el).some((s) => s.includes("以下正文内容已隐藏"))) {
+      this.assertChapterDocumentHealth(iframe.contentDocument, chapter);
+      let chapterPageModel = new ChapterPageModel(iframe.contentDocument);
+      if (chapterPageModel.getTexts().some((s) => s.includes("以下正文内容已隐藏"))) {
         throw new Error("章节内容不完整，结束下载");
       }
-      const success = saveContentToLocal(el);
+      const success = chapterPageModel.saveToLocal();
+      chapterPageModel = null;
       await sleep(300);
       await destroyIframeElementAsync(iframe);
       if (!success) {
@@ -5548,4 +5607,4 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
     console.log(e);
   });
 
-})(saveAs, JSZip);
+})(JSZip, saveAs);
