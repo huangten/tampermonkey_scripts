@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.19:09:52
+// @version    2026-08-19.22:52:06
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -77,6 +77,10 @@
   const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
   function cleanText(str) {
     return str.replace(/\u00A0/g, " ").replace(INVISIBLE_RE, "");
+  }
+  function getFileNameFromPath(filePath) {
+    const parts = filePath.split(/[\\/]/);
+    return parts[parts.length - 1];
   }
   function copyContext(str) {
     return new Promise((resolve, reject) => {

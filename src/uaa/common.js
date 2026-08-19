@@ -1,6 +1,3 @@
-import { cleanText, getFileNameFromPath } from "../common/common.js";
-
-
 export class CommonRes {
     constructor() {
         if (CommonRes.instance) {

@@ -1,4 +1,4 @@
-import { cleanText } from "../../common/common.js";
+import { cleanText, getFileNameFromPath } from "../../common/common.js";
 import { saveAs } from "file-saver";
 
 export class ChapterPageModel {
