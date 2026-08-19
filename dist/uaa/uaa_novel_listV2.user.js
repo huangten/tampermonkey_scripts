@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.15:49:15
+// @version    2026-08-19.15:53:20
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -4367,7 +4367,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
         return layui.layer.msg("请等待当前任务完成后再打开书籍列表窗口", { icon: 0, time: 2e3 });
       }
       if (this.openBookListWindowIndex !== 0) {
-        reloadBookTree(options.data);
+        this.reloadBookTree(options.data);
         return this.openBookListWindowIndex;
       }
       this.openBookListWindowIndex = layui.layer.tab({

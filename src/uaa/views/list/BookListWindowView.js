@@ -33,7 +33,7 @@ export class BookListWindowView {
         }
 
         if (this.openBookListWindowIndex !== 0) {
-            reloadBookTree(options.data);
+            this.reloadBookTree(options.data);
             return this.openBookListWindowIndex;
         }
 
