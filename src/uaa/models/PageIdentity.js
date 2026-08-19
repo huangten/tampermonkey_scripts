@@ -16,6 +16,7 @@ export function getPageLabel(pageId, doc = document) {
             span.remove();
         }
     }
-    return `${bookName} [${pageId.slice(0, 8)}]`;
+    const name =  bookName?.innerText.trim() || "未知书籍"
+    return `${name} [${pageId.slice(0, 8)}]`;
 }
 

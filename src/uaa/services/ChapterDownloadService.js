@@ -1,5 +1,5 @@
 import { destroyIframeElementAsync, sleep, waitForElement } from "../../common/common.js";
-import { getTexts, saveContentToLocal } from "../common.js";
+import { ChapterPageModel } from "../models/ChapterPageModel.js";
 
 export class ChapterDownloadService {
     constructor({ downloadInfoWindow, infoWindow, downloaderInterval }) {
@@ -36,13 +36,15 @@ export class ChapterDownloadService {
 
         await this.waitForChapterLoad(iframe, chapter);
 
-        const el = iframe.contentDocument;
-        this.assertChapterDocumentHealth(el, chapter);
-        if (getTexts(el).some(s => s.includes('以下正文内容已隐藏'))) {
+        this.assertChapterDocumentHealth(iframe.contentDocument, chapter);
+        let chapterPageModel = new ChapterPageModel(iframe.contentDocument);
+        if (chapterPageModel.getTexts().some(s => s.includes('以下正文内容已隐藏'))) {
             throw new Error("章节内容不完整，结束下载");
         }
-
-        const success = saveContentToLocal(el);
+        
+        const success = chapterPageModel.saveToLocal();
+        
+        chapterPageModel = null;
         await sleep(300);
         await destroyIframeElementAsync(iframe);
 

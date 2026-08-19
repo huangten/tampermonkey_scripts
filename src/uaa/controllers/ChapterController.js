@@ -57,10 +57,4 @@ export class ChapterController {
     copy(content) {
         copyContext(content).then();
     }
-
-    clickIfLink(el) {
-        if (el && el.nodeName.indexOf("A") > -1) {
-            el.click();
-        }
-    }
 }

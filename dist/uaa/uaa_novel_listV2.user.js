@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.17:46:01
+// @version    2026-08-19.19:06:38
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -29,7 +29,7 @@
 // @noframes
 // ==/UserScript==
 
-(function (fileSaver, JSZip) {
+(function (JSZip, fileSaver) {
   'use strict';
 
   function addCss(id, src) {
@@ -4900,4 +4900,4 @@ onmessage = function (event) {
     console.log(e);
   });
 
-})(saveAs, JSZip);
+})(JSZip, saveAs);
