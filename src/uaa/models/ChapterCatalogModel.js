@@ -111,7 +111,6 @@ export class ChapterCatalogModel {
                     let title = menulist[j].getAttribute("title");
                     let chapterName = cleanText(title.trim());
                     let chapterHref = menulist[j].href;
-                    // console.log(id + "chapterName: " + chapterName + ", chapterHref: " + chapterHref);
                     children.push({
                         'id': id,
                         "title": chapterName,
