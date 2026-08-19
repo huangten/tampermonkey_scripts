@@ -49,7 +49,9 @@ export class ListV2Controller {
             onExportAndAddChapters: () => this.exportSelectedBooks({ addChaptersToDb: true }),
             onExportAndAddChapterAndCover: () => this.exportSelectedBooks({ addChaptersToDb: true, SaveCover: true }),
             onClearSelected: () => this.clearSelected(),
-            onBookClick: (book) => this.toggleBook(book)
+            onBookClick: (book) => this.toggleBook(book),
+            openNewWindowScheduler: this.openNewWindowScheduler,
+            exportEpubScheduler: this.exportEpubScheduler
         });
     }
 

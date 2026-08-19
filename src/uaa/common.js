@@ -150,7 +150,7 @@ export function saveContentToLocal(el = document) {
             !!new Blob;
             saveAs(
                 new Blob([content], { type: "text/plain;charset=utf-8" }),
-                [bookName, authorInfo, title].join(' ') + ".txt"
+                [bookName, "作者：" + authorInfo, title].join(' ') + ".txt"
             );
         } catch (e) {
             console.log(e);

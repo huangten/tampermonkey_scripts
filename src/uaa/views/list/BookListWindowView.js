@@ -28,7 +28,12 @@ export class BookListWindowView {
     }
 
     openBookListWindow(options) {
+        if (options.openNewWindowScheduler.running || options.exportEpubScheduler.running) {
+            return layui.layer.msg('请等待当前任务完成后再打开书籍列表窗口', { icon: 0, time: 2000 });
+        }
+
         if (this.openBookListWindowIndex !== 0) {
+            reloadBookTree(options.data);
             return this.openBookListWindowIndex;
         }
 
