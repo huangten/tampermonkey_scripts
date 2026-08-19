@@ -149,7 +149,7 @@ export async function buildEpub(url, options = {}) {
                 textFolder.file(`${did}.xhtml`, genHtmlPage(escapeHtml(cleanText(d.title))));
                 let ncxNav = `
  <navPoint id="${did}" playOrder="${i + 1}">
-    <navLabel><text>${d.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(d.title))}</text></navLabel>
     <content src="Text/${did}.xhtml"/>
 </navPoint>
                         `;

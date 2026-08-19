@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.16:46:03
+// @version    2026-08-19.17:42:06
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -648,7 +648,7 @@
           textFolder.file(`${did}.xhtml`, genHtmlPage(escapeHtml(cleanText(d.title))));
           let ncxNav2 = `
  <navPoint id="${did}" playOrder="${i + 1}">
-    <navLabel><text>${d.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(d.title))}</text></navLabel>
     <content src="Text/${did}.xhtml"/>
 </navPoint>
                         `;
