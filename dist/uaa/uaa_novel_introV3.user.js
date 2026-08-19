@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.16:23:10
+// @version    2026-08-19.16:46:03
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -476,7 +476,7 @@
               "children": [],
               "spread": true,
               "field": "",
-              "checked": menulist[index].innerText.indexOf("new") > 0,
+              "checked": menulist[j].innerText.indexOf("new") > 0,
               bookName,
               bookId,
               volumeName: volName

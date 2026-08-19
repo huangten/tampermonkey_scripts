@@ -119,7 +119,7 @@ export class ChapterCatalogModel {
                         "children": [],
                         "spread": true,
                         "field": "",
-                        "checked": menulist[index].innerText.indexOf("new") > 0,
+                        "checked": menulist[j].innerText.indexOf("new") > 0,
                         bookName,
                         bookId,
                         volumeName: volName

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.16:23:04
+// @version    2026-08-19.16:46:11
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -400,7 +400,7 @@ async start() {
               "children": [],
               "spread": true,
               "field": "",
-              "checked": menulist[index].innerText.indexOf("new") > 0,
+              "checked": menulist[j].innerText.indexOf("new") > 0,
               bookName,
               bookId,
               volumeName: volName
