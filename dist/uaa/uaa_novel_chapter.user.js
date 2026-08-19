@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.15:48:56
+// @version    2026-08-19.16:23:15
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/chapter*
@@ -98,7 +98,7 @@
     try {
       const title = getChapterTitleText(el);
       const bookName = getBookName(el);
-      const authorInfo = getAuthorInfo(el);
+      const authorInfo = "作者：" + getAuthorInfo(el);
       const texts = getTexts(el).map((s) => `　　${s}`).join("\n");
       const htmlLines = getLines(el).join("\n");
       const separator = "\n\n=============================================\n";
@@ -113,7 +113,7 @@
         !!new Blob();
         fileSaver.saveAs(
           new Blob([content], { type: "text/plain;charset=utf-8" }),
-          [bookName, "作者：" + authorInfo, title].join(" ") + ".txt"
+          [bookName, authorInfo, title].join(" ") + ".txt"
         );
       } catch (e) {
         console.log(e);

@@ -135,7 +135,7 @@ export function saveContentToLocal(el = document) {
     try {
         const title = getChapterTitleText(el);
         const bookName = getBookName(el);
-        const authorInfo = getAuthorInfo(el);
+        const authorInfo = "作者：" + getAuthorInfo(el);
         const texts = getTexts(el).map((s) => `　　${s}`).join('\n');
         const htmlLines = getLines(el).join('\n');
         const separator = "\n\n=============================================\n";
@@ -150,7 +150,7 @@ export function saveContentToLocal(el = document) {
             !!new Blob;
             saveAs(
                 new Blob([content], { type: "text/plain;charset=utf-8" }),
-                [bookName, "作者：" + authorInfo, title].join(' ') + ".txt"
+                [bookName, authorInfo, title].join(' ') + ".txt"
             );
         } catch (e) {
             console.log(e);
