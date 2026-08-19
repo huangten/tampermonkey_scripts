@@ -43,13 +43,13 @@ export class ChapterController {
                 this.model.saveToLocal();
                 break;
             case "上一章":
-                this.clickIfLink(this.model.getPrevChapterElement());
+                this.model.getPrevChapterElement();
                 break;
             case "本书":
-                this.clickIfLink(this.model.getBookElement());
+                this.model.getBookElement()
                 break;
             case "下一章":
-                this.clickIfLink(this.model.getNextChapterElement());
+                this.model.getNextChapterElement();
                 break;
         }
     }

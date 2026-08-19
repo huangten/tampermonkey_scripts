@@ -46,13 +46,13 @@ export class InfoWindowView {
                     content: '<div style="height: 100%;width: 100%;padding-top: 10px;">' +
                         '<div id="downloadWindowDivInfoId">' +
                         '<fieldset class="layui-elem-field">\n' +
-                        '  <legend>当前下载</legend>\n' +
+                        '  <legend style="color:red;">当前下载</legend>\n' +
                         '  <div class="layui-field-box">\n' +
-                        '      <a id="downloadInfoContentId" href="">暂无下载</a>\n' +
+                        '      <a id="downloadInfoContentId" href="" style="color:red;">暂无下载</a>\n' +
                         '  </div>\n' +
                         '</fieldset>' +
                         '<fieldset class="layui-elem-field">\n' +
-                        '  <legend>进度条</legend>\n' +
+                        '  <legend style="color:red;">进度条</legend>\n' +
                         '  <div class="layui-field-box">\n' +
                         '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '">' +
                         ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
@@ -155,10 +155,10 @@ export class InfoWindowView {
 
     getSystemInfoPanelHtml() {
         return '<fieldset class="layui-elem-field">\n' +
-            '  <legend>系统状态</legend>\n' +
+            '  <legend style="color:red;">系统状态</legend>\n' +
             '  <div class="layui-field-box">\n' +
             '    <div id="systemInfoPanelId" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 12px;">' +
-            this.getSystemInfoItemHtml('id', 'ID') +
+            // this.getSystemInfoItemHtml('id', 'ID') +
             this.getSystemInfoItemHtml('status', '状态') +
             this.getSystemInfoItemHtml('consumerPageLabel', '消费页') +
             this.getSystemInfoItemHtml('consumerPageId', '消费页ID') +
@@ -169,7 +169,7 @@ export class InfoWindowView {
             this.getSystemInfoItemHtml('currentBookName', '当前书名') +
             this.getSystemInfoItemHtml('lastDownloadTime', '最后下载') +
             this.getSystemInfoItemHtml('updateTime', '系统更新时间') +
-            this.getSystemInfoItemHtml('displayUpdatedAt', '展示刷新时间') +
+            this.getSystemInfoItemHtml('displayUpdatedAt', '系统刷新时间') +
             '    </div>' +
             '  </div>\n' +
             '</fieldset>';
@@ -177,8 +177,8 @@ export class InfoWindowView {
 
     getSystemInfoItemHtml(field, label) {
         return '<div style="min-width:0;">' +
-            '<div style="color:#666;font-size:12px;line-height:18px;">' + label + '</div>' +
-            '<div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;">-</div>' +
+            '<div style="color:red;font-size:12px;line-height:18px;">' + label + '</div>' +
+            '<div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;color:blue;">-</div>' +
             '</div>';
     }
 

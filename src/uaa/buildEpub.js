@@ -1,7 +1,8 @@
-import {cleanText} from "../common/common.js";
-import {CommonRes} from "./common.js";
+import { cleanText } from "../common/common.js";
+import { CommonRes } from "./common.js";
 import JSZip from "jszip";
-import {saveAs} from "file-saver";
+import { saveAs } from "file-saver";
+import { ChapterCatalogModel } from "./models/ChapterCatalogModel.js";
 
 function fetchBookIntro(url) {
     return fetch(url)
@@ -22,64 +23,44 @@ function fetchBookIntro(url) {
 
 export async function buildEpub(url, options = {}) {
     const zip = new JSZip();
-    let doc = await fetchBookIntro(url).catch((e) => {
-        // console.log(e);
-        throw new Error(e);
-    });
-
-
-    let bookName = escapeHtml(cleanText(doc.getElementsByClassName('info_box')[0].getElementsByTagName("h1")[0].innerText.trim()));
-    let author = '';
-    let type = ""
-    let tags = doc.getElementsByClassName('tag_box')[0].innerText.replaceAll('\n', '').replaceAll('标签：', '').replaceAll(' ', '').replaceAll('#', ' #').trim()
-    //       console.log(tags);
-    let rou = doc.getElementsByClassName('props_box')[0].getElementsByTagName('li')[0].innerText.trim();
-    let score = "";
-    let lastUpdateTime = "";
-    let intro = doc.getElementsByClassName('brief_box')[0].innerText.replaceAll('小说简介：', "").replaceAll('\n', '').trim();
-    //         console.log(intro);
-
-    let infoBox = doc.getElementsByClassName('info_box')[0].getElementsByTagName("div");
-
-    for (let i = 0; i < infoBox.length; i++) {
-        if (infoBox[i].innerText.trim().includes("最新：")) {
-            lastUpdateTime = infoBox[i].innerText.replace("最新：", '').trim();
-        }
-        if (infoBox[i].innerText.trim().includes("作者：")) {
-            let a = infoBox[i].getElementsByTagName("a");
-            let aText = a[0]?.innerText.trim() || "";
-            author = escapeHtml(cleanText(aText));
-            // console.log(author);
-
-            author = author.replace(/\s+/g, ' ');
-            // author = escapeHtml(cleanText(infoBox[i].innerText.replace("作者：", '').trim()));
-        }
-        if (infoBox[i].innerText.trim().includes("题材：")) {
-            type = infoBox[i].innerText.replace("题材：", '').split(' ').map(str => str.trim()).filter(str => str.length > 0);
-        }
-        if (infoBox[i].innerText.trim().includes("评分：")) {
-            score = infoBox[i].innerText.replace("评分：", '').trim();
-        }
+    let doc = null;
+    if (typeof url === 'string') {
+        doc = await fetchBookIntro(url).catch((e) => {
+            throw new Error(e);
+        });
+    } else if (url?.nodeType === Node.DOCUMENT_NODE) {
+        doc = url;
     }
 
-    const introDoc = doc.cloneNode(true);
-    let chapters = getChapterMenu(doc)
+    const chapterCatalogModel = new ChapterCatalogModel(doc);
+    let bookName = escapeHtml(cleanText(chapterCatalogModel.getBookName()));
+    let author = chapterCatalogModel.getAuthor();
+    author = escapeHtml(cleanText(author));
+    author = author.replace(/\s+/g, ' ');
+    let type = chapterCatalogModel.getType();
+    let tags = chapterCatalogModel.getTags();
+    let rou = chapterCatalogModel.getRou();
+    let score = chapterCatalogModel.getScore();
+    let lastUpdateTime = chapterCatalogModel.getLatestChapter();
+    let intro = chapterCatalogModel.getIntro();
+    let chapters = chapterCatalogModel.getChapterListTree();
+
     if (typeof options.onIntroParsed === 'function') {
         await options.onIntroParsed({
             url,
-            doc: introDoc,
+            doc: doc,
             chapters
         });
     }
 
-    zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
+    zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
     zip.folder('META-INF').file('container.xml', createContainer());
 
     const o = zip.folder('OEBPS');
     const cssFolder = o.folder("Styles");
     const imgFolder = o.folder("Images")
 
-    let coverUrl = doc.getElementsByClassName("cover")[0].src;
+    let coverUrl = chapterCatalogModel.getCover();
     const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
 
     await Promise.all([
@@ -92,7 +73,7 @@ export async function buildEpub(url, options = {}) {
         CommonRes.getInstance().getGirlImg().then(img => imgFolder.file('girl.jpg', img)),
     ]);
 
-    if (Object.hasOwn(options,'SaveCover') && options.SaveCover === true) {
+    if (Object.hasOwn(options, 'SaveCover') && options.SaveCover === true) {
         const coverImage = await coverImagePromise;
         console.log('coverImage.type:', coverImage.type);
         if (coverImage.type === 'application/octet-stream') {
@@ -364,8 +345,8 @@ function genCoverHtmlPage() {
 }
 
 function genCoverHtmlPageV2() {
-    const htmlStr = 
-`<?xml version="1.0" encoding="utf-8"?>
+    const htmlStr =
+        `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">

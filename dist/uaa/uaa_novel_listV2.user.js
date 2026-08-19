@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-04.19:22:47
+// @version    2026-08-19.14:46:39
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -291,6 +291,165 @@ async start() {
       return this.fontsCss;
     }
   }
+  class ChapterCatalogModel {
+    constructor(doc = document, location2 = document.location) {
+      this.doc = doc;
+      this.location = location2;
+    }
+    getBookName() {
+      const bookName = this.doc.getElementsByTagName("h1")[0]?.cloneNode(true);
+      const spans = bookName?.getElementsByTagName("span");
+      if (spans) {
+        for (const span of spans) {
+          span.remove();
+        }
+      }
+      return cleanText(bookName?.innerText.trim() ?? "");
+    }
+    getBookId() {
+      return new URL(this.location.href).searchParams.get("id") ?? "";
+    }
+    getAuthor() {
+      return this.doc.getElementsByClassName("nd-author")[0]?.getElementsByTagName("a")[0]?.innerText.trim() ?? "";
+    }
+    getLatestChapter() {
+      return this.doc.getElementsByClassName("nd-latest")[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? "";
+    }
+    getScore() {
+      return this.doc.getElementsByClassName("nd-score")[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? "";
+    }
+    getType() {
+      return "";
+    }
+    getRou() {
+      return "";
+    }
+    getTags() {
+      const tagsBox = this.doc.getElementById("ndTags").cloneNode(true);
+      const tags = [];
+      if (tagsBox) {
+        const tagElements = tagsBox.getElementsByTagName("a");
+        for (const tagElement of tagElements) {
+          tagElement.getElementsByTagName("em")[0]?.remove();
+          tags.push(tagElement.innerText.trim());
+        }
+      }
+      return tags.join(", ");
+    }
+    getIntro() {
+      return this.doc.getElementsByClassName("nd-synopsis")[0]?.innerText.replaceAll("小说简介：", "").replaceAll("\n", "").trim() ?? "";
+    }
+    getCover() {
+      const coverElement = this.doc.getElementsByClassName("nd-cover")[0]?.getElementsByTagName("img")[0];
+      return coverElement?.src ?? "";
+    }
+    getChapterListTree() {
+      return this.getMenuTree(this.doc, this.getBookName(), this.getBookId());
+    }
+    getMenuTree(doc, bookName, bookId) {
+      let menus = [];
+      const lis = doc.querySelectorAll("#ndcBody > *");
+      for (let index = 0; index < lis.length; index++) {
+        if (lis[index].nodeName.indexOf("A") > -1) {
+          let id = (index + 1) * 1e8;
+          let title = lis[index].getAttribute("title");
+          let chapterName = cleanText(title.trim());
+          let chapterHref = lis[index].href;
+          menus.push({
+            "id": id,
+            "title": chapterName,
+            "href": chapterHref,
+            "children": [],
+            "spread": true,
+            "field": "",
+            "checked": chapterName.indexOf("new") > 0,
+            bookName,
+            bookId,
+            volumeName: ""
+          });
+        }
+        if (lis[index].nodeName.indexOf("DIV") > -1) {
+          let vol = lis[index].getElementsByTagName("button")[0];
+          if (!vol) {
+            continue;
+          }
+          let volTitle = vol.getElementsByClassName("ndc-vol__t")[0];
+          if (!volTitle) {
+            continue;
+          }
+          let volName = cleanText(volTitle.innerText.trim());
+          let volBody = lis[index].getElementsByClassName("ndc-vol__body")[0];
+          if (!volBody) {
+            continue;
+          }
+          let volList = volBody.getElementsByClassName("ndc-list")[0];
+          if (!volList) {
+            continue;
+          }
+          let menulist = volList.getElementsByTagName("a");
+          let children = [];
+          for (let j = 0; j < menulist.length; j++) {
+            let id = (index + 1) * 1e8 + j + 1;
+            let title = menulist[j].getAttribute("title");
+            let chapterName = cleanText(title.trim());
+            let chapterHref = menulist[j].href;
+            children.push({
+              "id": id,
+              "title": chapterName,
+              "href": chapterHref,
+              "children": [],
+              "spread": true,
+              "field": "",
+              "checked": menulist[index].innerText.indexOf("new") > 0,
+              bookName,
+              bookId,
+              volumeName: volName
+            });
+          }
+          menus.push({
+            "id": (index + 1) * 1e8,
+            "title": volName,
+            "href": "",
+            "children": children,
+            "spread": true,
+            "field": "",
+            bookName,
+            bookId,
+            volumeName: volName
+          });
+        }
+      }
+      return menus;
+    }
+    toChapterList(trees) {
+      const menus = [];
+      for (let index = 0; index < trees.length; index++) {
+        if (trees[index].children.length === 0) {
+          menus.push({
+            chapterId: trees[index].id,
+            chapterName: trees[index].title,
+            href: trees[index].href,
+            bookName: trees[index].bookName,
+            bookId: trees[index].bookId,
+            volumeName: trees[index].volumeName ?? ""
+          });
+        } else {
+          for (let j = 0; j < trees[index].children.length; j++) {
+            const preName = trees[index].title + " ";
+            menus.push({
+              chapterId: trees[index].children[j].id,
+              chapterName: preName + trees[index].children[j].title,
+              href: trees[index].children[j].href,
+              bookName: trees[index].children[j].bookName,
+              bookId: trees[index].children[j].bookId,
+              volumeName: trees[index].title
+            });
+          }
+        }
+      }
+      return menus;
+    }
+  }
   function fetchBookIntro(url) {
     return fetch(url).then((response) => {
       if (!response.ok) {
@@ -304,41 +463,30 @@ async start() {
   }
   async function buildEpub(url, options = {}) {
     const zip = new JSZip();
-    let doc = await fetchBookIntro(url).catch((e) => {
-      throw new Error(e);
-    });
-    let bookName = escapeHtml(cleanText(doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim()));
-    let author = "";
-    let type = "";
-    let tags = doc.getElementsByClassName("tag_box")[0].innerText.replaceAll("\n", "").replaceAll("标签：", "").replaceAll(" ", "").replaceAll("#", " #").trim();
-    let rou = doc.getElementsByClassName("props_box")[0].getElementsByTagName("li")[0].innerText.trim();
-    let score = "";
-    let lastUpdateTime = "";
-    let intro = doc.getElementsByClassName("brief_box")[0].innerText.replaceAll("小说简介：", "").replaceAll("\n", "").trim();
-    let infoBox = doc.getElementsByClassName("info_box")[0].getElementsByTagName("div");
-    for (let i = 0; i < infoBox.length; i++) {
-      if (infoBox[i].innerText.trim().includes("最新：")) {
-        lastUpdateTime = infoBox[i].innerText.replace("最新：", "").trim();
-      }
-      if (infoBox[i].innerText.trim().includes("作者：")) {
-        let a = infoBox[i].getElementsByTagName("a");
-        let aText = a[0]?.innerText.trim() || "";
-        author = escapeHtml(cleanText(aText));
-        author = author.replace(/\s+/g, " ");
-      }
-      if (infoBox[i].innerText.trim().includes("题材：")) {
-        type = infoBox[i].innerText.replace("题材：", "").split(" ").map((str) => str.trim()).filter((str) => str.length > 0);
-      }
-      if (infoBox[i].innerText.trim().includes("评分：")) {
-        score = infoBox[i].innerText.replace("评分：", "").trim();
-      }
+    let doc = null;
+    if (typeof url === "string") {
+      doc = await fetchBookIntro(url).catch((e) => {
+        throw new Error(e);
+      });
+    } else if (url?.nodeType === Node.DOCUMENT_NODE) {
+      doc = url;
     }
-    const introDoc = doc.cloneNode(true);
-    let chapters = getChapterMenu(doc);
+    const chapterCatalogModel = new ChapterCatalogModel(doc);
+    let bookName = escapeHtml(cleanText(chapterCatalogModel.getBookName()));
+    let author = chapterCatalogModel.getAuthor();
+    author = escapeHtml(cleanText(author));
+    author = author.replace(/\s+/g, " ");
+    let type = chapterCatalogModel.getType();
+    let tags = chapterCatalogModel.getTags();
+    let rou = chapterCatalogModel.getRou();
+    let score = chapterCatalogModel.getScore();
+    let lastUpdateTime = chapterCatalogModel.getLatestChapter();
+    let intro = chapterCatalogModel.getIntro();
+    let chapters = chapterCatalogModel.getChapterListTree();
     if (typeof options.onIntroParsed === "function") {
       await options.onIntroParsed({
         url,
-        doc: introDoc,
+        doc,
         chapters
       });
     }
@@ -347,7 +495,7 @@ async start() {
     const o = zip.folder("OEBPS");
     const cssFolder = o.folder("Styles");
     const imgFolder = o.folder("Images");
-    let coverUrl = doc.getElementsByClassName("cover")[0].src;
+    let coverUrl = chapterCatalogModel.getCover();
     const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
     await Promise.all([
       CommonRes.getInstance().getMainCss().then((css) => cssFolder.file("main.css", css)),
@@ -487,52 +635,6 @@ ${ncxNav.join("\n")}
 });
     fileSaver.saveAs(blob, `${bookName} 作者：${author}.epub`);
     console.log(bookName + " 下载完毕！");
-  }
-  function getChapterMenu(doc) {
-    let menus = [];
-    let lis = doc.querySelectorAll(".catalog_ul > li");
-    for (let index = 0; index < lis.length; index++) {
-      let preName = "";
-      if (lis[index].className.indexOf("menu") > -1) {
-        let alist = lis[index].getElementsByTagName("a");
-        for (let j = 0; j < alist.length; j++) {
-          let aspan = alist[j].querySelector("span");
-          if (aspan) {
-            aspan.remove();
-          }
-          menus.push({
-            "id": (index + 1) * 1e8 + j,
-            "title": escapeHtml((preName + alist[j].innerText.trim()).split(" ").map((str) => str.trim()).filter((str) => str.length > 0).join(" ")),
-            "href": alist[j].href,
-            "children": []
-          });
-        }
-      }
-      if (lis[index].className.indexOf("volume") > -1) {
-        preName = escapeHtml(cleanText(lis[index].querySelector("span").innerText.trim().split(" ").map((str) => str.trim()).filter((str) => str.length > 0).join(" ")));
-        let children = [];
-        let alist = lis[index].getElementsByTagName("a");
-        for (let j = 0; j < alist.length; j++) {
-          let aspan = alist[j].querySelector("span");
-          if (aspan) {
-            aspan.remove();
-          }
-          children.push({
-            "id": (index + 1) * 1e8 + j + 1,
-            "title": escapeHtml(cleanText(alist[j].innerText.trim().split(" ").map((str) => str.trim()).filter((str) => str.length > 0).join(" "))),
-            "href": alist[j].href,
-            "children": []
-          });
-        }
-        menus.push({
-          "id": (index + 1) * 1e8,
-          "title": preName,
-          "href": "",
-          "children": children
-        });
-      }
-    }
-    return menus;
   }
   function escapeHtml(unsafe) {
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -4145,103 +4247,6 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       return await this.db.table(tableName).offset(offset).limit(pageSize).toArray();
     }
   }
-  class ChapterCatalogModel {
-    constructor(doc = document, location2 = document.location) {
-      this.doc = doc;
-      this.location = location2;
-    }
-    getBookName() {
-      return this.doc.getElementsByClassName("info_box")[0].getElementsByTagName("h1")[0].innerText.trim();
-    }
-    getBookId() {
-      return new URL(this.location.href).searchParams.get("id") ?? "";
-    }
-    getChapterListTree() {
-      const menus = [];
-      const bookName = this.getBookName();
-      const bookId = this.getBookId();
-      const lis = this.doc.querySelectorAll(".catalog_ul > li");
-      for (let index = 0; index < lis.length; index++) {
-        let preName = "";
-        if (lis[index].className.indexOf("menu") > -1) {
-          const alist = lis[index].getElementsByTagName("a");
-          for (let j = 0; j < alist.length; j++) {
-            menus.push({
-              id: (index + 1) * 1e8 + j,
-              title: cleanText(preName + alist[j].innerText.trim()),
-              href: alist[j].href,
-              children: [],
-              spread: true,
-              field: "",
-              checked: alist[j].innerText.indexOf("new") > 0,
-              bookName,
-              bookId,
-              volumeName: ""
-            });
-          }
-        }
-        if (lis[index].className.indexOf("volume") > -1) {
-          preName = cleanText(lis[index].querySelector("span").innerText);
-          const children = [];
-          const alist = lis[index].getElementsByTagName("a");
-          for (let j = 0; j < alist.length; j++) {
-            children.push({
-              id: (index + 1) * 1e8 + j + 1,
-              title: cleanText(alist[j].innerText.trim()),
-              href: alist[j].href,
-              children: [],
-              spread: true,
-              field: "",
-              checked: alist[j].innerText.indexOf("new") > 0,
-              bookName,
-              bookId,
-              volumeName: preName
-            });
-          }
-          menus.push({
-            id: (index + 1) * 1e8,
-            title: cleanText(preName),
-            href: "",
-            children,
-            spread: true,
-            field: "",
-            bookName,
-            bookId,
-            volumeName: preName
-          });
-        }
-      }
-      return menus;
-    }
-    toChapterList(trees) {
-      const menus = [];
-      for (let index = 0; index < trees.length; index++) {
-        if (trees[index].children.length === 0) {
-          menus.push({
-            chapterId: trees[index].id,
-            chapterName: trees[index].title,
-            href: trees[index].href,
-            bookName: trees[index].bookName,
-            bookId: trees[index].bookId,
-            volumeName: trees[index].volumeName ?? ""
-          });
-        } else {
-          for (let j = 0; j < trees[index].children.length; j++) {
-            const preName = trees[index].title + " ";
-            menus.push({
-              chapterId: trees[index].children[j].id,
-              chapterName: preName + trees[index].children[j].title,
-              href: trees[index].children[j].href,
-              bookName: trees[index].children[j].bookName,
-              bookId: trees[index].children[j].bookId,
-              volumeName: trees[index].title
-            });
-          }
-        }
-      }
-      return menus;
-    }
-  }
   class BookListModel {
     constructor(doc = document, location2 = document.location) {
       this.doc = doc;
@@ -4249,7 +4254,11 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
     }
     getBookTree() {
       const menus = [];
-      const links = this.doc.querySelectorAll(".cover_box > a");
+      const links = this.doc.getElementsByClassName("cn-lcard");
+      if (!links || links.length === 0) {
+        console.warn("No book links found in the document.");
+        return menus;
+      }
       for (let index = 0; index < links.length; index++) {
         menus.push(this.createBookNode(links[index], index));
       }
@@ -4299,14 +4308,15 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
     }
     createBookNode(link, index) {
       const coverImg = link.getElementsByTagName("img")[0];
+      const title = link.getAttribute("data-title");
       return {
         id: this.getBookId(link.href, index),
-        title: link.title,
+        title,
         href: link.href,
         spread: true,
         field: "",
         checked: false,
-        cover_href: coverImg ? coverImg.src : ""
+        cover_href: coverImg?.src ?? ""
       };
     }
     getBookId(href, index) {
@@ -4514,7 +4524,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="bookListWindowDiv"></div></div>';
     }
     getTaskInfoTabContent() {
-      return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="exportAndOpenNewWindow"><fieldset class="layui-elem-field">  <legend>打开新窗口的信息</legend>  <div class="layui-field-box">      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>      <div style="margin-top: 12px;" class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="openNewWindowProgress">          <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>      </div>  </div></fieldset><fieldset class="layui-elem-field">  <legend>当前导出</legend>  <div class="layui-field-box">      <a id="exportInfoContentId" href="">暂无导出</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend>导出进度条</legend>  <div class="layui-field-box"><div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset><fieldset class="layui-elem-field">  <legend>章节入库</legend>  <div class="layui-field-box">      <a id="chapterDbInfoContentId" href="">暂无入库</a>      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;"></div>  </div></fieldset></div></div>';
+      return '<div style="height: 100%;width: 99%;padding-top: 10px;"><div id="exportAndOpenNewWindow"><fieldset class="layui-elem-field">  <legend style="color:red;">打开新窗口的信息</legend>  <div class="layui-field-box">      <a id="openNewWindowInfo" href="" style="color:blue;">暂未打开新窗口</a>      <div style="margin-top: 12px;" class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="openNewWindowProgress">          <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>      </div>  </div></fieldset><fieldset class="layui-elem-field">  <legend  style="color:red;">当前导出</legend>  <div class="layui-field-box">      <a id="exportInfoContentId" href="" style="color:blue;">暂无导出</a>  </div></fieldset><fieldset class="layui-elem-field">  <legend  style="color:red;">导出进度条</legend>  <div class="layui-field-box"><div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset><fieldset class="layui-elem-field">  <legend style="color:red;">章节入库</legend>  <div class="layui-field-box">      <a id="chapterDbInfoContentId" href="" style="color:blue;">暂无入库</a>      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;color:blue;"></div>  </div></fieldset></div></div>';
     }
   }
   class ListV2Controller {

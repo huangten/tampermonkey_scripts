@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍章节页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-04-25.22:04:12
+// @version    2026-08-19.14:46:23
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/chapter*
@@ -96,35 +96,60 @@
   }
   function saveContentToLocal(el = document) {
     try {
-      let title = getTitle(el);
-      let separator = "\n\n=============================================\n";
-      let content = "book name:\n" + getBookName2(el) + separator + "author:\n" + getAuthorInfo(el) + separator + "title:\n" + getTitle(el) + separator + "text:\n" + getTexts(el).map((s) => `　　${s}`).join("\n") + separator + "html:\n" + getLines(el).join("");
+      const title = getChapterTitleText(el);
+      const bookName = getBookName(el);
+      const authorInfo = getAuthorInfo(el);
+      const texts = getTexts(el).map((s) => `　　${s}`).join("\n");
+      const htmlLines = getLines(el).join("\n");
+      const separator = "\n\n=============================================\n";
+      const content = [
+        "book name:\n" + bookName,
+        "author:\n" + authorInfo,
+        "title:\n" + title,
+        "text:\n" + texts,
+        "html:\n" + htmlLines
+      ].join(separator);
       try {
-        const isFileSaverSupported = !!new Blob();
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-        fileSaver.saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
+        !!new Blob();
+        fileSaver.saveAs(
+          new Blob([content], { type: "text/plain;charset=utf-8" }),
+          [bookName, authorInfo, title].join(" ") + ".txt"
+        );
       } catch (e) {
         console.log(e);
       }
-      return true;
     } catch (e) {
       console.error("保存失败", e);
       return false;
     }
+    return true;
   }
-  function getTitle(el = document) {
-    let level = el.getElementsByClassName("title_box")[0].getElementsByTagName("p")[0] !== void 0 ? el.getElementsByClassName("title_box")[0].getElementsByTagName("p")[0].innerText + " " : "";
-    return cleanText(level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
+  function getChapterTitleText(el = document) {
+    const titleBox = el.getElementsByClassName("reader-content")[0];
+    const level = titleBox.getElementsByClassName("reader-vol")[0] !== void 0 ? titleBox.getElementsByClassName("reader-vol")[0].innerText + " " : "";
+    const title = titleBox.getElementsByTagName("h1")[0] !== void 0 ? titleBox.getElementsByTagName("h1")[0].innerText : "";
+    return cleanText(level + title);
+  }
+  function getChapterLines(el = document) {
+    const contentBox = el.getElementsByClassName("reader-content")[0];
+    if (!contentBox) {
+      return [];
+    }
+    const contentBody = contentBox.getElementsByClassName("reader-body")[0];
+    if (!contentBody) {
+      return [];
+    }
+    let lines = contentBody.getElementsByTagName("p");
+    return Array.from(lines);
   }
   function getTexts(el = document) {
-    let lines = el.getElementsByClassName("line");
+    const lines = getChapterLines(el);
     let texts = [];
     for (let i = 0; i < lines.length; i++) {
-      let spanElement = lines[i].getElementsByTagName("span");
-      if (spanElement.length > 0) {
-        for (let j = 0; j < spanElement.length; j++) {
-          console.log(spanElement[j]);
-          spanElement[j].parentNode.removeChild(spanElement[j]);
+      let elements = lines[i].getElementsByTagName("button");
+      if (elements.length > 0) {
+        for (let j = elements.length - 1; j >= 0; j--) {
+          elements[j].parentNode.removeChild(elements[j]);
         }
       }
       let imgElement = lines[i].getElementsByTagName("img");
@@ -145,21 +170,19 @@
     return texts;
   }
   function getLines(el = document) {
-    let lines = el.getElementsByClassName("line");
+    let lines = getChapterLines(el);
     let htmlLines = [];
     for (let i = 0; i < lines.length; i++) {
-      let spanElement = lines[i].getElementsByTagName("span");
-      if (spanElement.length > 0) {
-        for (let j = 0; j < spanElement.length; j++) {
-          console.log(spanElement[j]);
-          spanElement[j].parentNode.removeChild(spanElement[j]);
+      let elements = lines[i].getElementsByTagName("button");
+      if (elements.length > 0) {
+        for (let j = elements.length - 1; j >= 0; j--) {
+          elements[j].parentNode.removeChild(elements[j]);
         }
       }
       let imgElement = lines[i].getElementsByTagName("img");
       if (imgElement.length > 0) {
         for (let j = 0; j < imgElement.length; j++) {
-          htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>
-`);
+          htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
         }
       }
       if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
@@ -169,16 +192,24 @@
       if (t.length === 0) {
         continue;
       }
-      htmlLines.push(`<p>${t}</p>
-`);
+      htmlLines.push(`<p>${t}</p>`);
     }
     return htmlLines;
   }
-  function getBookName2(el = document) {
-    return cleanText(el.getElementsByClassName("chapter_box")[0].getElementsByClassName("title_box")[0].getElementsByTagName("a")[0].innerText.trim());
+  function getBookName(el = document) {
+    return cleanText(el.getElementById("readerBook")?.innerText.trim());
   }
   function getAuthorInfo(el = document) {
-    return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
+    const metaBox = el.getElementsByClassName("reader-meta")[0];
+    if (!metaBox) {
+      return "";
+    }
+    const meta = metaBox.innerHTML.trim();
+    const authorMatch = meta.match(/(.*?) 著 ·/);
+    if (authorMatch && authorMatch[1]) {
+      return cleanText(authorMatch[1].trim());
+    }
+    return "";
   }
   class ChapterPageModel {
     constructor(doc = document) {
@@ -188,7 +219,7 @@
       this.htmlLines = [];
     }
     load() {
-      this.titleText = this.parseTitleText();
+      this.titleText = getChapterTitleText();
       this.texts = getTexts(this.doc);
       this.htmlLines = getLines(this.doc);
     }
@@ -214,29 +245,31 @@
       return saveContentToLocal(this.doc);
     }
     getPrevChapterElement() {
-      return this.getBottomBoxElement(0);
+      return this.getBottomBoxElement("prev");
     }
     getBookElement() {
-      return this.getBottomBoxElement(1);
+      const topBox = this.doc.getElementsByClassName("reader-top")[0];
+      if (!topBox) {
+        return null;
+      }
+      this.doc.getElementById("readerBook")?.click();
     }
     getNextChapterElement() {
-      return this.getBottomBoxElement(2);
-    }
-    parseTitleText() {
-      const titleBox = this.doc.getElementsByClassName("title_box")[0];
-      const level = titleBox.getElementsByTagName("p")[0] !== void 0 ? titleBox.getElementsByTagName("p")[0].innerText + " " : "";
-      return cleanText(level + titleBox.getElementsByTagName("h2")[0].innerText);
+      return this.getBottomBoxElement("next");
     }
     getBottomBoxElement(index) {
-      const bottomBox = this.doc.getElementsByClassName("bottom_box")[0];
+      const bottomBox = this.doc.getElementsByClassName("reader-bottom")[0];
       if (!bottomBox) {
         return null;
       }
-      let el = bottomBox.firstElementChild;
-      for (let i = 0; i < index && el; i++) {
-        el = el.nextElementSibling;
+      const buttons = bottomBox.getElementsByTagName("button");
+      for (const button of buttons) {
+        const attribute = button.getAttribute("data-reader-action");
+        if (attribute === index) {
+          return button?.click();
+        }
       }
-      return el;
+      return null;
     }
   }
   class ChapterFixbarView {
@@ -345,13 +378,13 @@
           this.model.saveToLocal();
           break;
         case "上一章":
-          this.clickIfLink(this.model.getPrevChapterElement());
+          this.model.getPrevChapterElement();
           break;
         case "本书":
-          this.clickIfLink(this.model.getBookElement());
+          this.model.getBookElement();
           break;
         case "下一章":
-          this.clickIfLink(this.model.getNextChapterElement());
+          this.model.getNextChapterElement();
           break;
       }
     }

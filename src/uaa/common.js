@@ -1,52 +1,5 @@
-import {cleanText, getFileNameFromPath} from "../common/common.js";
-import {saveAs} from "file-saver";
-
-export function getMenuTree(doc = document) {
-    let menus = [];
-    let lis = doc.querySelectorAll(".catalog_ul > li");
-    for (let index = 0; index < lis.length; index++) {
-        let preName = "";
-        if (lis[index].className.indexOf("menu") > -1) {
-            let alist = lis[index].getElementsByTagName("a");
-            for (let j = 0; j < alist.length; j++) {
-                menus.push({
-                    'id': (index + 1) * 100000000 + j,
-                    "title": cleanText(preName + alist[j].innerText.replace("new", "").trim()),
-                    "href": alist[j].href,
-                    "children": [],
-                    "spread": true,
-                    "field": "",
-                    "checked": alist[j].innerText.indexOf("new") > 0,
-                });
-            }
-        }
-        if (lis[index].className.indexOf("volume") > -1) {
-            preName = cleanText(lis[index].querySelector("span").innerText);
-            let children = [];
-            let alist = lis[index].getElementsByTagName("a");
-            for (let j = 0; j < alist.length; j++) {
-                children.push({
-                    'id': (index + 1) * 100000000 + j + 1,
-                    "title": cleanText(alist[j].innerText.replace("new", "").trim()),
-                    "href": alist[j].href,
-                    "children": [],
-                    "spread": true,
-                    "field": "",
-                    "checked": alist[j].innerText.indexOf("new") > 0,
-                });
-            }
-            menus.push({
-                'id': (index + 1) * 100000000,
-                "title": cleanText(preName),
-                "href": "",
-                "children": children,
-                "spread": true,
-                "field": "",
-            });
-        }
-    }
-    return menus;
-}
+import { cleanText, getFileNameFromPath } from "../common/common.js";
+import { saveAs } from "file-saver";
 
 export function getMenuArray(trees) {
     let menus = [];
@@ -180,47 +133,69 @@ export class CommonRes {
 
 export function saveContentToLocal(el = document) {
     try {
-        let title = getTitle(el);
-        let separator = "\n\n=============================================\n";
-        let content = "book name:\n" + getBookName2(el)
-            + separator +
-            "author:\n" + getAuthorInfo(el)
-            + separator +
-            "title:\n" + getTitle(el)
-            + separator +
-            "text:\n" + getTexts(el).map((s) => `　　${s}`).join('\n')
-            + separator +
-            "html:\n" + getLines(el).join('');
+        const title = getChapterTitleText(el);
+        const bookName = getBookName(el);
+        const authorInfo = getAuthorInfo(el);
+        const texts = getTexts(el).map((s) => `　　${s}`).join('\n');
+        const htmlLines = getLines(el).join('\n');
+        const separator = "\n\n=============================================\n";
+        const content = [
+            "book name:\n" + bookName,
+            "author:\n" + authorInfo,
+            "title:\n" + title,
+            "text:\n" + texts,
+            "html:\n" + htmlLines
+        ].join(separator);
         try {
-            const isFileSaverSupported = !!new Blob;
-            const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
-            saveAs(blob, getBookName2(el) + " " + getAuthorInfo(el) + " " + title + ".txt");
+            !!new Blob;
+            saveAs(
+                new Blob([content], { type: "text/plain;charset=utf-8" }),
+                [bookName, authorInfo, title].join(' ') + ".txt"
+            );
         } catch (e) {
             console.log(e);
         }
-        return true;
-
     } catch (e) {
         console.error("保存失败", e);
         return false;
     }
+    return true;
 }
 
-export function getTitle(el = document) {
-    let level = el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0] !== undefined ?
-        el.getElementsByClassName("title_box")[0].getElementsByTagName('p')[0].innerText + " " : "";
-    return cleanText(level + el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].innerText);
+export function getChapterTitleText(el = document) {
+    const titleBox = el.getElementsByClassName("reader-content")[0];
+    const level = titleBox.getElementsByClassName('reader-vol')[0] !== undefined
+        ? titleBox.getElementsByClassName('reader-vol')[0].innerText + " "
+        : "";
+    const title = titleBox.getElementsByTagName("h1")[0] !== undefined
+        ? titleBox.getElementsByTagName("h1")[0].innerText
+        : "";
+    return cleanText(level + title);
+}
+
+
+function getChapterLines(el = document) {
+    const contentBox = el.getElementsByClassName("reader-content")[0];
+    if (!contentBox) {
+        return [];
+    }
+    const contentBody = contentBox.getElementsByClassName("reader-body")[0];
+    if (!contentBody) {
+        return [];
+    }
+    let lines = contentBody.getElementsByTagName("p");
+    return Array.from(lines);
 }
 
 export function getTexts(el = document) {
-    let lines = el.getElementsByClassName("line");
+    const lines = getChapterLines(el);
     let texts = [];
     for (let i = 0; i < lines.length; i++) {
-        let spanElement = lines[i].getElementsByTagName('span');
-        if (spanElement.length > 0) {
-            for (let j = 0; j < spanElement.length; j++) {
-                console.log(spanElement[j])
-                spanElement[j].parentNode.removeChild(spanElement[j]);
+        let elements = lines[i].getElementsByTagName('button');
+        if (elements.length > 0) {
+            for (let j = elements.length - 1; j >= 0; j--) {
+                // console.log(spanElement[j])
+                elements[j].parentNode.removeChild(elements[j]);
             }
         }
         let imgElement = lines[i].getElementsByTagName('img');
@@ -244,20 +219,20 @@ export function getTexts(el = document) {
 }
 
 export function getLines(el = document) {
-    let lines = el.getElementsByClassName("line");
+    let lines = getChapterLines(el);
     let htmlLines = [];
     for (let i = 0; i < lines.length; i++) {
-        let spanElement = lines[i].getElementsByTagName('span');
-        if (spanElement.length > 0) {
-            for (let j = 0; j < spanElement.length; j++) {
-                console.log(spanElement[j])
-                spanElement[j].parentNode.removeChild(spanElement[j]);
+        let elements = lines[i].getElementsByTagName('button');
+        if (elements.length > 0) {
+            for (let j = elements.length - 1; j >= 0; j--) {
+                // console.log(spanElement[j])
+                elements[j].parentNode.removeChild(elements[j]);
             }
         }
         let imgElement = lines[i].getElementsByTagName('img');
         if (imgElement.length > 0) {
             for (let j = 0; j < imgElement.length; j++) {
-                htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>\n`);
+                htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
             }
         }
 
@@ -268,26 +243,26 @@ export function getLines(el = document) {
         if (t.length === 0) {
             continue;
         }
-        htmlLines.push(`<p>${t}</p>\n`);
+        htmlLines.push(`<p>${t}</p>`);
 
     }
     return htmlLines;
 }
 
-
-export function getBookName2(el = document) {
-    return cleanText(el.getElementsByClassName('chapter_box')[0]
-        .getElementsByClassName("title_box")[0]
-        .getElementsByTagName('a')[0].innerText.trim())
-}
-
 export function getBookName(el = document) {
-    let htmlTitle = el.getElementsByTagName("title")[0].innerText;
-    let bookName = htmlTitle.split(" | ")[0].split(" - ").pop();
-    bookName = bookName.replaceAll("/", "_");
-    return bookName;
+    return cleanText(el.getElementById('readerBook')?.innerText.trim())
 }
 
 export function getAuthorInfo(el = document) {
-    return cleanText(el.getElementsByClassName("title_box")[0].getElementsByTagName("h2")[0].nextElementSibling.getElementsByTagName("span")[0].innerText);
+    const metaBox = el.getElementsByClassName("reader-meta")[0];
+    if (!metaBox) {
+        return "";
+    }
+    const meta = metaBox.innerHTML.trim();
+    // tttjjj_200 著 · 8448字
+    const authorMatch = meta.match(/(.*?) 著 ·/);
+    if (authorMatch && authorMatch[1]) {
+        return cleanText(authorMatch[1].trim());
+    }
+    return '';
 }

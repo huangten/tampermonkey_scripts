@@ -1,5 +1,5 @@
 import { cleanText } from "../../common/common.js";
-import { getLines, getTexts, saveContentToLocal } from "../common.js";
+import {getChapterTitleText, getLines, getTexts, saveContentToLocal } from "../common.js";
 
 export class ChapterPageModel {
     constructor(doc = document) {
@@ -10,7 +10,7 @@ export class ChapterPageModel {
     }
 
     load() {
-        this.titleText = this.parseTitleText();
+        this.titleText = getChapterTitleText();
         this.texts = getTexts(this.doc);
         this.htmlLines = getLines(this.doc);
     }
@@ -44,35 +44,33 @@ export class ChapterPageModel {
     }
 
     getPrevChapterElement() {
-        return this.getBottomBoxElement(0);
+        return this.getBottomBoxElement("prev");
     }
 
     getBookElement() {
-        return this.getBottomBoxElement(1);
+        const topBox = this.doc.getElementsByClassName("reader-top")[0];
+        if (!topBox) {
+            return null;
+        }
+        this.doc.getElementById("readerBook")?.click();
     }
 
     getNextChapterElement() {
-        return this.getBottomBoxElement(2);
-    }
-
-    parseTitleText() {
-        const titleBox = this.doc.getElementsByClassName("title_box")[0];
-        const level = titleBox.getElementsByTagName('p')[0] !== undefined
-            ? titleBox.getElementsByTagName('p')[0].innerText + " "
-            : "";
-        return cleanText(level + titleBox.getElementsByTagName("h2")[0].innerText);
+        return this.getBottomBoxElement("next");
     }
 
     getBottomBoxElement(index) {
-        const bottomBox = this.doc.getElementsByClassName("bottom_box")[0];
+        const bottomBox = this.doc.getElementsByClassName("reader-bottom")[0];
         if (!bottomBox) {
             return null;
         }
-
-        let el = bottomBox.firstElementChild;
-        for (let i = 0; i < index && el; i++) {
-            el = el.nextElementSibling;
+        const buttons = bottomBox.getElementsByTagName("button");
+        for (const button of buttons) {
+            const attribute = button.getAttribute("data-reader-action");
+            if (attribute === index) {
+                return button?.click();
+            }
         }
-        return el;
+        return null;
     }
 }

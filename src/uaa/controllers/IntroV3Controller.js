@@ -19,7 +19,8 @@ import { InfoWindowView } from "../views/intro/InfoWindowView.js";
 import { topLayerMsg } from "../views/intro/layerUtils.js";
 
 export class IntroV3Controller {
-    constructor() {
+    constructor(doc = document) {
+        this.doc = doc;
         this.db = new DatabaseService();
         this.worker = new WorkerSingleton();
         this.catalog = new ChapterCatalogModel();
@@ -73,7 +74,7 @@ export class IntroV3Controller {
                 return this.downloadAll();
             },
             '复制书名': () => copyContext(this.catalog.getBookName()),
-            '导出本书EPUB文件': () => buildEpub(document.location.href),
+            '导出本书EPUB文件': () => buildEpub(this.doc),
             '启动': () => this.startWorker(),
             '停止': () => this.stopWorker(),
             '恢复残留': () => this.recoverStaleSystemState(),

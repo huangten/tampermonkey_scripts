@@ -221,23 +221,23 @@ export class BookListWindowView {
         return '<div style="height: 100%;width: 99%;padding-top: 10px;">' +
             '<div id="exportAndOpenNewWindow">' +
             '<fieldset class="layui-elem-field">' +
-            '  <legend>打开新窗口的信息</legend>' +
+            '  <legend style="color:red;">打开新窗口的信息</legend>' +
             '  <div class="layui-field-box">' +
-            '      <a id="openNewWindowInfo" href="">暂未打开新窗口</a>' +
+            '      <a id="openNewWindowInfo" href="" style="color:blue;">暂未打开新窗口</a>' +
             '      <div style="margin-top: 12px;" class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="openNewWindowProgress">' +
             '          <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>' +
             '      </div>' +
             '  </div>' +
             '</fieldset>' +
             '<fieldset class="layui-elem-field">' +
-            '  <legend>当前导出</legend>' +
+            '  <legend  style="color:red;">当前导出</legend>' +
             '  <div class="layui-field-box">' +
-            '      <a id="exportInfoContentId" href="">暂无导出</a>' +
+            '      <a id="exportInfoContentId" href="" style="color:blue;">暂无导出</a>' +
             '  </div>' +
             '</fieldset>' +
 
             '<fieldset class="layui-elem-field">' +
-            '  <legend>导出进度条</legend>' +
+            '  <legend  style="color:red;">导出进度条</legend>' +
             '  <div class="layui-field-box">' +
             '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="exportProgress">' +
             ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
@@ -245,10 +245,10 @@ export class BookListWindowView {
             '  </div>' +
             '</fieldset>' +
             '<fieldset class="layui-elem-field">' +
-            '  <legend>章节入库</legend>' +
+            '  <legend style="color:red;">章节入库</legend>' +
             '  <div class="layui-field-box">' +
-            '      <a id="chapterDbInfoContentId" href="">暂无入库</a>' +
-            '      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;"></div>' +
+            '      <a id="chapterDbInfoContentId" href="" style="color:blue;">暂无入库</a>' +
+            '      <div id="chapterDbHistoryBodyId" style="margin-top: 10px;max-height: 220px;overflow-y: auto;color:blue;"></div>' +
             '  </div>' +
             '</fieldset>' +
             '</div>' +

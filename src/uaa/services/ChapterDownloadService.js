@@ -61,7 +61,7 @@ export class ChapterDownloadService {
             iframe.onload = async () => {
                 try {
                     this.assertChapterDocumentHealth(iframe.contentDocument, chapter);
-                    await waitForElement(iframe.contentDocument, '.line', 1000 * 25 * 60);
+                    await waitForElement(iframe.contentDocument, '.reader-content', 1000 * 25 * 60);
                     clearTimeout(timeout);
                     resolve();
                 } catch (err) {

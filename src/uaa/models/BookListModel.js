@@ -6,7 +6,11 @@ export class BookListModel {
 
     getBookTree() {
         const menus = [];
-        const links = this.doc.querySelectorAll(".cover_box > a");
+        const links = this.doc.getElementsByClassName("cn-lcard");
+        if (!links || links.length === 0) {
+            console.warn("No book links found in the document.");
+            return menus;
+        }
         for (let index = 0; index < links.length; index++) {
             menus.push(this.createBookNode(links[index], index));
         }
@@ -62,14 +66,15 @@ export class BookListModel {
 
     createBookNode(link, index) {
         const coverImg = link.getElementsByTagName('img')[0];
+        const title = link.getAttribute('data-title');
         return {
             id: this.getBookId(link.href, index),
-            title: link.title,
+            title: title,
             href: link.href,
             spread: true,
             field: "",
             checked: false,
-            cover_href: coverImg ? coverImg.src : ''
+            cover_href: coverImg?.src ?? ''
         };
     }
 

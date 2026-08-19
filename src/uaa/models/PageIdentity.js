@@ -9,10 +9,13 @@ export function getOrCreatePageId(storage = sessionStorage) {
 }
 
 export function getPageLabel(pageId, doc = document) {
-    const bookName = doc.getElementsByClassName('info_box')[0]
-        ?.getElementsByTagName('h1')[0]
-        ?.innerText
-        ?.trim() || '未知书籍';
+    const bookName = doc.getElementsByTagName('h1')[0]?.cloneNode(true);
+    const spans = bookName?.getElementsByTagName('span');
+    if (spans) {
+        for (const span of spans) {
+            span.remove();
+        }
+    }
     return `${bookName} [${pageId.slice(0, 8)}]`;
 }
 
