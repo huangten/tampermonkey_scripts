@@ -131,7 +131,7 @@ export async function buildEpub(url, options = {}) {
         if (c.children.length === 0) {
             textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
             ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(c.title))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>
 </navPoint>`);
         } else {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.17:42:06
+// @version    2026-08-19.17:45:55
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -632,7 +632,7 @@
       if (c.children.length === 0) {
         textFolder.file(`${id}.xhtml`, genHtmlPage(c.title));
         ncxNav.push(`<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(c.title))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>
 </navPoint>`);
       } else {
