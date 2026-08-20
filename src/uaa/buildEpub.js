@@ -1,8 +1,8 @@
-import { cleanText } from "../common/common.js";
-import { CommonRes } from "./common.js";
+import {cleanText} from "../common/common.js";
+import {CommonRes} from "./common.js";
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
-import { ChapterCatalogModel } from "./models/ChapterCatalogModel.js";
+import {saveAs} from "file-saver";
+import {ChapterCatalogModel} from "./models/ChapterCatalogModel.js";
 
 function fetchBookIntro(url) {
     return fetch(url)
@@ -225,50 +225,6 @@ ${ncxNav.join('\n')}
 
 }
 
-function getChapterMenu(doc) {
-    let menus = [];
-    let lis = doc.querySelectorAll(".catalog_ul > li");
-    for (let index = 0; index < lis.length; index++) {
-        let preName = "";
-        if (lis[index].className.indexOf("menu") > -1) {
-            let alist = lis[index].getElementsByTagName("a");
-            for (let j = 0; j < alist.length; j++) {
-                let aspan = alist[j].querySelector("span");
-                if (aspan) {
-                    aspan.remove()
-                }
-                menus.push({
-                    'id': (index + 1) * 100000000 + j,
-                    "title": escapeHtml((preName + alist[j].innerText.trim()).split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')),
-                    "href": alist[j].href,
-                    "children": [],
-                });
-            }
-        }
-        if (lis[index].className.indexOf("volume") > -1) {
-            preName = escapeHtml(cleanText(lis[index].querySelector("span").innerText.trim().split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' ')));
-            let children = [];
-            let alist = lis[index].getElementsByTagName("a");
-            for (let j = 0; j < alist.length; j++) {
-                let aspan = alist[j].querySelector("span");
-                if (aspan) {
-                    aspan.remove()
-                }
-                children.push({
-                    'id': (index + 1) * 100000000 + j + 1,
-                    "title": escapeHtml(cleanText(alist[j].innerText.trim().split(' ').map(str => str.trim()).filter(str => str.length > 0).join(' '))),
-                    "href": alist[j].href,
-                    "children": [],
-                });
-            }
-            menus.push({
-                'id': (index + 1) * 100000000, "title": preName, "href": "", "children": children,
-            });
-        }
-    }
-    return menus;
-}
-
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, "&amp;")
@@ -345,8 +301,7 @@ function genCoverHtmlPage() {
 }
 
 function genCoverHtmlPageV2() {
-    const htmlStr =
-        `<?xml version="1.0" encoding="utf-8"?>
+    return `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
@@ -361,7 +316,6 @@ function genCoverHtmlPageV2() {
 </body>
 </html>
 `;
-    return htmlStr;
 }
 
 
