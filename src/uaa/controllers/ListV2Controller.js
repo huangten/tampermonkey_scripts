@@ -35,6 +35,7 @@ export class ListV2Controller {
     }
 
     init() {
+        this.model.adjustUI();
         this.view.renderFixbar({
             onOpenBookList: () => this.openBookListWindow()
         });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.22:52:06
+// @version    2026-08-22.12:45:18
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -625,7 +625,7 @@ ${ncxNav.join("\n")}
     return serializeXML(doc);
   }
   function genCoverHtmlPageV2() {
-    const htmlStr = `<?xml version="1.0" encoding="utf-8"?>
+    return `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
@@ -640,7 +640,6 @@ ${ncxNav.join("\n")}
 </body>
 </html>
 `;
-    return htmlStr;
   }
   function genFyHtmlPage(book = {
     name: "书名",

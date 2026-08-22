@@ -4,6 +4,18 @@ export class BookListModel {
         this.location = location;
     }
 
+
+    adjustUI(){
+        const cheros = this.doc.getElementsByClassName('cn-chero');
+        if (cheros) {
+            for (const chero of [...cheros]){
+                chero.remove();
+            }
+        }
+        this.doc.getElementById('cnEntries')?.style.setProperty("padding-top", "60px");
+    }
+
+
     getBookTree() {
         const menus = [];
         const links = this.doc.getElementsByClassName("cn-lcard");

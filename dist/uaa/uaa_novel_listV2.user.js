@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍列表页 V2 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-19.22:51:58
+// @version    2026-08-22.12:45:04
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/list*
@@ -666,7 +666,7 @@ ${ncxNav.join("\n")}
     return serializeXML(doc);
   }
   function genCoverHtmlPageV2() {
-    const htmlStr = `<?xml version="1.0" encoding="utf-8"?>
+    return `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
@@ -681,7 +681,6 @@ ${ncxNav.join("\n")}
 </body>
 </html>
 `;
-    return htmlStr;
   }
   function genFyHtmlPage(book = {
     name: "书名",
@@ -4252,6 +4251,15 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       this.doc = doc;
       this.location = location2;
     }
+    adjustUI() {
+      const cheros = this.doc.getElementsByClassName("cn-chero");
+      if (cheros) {
+        for (const chero of [...cheros]) {
+          chero.remove();
+        }
+      }
+      this.doc.getElementById("cnEntries")?.style.setProperty("padding-top", "60px");
+    }
     getBookTree() {
       const menus = [];
       const links = this.doc.getElementsByClassName("cn-lcard");
@@ -4559,6 +4567,7 @@ async getPaged(tableName, pageNum = 1, pageSize = 10) {
       this.configureExportEpubScheduler();
     }
     init() {
+      this.model.adjustUI();
       this.view.renderFixbar({
         onOpenBookList: () => this.openBookListWindow()
       });
