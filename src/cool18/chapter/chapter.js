@@ -12,6 +12,10 @@ function run() {
         util.fixbar({
             bars: [
                 {
+                    type: '复制书名',
+                    icon: 'layui-icon-auz'
+                },
+                {
                     type: '复制内容',
                     icon: 'layui-icon-success'
                 }, {
@@ -36,7 +40,7 @@ function run() {
             ],
             default: false,
             css: {bottom: "21%"},
-            bgcolor: '#0000ff',
+            bgcolor: '#ad2fec',
             margin: 0,
             on: { // 任意事件 --  v2.8.0 新增
                 mouseenter: function (type) {
@@ -50,6 +54,9 @@ function run() {
                 }
             },
             click: function (type) {
+                if (type === "复制书名") {
+                    getBookname();
+                }
                 if (type === "复制内容") {
                     getPreTagContent();
                 }
@@ -81,6 +88,19 @@ function getPreTagContent() {
     copyContext(getPreElement().innerText).then();
 }
 
+
+function getBookname() {
+    const titleElements = document.getElementsByClassName('main-title');
+    const titleContent = titleElements[0].innerText.trim();
+    let bookName = titleContent.match(/^【(.*?)】/);
+    if (!bookName) {
+        bookName = titleContent;
+    } else {
+        bookName = bookName[1];
+    }
+    copyContext(bookName).then();
+    return bookName;
+}
 
 function downloadChapterContent() {
     const titleElements = document.getElementsByClassName('main-title');
@@ -138,7 +158,7 @@ function copyChapterHtml() {
 
 function saveContentToLocationTxtFile(filename, content) {
     try {
-        const isFileSaverSupported = !!new Blob;
+        !!new Blob;
         const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
         saveAs(blob, filename + ".txt");
     } catch (e) {
