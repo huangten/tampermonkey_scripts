@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       sehuatang 列表页 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-01-28.23:26:10
+// @version    2026-09-10.19:12:08
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/forum*
@@ -110,6 +110,7 @@
         iframe = null;
         await sleep(50);
       } catch (e) {
+        iframe = null;
         console.error("清空 iframe 失败", e);
       }
       console.log("✅ iframe 已完全清理并销毁");

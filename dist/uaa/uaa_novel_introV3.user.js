@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-08-22.12:45:18
+// @version    2026-09-10.19:10:16
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -141,6 +141,7 @@
         iframe = null;
         await sleep(50);
       } catch (e) {
+        iframe = null;
         console.error("清空 iframe 失败", e);
       }
       console.log("✅ iframe 已完全清理并销毁");

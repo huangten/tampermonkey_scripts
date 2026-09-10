@@ -124,6 +124,7 @@ export async function destroyIframeElementAsync(iframe) {
             iframe = null;
             await sleep(50);
         } catch (e) {
+            iframe = null;
             console.error("清空 iframe 失败", e);
         }
         console.log("✅ iframe 已完全清理并销毁");
