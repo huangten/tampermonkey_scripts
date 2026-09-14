@@ -73,7 +73,7 @@ export class IntroV3Controller {
                 this.infoWindow.minimize();
                 return this.downloadAll();
             },
-            '删除本书': () => {return this.deleteBookById()},
+            '删除本书': () => this.deleteBookById(),
             '复制书名': () => copyContext(this.catalog.getBookName()),
             '导出本书EPUB文件': () => buildEpub(this.doc),
             '启动': () => this.startWorker(),
