@@ -1,12 +1,7 @@
-import {copyContext, init} from '../../common/common.js'
+import {copyContext} from "../../common/common.js";
 import {saveAs} from "file-saver";
 
-
-init().then(() => {
-    run();
-});
-
-function run() {
+export function run() {
     layui.use(function () {
         const util = layui.util;
         util.fixbar({
@@ -19,23 +14,20 @@ function run() {
                     type: '复制内容',
                     icon: 'layui-icon-success'
                 }, {
-                    type: '下载内容',
+                    type: '原样下载',
                     icon: 'layui-icon-download-circle'
+                }
+                , {
+                    type: '添加空白符下载',
+                    icon: 'layui-icon-release'
                 }
                 , {
                     type: '复制内容HTML',
                     icon: 'layui-icon-fonts-code'
                 }
                 , {
-                    type: '复制内容（第二版）',
-                    icon: 'layui-icon-vercode'
-                }, {
-                    type: '下载内容（第二版）',
-                    icon: 'layui-icon-download-circle'
-                }
-                , {
-                    type: '复制内容HTML（第二版）',
-                    icon: 'layui-icon-code-circle'
+                    type: '调整排版并复制',
+                    icon: 'layui-icon-spread-left'
                 }
             ],
             default: false,
@@ -60,20 +52,17 @@ function run() {
                 if (type === "复制内容") {
                     getPreTagContent();
                 }
-                if (type === "下载内容") {
+                if (type === "原样下载") {
                     downloadChapterContent();
+                }
+                if (type === "添加空白符下载") {
+                    downloadChapterContent('blank');
                 }
                 if (type === "复制内容HTML") {
                     getPreTagContentHtml();
                 }
-                if (type === "复制内容（第二版）") {
+                if (type === "调整排版并复制") {
                     copyChapterContent();
-                }
-                if (type === "下载内容（第二版）") {
-                    downloadChapterContentV2()
-                }
-                if (type === "复制内容HTML（第二版）") {
-                    copyChapterHtml();
                 }
             }
         });
@@ -102,18 +91,46 @@ function getBookname() {
     return bookName;
 }
 
-function downloadChapterContent() {
+function downloadChapterContent(tag) {
     const titleElements = document.getElementsByClassName('main-title');
     const titleContent = titleElements[0].innerText.trim();
     // const bookName = titleContent.match(/^【(.*?)】/)[1];
     // const author = titleContent.match(/(.*?)作者(.*?)/)
     // console.log(bookName)
-    const title = titleContent.replace(/^【(.*?)】/, "$1");
-    const contents = getPreElement().innerText.split('\n')
-        .filter(Boolean).map((c) => `${c.trimEnd()}`);
-    const content = title
-        + '\n\n\n\n' + contents.join('\n') + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+    let title = titleContent.replace(/^【(.*?)】/, "$1");
+
+    const prentTitleElements =  document.getElementsByClassName('reply-info');
+    if (prentTitleElements.length > 0) {
+        try {
+            const prentTitle = prentTitleElements[0].getElementsByTagName('a')[0].innerText.trim();
+            const pTitle = prentTitle.replace(/^【(.*?)】/, "$1");
+            title = title + '\n\n' +`回复于：${pTitle}`;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const content = title +
+        '\n\n' +
+        getChapterContent(tag) +
+        '\n\n\n\n\n\n\n';
+
     saveContentToLocationTxtFile(title, content);
+}
+
+function getChapterContent(tag = '') {
+    return getPreElement().innerText.split('\n')
+        .filter(Boolean).map((c) => {
+            c = c.trimEnd();
+            // const a = c.length;
+
+            // const b = c.length;
+            if (tag === 'blank') {
+                c = c.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, '');
+                c = `　　${c}`;
+            }
+            return c;
+        }).join('\n');
 }
 
 function getPreTagContentHtml() {
@@ -121,7 +138,7 @@ function getPreTagContentHtml() {
 }
 
 function getPreElementV2() {
-    const preElement = document.getElementsByTagName('pre')[0];
+    const preElement = getPreElement();
     const brs = preElement.getElementsByTagName('br');
     if (brs) {
         for (let i = brs.length - 1; i >= 0; i--) {
@@ -133,27 +150,6 @@ function getPreElementV2() {
 
 function copyChapterContent() {
     copyContext(getPreElementV2().innerText.split('\n').filter(Boolean).join('\n')).then();
-}
-
-function downloadChapterContentV2() {
-    const titleElements = document.getElementsByClassName('main-title');
-    const titleContent = titleElements[0].innerText.trim();
-    // const bookName = titleContent.match(/^【(.*?)】/)[1];
-    // const author = titleContent.match(/(.*?)作者(.*?)/)
-    // console.log(bookName)
-    const title = titleContent.replace(/^【(.*?)】/, "$1");
-    const contents = getPreElementV2().innerText.split('\n')
-        .filter(Boolean)
-        .map((c) => `${c.trimEnd()}`);
-    const content = title
-        + '\n\n\n\n' + contents.join('\n')
-        // + '\n\n\n\n' + contents.map((c) => `<p>${c.trim()}</p>`).join('\n')
-        + '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
-    saveContentToLocationTxtFile(title, content);
-}
-
-function copyChapterHtml() {
-    copyContext(getPreElementV2().innerHTML).then();
 }
 
 function saveContentToLocationTxtFile(filename, content) {

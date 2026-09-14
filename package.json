@@ -17,7 +17,9 @@
 
     "dev:cool18_chapter": "cross-env TARGET_SCRIPT=cool18_chapter vite --config vite.config.cool18.js",
     "build:cool18_chapter": "cross-env TARGET_SCRIPT=cool18_chapter vite build --config vite.config.cool18.js",
-    "build_cool18:all": "npm run build:cool18_chapter",
+
+
+
     "dev:sshuba_chapter": "cross-env TARGET_SCRIPT=sshuba_chapter vite --config vite.config.sshuba.js",
     "build:sshuba_chapter": "cross-env TARGET_SCRIPT=sshuba_chapter vite build --config vite.config.sshuba.js",
     "build_sshuba:all": "npm run build:sshuba_chapter",
@@ -39,18 +41,18 @@
     "@types/file-saver": "^2.0.7",
     "@types/layui-src": "^2.6.4",
     "@types/node": "^25.0.3",
-    "@types/tampermonkey": "^5.0.5",
-    "@vitejs/plugin-vue": "^6.0.3",
+    "@types/tampermonkey": "^5.5.0",
+    "@vitejs/plugin-vue": "^6.0.9",
     "cross-env": "^10.1.0",
-    "dayjs": "^1.11.19",
-    "dexie": "^4.4.2",
-    "eslint": "^9.39.2",
+    "dayjs": "^1.11.23",
+    "dexie": "^4.4.6",
+    "eslint": "^10.10.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
-    "unplugin-auto-import": "^20.3.0",
-    "unplugin-vue-components": "^30.0.0",
-    "vite": "^7.1.3",
-    "vite-plugin-monkey": "^7.1.1",
+    "unplugin-auto-import": "^21.1.0",
+    "unplugin-vue-components": "^32.1.0",
+    "vite": "^8.3.0",
+    "vite-plugin-monkey": "^8.1.1",
     "vue": "^3.5.26"
   }
 }

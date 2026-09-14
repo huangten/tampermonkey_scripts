@@ -6,28 +6,14 @@ import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
-    cool18_list: {
-        entry: 'src/cool18/list/list.js',
-        userscript: {
-            name: 'cool18 列表页 增强',
-            author: 'YourName',
-            match: ['https://www.uaa.com/novel/intro*'],
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
-            namespace: 'https://tampermonkey.net/',
-            version: getVersion(),
-            noframes: true,
-        },
-        build: {
-            outDir: "cool18",
-            fileName: "cool18_list"
-        }
-    },
     cool18_chapter: {
-        entry: 'src/cool18/chapter/chapter.js',
+        entry: 'src/cool18/main.js',
         userscript: {
             name: 'cool18 章节页 增强',
             author: 'YourName',
-            match: ['*://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid=*'],
+            match: [
+                '*://*.cool18.com/*'
+            ],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=cool18.com',
             namespace: 'https://tampermonkey.net/',
             version: getVersion(),
