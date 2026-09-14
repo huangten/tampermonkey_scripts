@@ -1,7 +1,7 @@
-import { copyContext } from "../../common/common.js";
-import { buildEpub } from "../buildEpub.js";
-import { DatabaseService } from "../db/DatabaseService.js";
-import { WorkerSingleton } from "../common/WorkerSingleton.js";
+import {copyContext} from "../../common/common.js";
+import {buildEpub} from "../buildEpub.js";
+import {DatabaseService} from "../db/DatabaseService.js";
+import {WorkerSingleton} from "../common/WorkerSingleton.js";
 import {
     CHAPTER_TREE_ID,
     DEBUG_TABLE_ID,
@@ -9,14 +9,14 @@ import {
     DOWNLOADER_INTERVAL,
     INFO_WINDOW_PROGRESS_FILTER
 } from "../router/introV3Constants.js";
-import { ChapterCatalogModel } from "../models/ChapterCatalogModel.js";
-import { getOrCreatePageId, getPageLabel } from "../models/PageIdentity.js";
-import { ChapterDownloadService } from "../services/ChapterDownloadService.js";
-import { DebugTableView } from "../views/intro/DebugTableView.js";
-import { DownloadInfoWindowView } from "../views/intro/DownloadInfoWindowView.js";
-import { renderIntroFixbar } from "../views/intro/FixbarView.js";
-import { InfoWindowView } from "../views/intro/InfoWindowView.js";
-import { topLayerMsg } from "../views/intro/layerUtils.js";
+import {ChapterCatalogModel} from "../models/ChapterCatalogModel.js";
+import {getOrCreatePageId, getPageLabel} from "../models/PageIdentity.js";
+import {ChapterDownloadService} from "../services/ChapterDownloadService.js";
+import {DebugTableView} from "../views/intro/DebugTableView.js";
+import {DownloadInfoWindowView} from "../views/intro/DownloadInfoWindowView.js";
+import {renderIntroFixbar} from "../views/intro/FixbarView.js";
+import {InfoWindowView} from "../views/intro/InfoWindowView.js";
+import {topLayerConfirm, topLayerMsg} from "../views/intro/layerUtils.js";
 
 export class IntroV3Controller {
     constructor(doc = document) {
@@ -73,6 +73,7 @@ export class IntroV3Controller {
                 this.infoWindow.minimize();
                 return this.downloadAll();
             },
+            '删除本书': () => this.deleteBookById(),
             '复制书名': () => copyContext(this.catalog.getBookName()),
             '导出本书EPUB文件': () => buildEpub(this.doc),
             '启动': () => this.startWorker(),
@@ -126,7 +127,7 @@ export class IntroV3Controller {
             if (stats.pending === 0) {
                 this.finishDownloadWindow();
                 topLayerMsg('章节下载完毕',
-                    { icon: 1, shadeClose: true, zIndex: layui.layer.zIndex }
+                    {icon: 1, shadeClose: true, zIndex: layui.layer.zIndex}
                 );
             }
         } catch (err) {
@@ -136,7 +137,7 @@ export class IntroV3Controller {
             this.infoWindow.minimize();
             this.downloadInfoWindow.restore();
             topLayerMsg('出现错误：' + this.getErrorMessage(err),
-                { icon: 5, shadeClose: true, zIndex: layui.layer.zIndex }
+                {icon: 5, shadeClose: true, zIndex: layui.layer.zIndex}
             );
         } finally {
             if (this.releaseAfterCurrentTask) {
@@ -155,6 +156,34 @@ export class IntroV3Controller {
             return;
         }
         await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
+    }
+
+    confirm(message) {
+        return new Promise(resolve => {
+            topLayerConfirm(message, index => {
+                layui.layer.close(index);
+                resolve(true);
+            }, index => {
+                layui.layer.close(index);
+                resolve(false);
+            });
+        });
+    }
+
+    async deleteBookById() {
+        const params = new URLSearchParams(this.doc.URL);
+        const bookId = params.get('id');
+        if (!bookId) {
+            return;
+        }
+
+        const confirmed = await this.confirm(`确定删除 bookId=${bookId} 的所有章节记录吗？已下载章节也会删除。`);
+        if (!confirmed) {
+            return;
+        }
+
+        const deleted = await this.db.deleteChaptersByBookId(bookId);
+        topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条章节记录`);
     }
 
     async downloadAll() {

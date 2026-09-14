@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-10.19:10:16
+// @version    2026-09-14.12:27:47
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -5163,7 +5163,11 @@ page: false,
           },
           {
             type: "添加全部",
-            icon: "layui-icon-add-1"
+            icon: "layui-icon-addition"
+          },
+          {
+            type: "删除本书",
+            icon: "layui-icon-subtraction"
           },
           {
             type: "导出本书EPUB文件",
@@ -5433,6 +5437,7 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
           this.infoWindow.minimize();
           return this.downloadAll();
         },
+        "删除本书": () => this.deleteBookById(),
         "复制书名": () => copyContext(this.catalog.getBookName()),
         "导出本书EPUB文件": () => buildEpub(this.doc),
         "启动": () => this.startWorker(),
@@ -5509,6 +5514,30 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
         return;
       }
       await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
+    }
+    confirm(message) {
+      return new Promise((resolve) => {
+        topLayerConfirm(message, (index) => {
+          layui.layer.close(index);
+          resolve(true);
+        }, (index) => {
+          layui.layer.close(index);
+          resolve(false);
+        });
+      });
+    }
+    async deleteBookById() {
+      const params = new URLSearchParams(this.doc.URL);
+      const bookId = params.get("id");
+      if (!bookId) {
+        return;
+      }
+      const confirmed = await this.confirm(`确定删除 bookId=${bookId} 的所有章节记录吗？已下载章节也会删除。`);
+      if (!confirmed) {
+        return;
+      }
+      const deleted = await this.db.deleteChaptersByBookId(bookId);
+      topLayerMsg(`已删除 bookId=${bookId} 的 ${deleted} 条章节记录`);
     }
     async downloadAll() {
       await this.addChaptersToDb(this.catalog.toChapterList(this.catalog.getChapterListTree()));

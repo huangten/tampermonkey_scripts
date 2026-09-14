@@ -7,7 +7,10 @@ export function renderIntroFixbar(handlers) {
                     icon: 'layui-icon-success'
                 }, {
                     type: '添加全部',
-                    icon: 'layui-icon-add-1'
+                    icon: 'layui-icon-addition'
+                }, {
+                    type: '删除本书',
+                    icon: 'layui-icon-subtraction'
                 }, {
                     type: '导出本书EPUB文件',
                     icon: 'layui-icon-release'
