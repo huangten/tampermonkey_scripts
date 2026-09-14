@@ -8,28 +8,15 @@
     "dev:uaa_novel": "cross-env TARGET_SCRIPT=uaa_novel vite --config vite.config.uaa.js",
     "build:uaa_novel": "cross-env TARGET_SCRIPT=uaa_novel vite build --config vite.config.uaa.js",
 
-
-    "dev:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite --config vite.config.uaa.js",
-    "build:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite build --config vite.config.uaa.js",
-
-    "dev:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite --config vite.config.uaa.js",
-    "build:uaa_novel_chapter": "cross-env TARGET_SCRIPT=uaa_novel_chapter vite build --config vite.config.uaa.js",
-
-    "dev:uaa_novel_listV2": "cross-env TARGET_SCRIPT=uaa_novel_listV2 vite --config vite.config.uaa.js",
-    "build:uaa_novel_listV2": "cross-env TARGET_SCRIPT=uaa_novel_listV2 vite build --config vite.config.uaa.js",
-    
-
     "dev:cool18": "cross-env TARGET_SCRIPT=cool18 vite --config vite.config.cool18.js",
     "build:cool18": "cross-env TARGET_SCRIPT=cool18 vite build --config vite.config.cool18.js",
 
-
-
     "dev:sshuba_chapter": "cross-env TARGET_SCRIPT=sshuba_chapter vite --config vite.config.sshuba.js",
     "build:sshuba_chapter": "cross-env TARGET_SCRIPT=sshuba_chapter vite build --config vite.config.sshuba.js",
-    "build_sshuba:all": "npm run build:sshuba_chapter",
+
     "dev:sis001_chapter": "cross-env TARGET_SCRIPT=sis001_chapter vite --config vite.config.sis001.js",
     "build:sis001_chapter": "cross-env TARGET_SCRIPT=sis001_chapter vite build --config vite.config.sis001.js",
-    "build_sis001:all": "npm run build:sis001_chapter",
+
     "dev:sehuatang_details_page": "cross-env TARGET_SCRIPT=sehuatang_details_page vite --config vite.config.sehuatang.js",
     "build:sehuatang_details_page": "cross-env TARGET_SCRIPT=sehuatang_details_page vite build --config vite.config.sehuatang.js",
     "dev:sehuatang_list": "cross-env TARGET_SCRIPT=sehuatang_list vite --config vite.config.sehuatang.js",
@@ -37,6 +24,7 @@
     "dev:sehuatang_list_v2": "cross-env TARGET_SCRIPT=sehuatang_list_v2 vite --config vite.config.sehuatang.js",
     "build:sehuatang_list_v2": "cross-env TARGET_SCRIPT=sehuatang_list_v2 vite build --config vite.config.sehuatang.js",
     "build_sehuatang:all": "npm run build:sehuatang_details_page && npm run build:sehuatang_list",
+
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
