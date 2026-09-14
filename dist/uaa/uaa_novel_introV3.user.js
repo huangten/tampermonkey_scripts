@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-14.12:27:47
+// @version    2026-09-14.12:39:20
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -5437,7 +5437,9 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
           this.infoWindow.minimize();
           return this.downloadAll();
         },
-        "删除本书": () => this.deleteBookById(),
+        "删除本书": () => {
+          return this.deleteBookById();
+        },
         "复制书名": () => copyContext(this.catalog.getBookName()),
         "导出本书EPUB文件": () => buildEpub(this.doc),
         "启动": () => this.startWorker(),
@@ -5515,7 +5517,7 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
       }
       await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
     }
-    confirm(message) {
+    async confirm(message) {
       return new Promise((resolve) => {
         topLayerConfirm(message, (index) => {
           layui.layer.close(index);
@@ -5527,8 +5529,8 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
       });
     }
     async deleteBookById() {
-      const params = new URLSearchParams(this.doc.URL);
-      const bookId = params.get("id");
+      const url = new URL(this.doc.URL);
+      const bookId = url.searchParams.get("id");
       if (!bookId) {
         return;
       }

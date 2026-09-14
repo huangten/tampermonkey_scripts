@@ -73,7 +73,7 @@ export class IntroV3Controller {
                 this.infoWindow.minimize();
                 return this.downloadAll();
             },
-            '删除本书': () => this.deleteBookById(),
+            '删除本书': () => {return this.deleteBookById()},
             '复制书名': () => copyContext(this.catalog.getBookName()),
             '导出本书EPUB文件': () => buildEpub(this.doc),
             '启动': () => this.startWorker(),
@@ -158,7 +158,7 @@ export class IntroV3Controller {
         await this.addChaptersToDb(this.catalog.toChapterList(checkedData));
     }
 
-    confirm(message) {
+    async confirm(message) {
         return new Promise(resolve => {
             topLayerConfirm(message, index => {
                 layui.layer.close(index);
@@ -171,8 +171,8 @@ export class IntroV3Controller {
     }
 
     async deleteBookById() {
-        const params = new URLSearchParams(this.doc.URL);
-        const bookId = params.get('id');
+        const url = new URL(this.doc.URL);
+        const bookId = url.searchParams.get('id');
         if (!bookId) {
             return;
         }
