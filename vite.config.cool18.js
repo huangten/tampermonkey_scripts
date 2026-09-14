@@ -6,10 +6,10 @@ import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
-    cool18_chapter: {
+    cool18: {
         entry: 'src/cool18/main.js',
         userscript: {
-            name: 'cool18 章节页 增强',
+            name: 'cool18 增强',
             author: 'YourName',
             match: [
                 '*://*.cool18.com/*'
@@ -21,7 +21,7 @@ const scriptConfigs = {
         },
         build: {
             outDir: "cool18",
-            fileName: "cool18_chapter"
+            fileName: "cool18"
         }
     }
 };
