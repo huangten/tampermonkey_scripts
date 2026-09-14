@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 书籍描述页 V3 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-14.12:42:28
+// @version    2026-09-14.13:16:50
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/intro*
@@ -5257,7 +5257,7 @@ page: false,
           },
           {
             title: "下载进度",
-            content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend style="color:red;">当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="" style="color:red;">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend style="color:red;">进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset>' + this.getSystemInfoPanelHtml() + "</div></div>"
+            content: '<div style="height: 100%;width: 100%;padding-top: 10px;"><div id="downloadWindowDivInfoId"><fieldset class="layui-elem-field">\n  <legend style="color:red;">当前下载</legend>\n  <div class="layui-field-box">\n      <a id="downloadInfoContentId" href="" style="color:red;">暂无下载</a>\n  </div>\n</fieldset><fieldset class="layui-elem-field">\n  <legend style="color:red;">进度条</legend>\n  <div class="layui-field-box">\n<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '"> <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div></div>  </div></fieldset><div class="layui-bg-gray" style="padding: 16px;">\n  <div class="layui-row layui-col-space15">\n    <div class="layui-col-md6">\n      <div class="layui-card">\n        <div class="layui-card-header">待下载数</div>\n        <div class="layui-card-body" id="pendingDownloadCount">0</div>\n      </div>\n    </div>\n    <div class="layui-col-md6">\n      <div class="layui-card">\n        <div class="layui-card-header">已下载数</div>\n        <div class="layui-card-body" id="downloadedCount">0</div>\n      </div>\n    </div>\n  </div>\n' + this.getSystemInfoPanelHtml() + "</div></div>"
           },
           {
             title: "书籍章节信息",
@@ -5312,9 +5312,17 @@ page: false,
     getCheckedChapters() {
       return layui.tree.getChecked(this.chapterTreeId);
     }
-    setProgress(percent) {
+    setProgress(percent, stats) {
       if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) {
         layui.element.progress(this.progressFilter, percent);
+      }
+      const pendingDownloadCount = document.getElementById("pendingDownloadCount");
+      if (pendingDownloadCount) {
+        pendingDownloadCount.innerText = stats.pending;
+      }
+      const downloadedCount = document.getElementById("downloadedCount");
+      if (downloadedCount) {
+        downloadedCount.innerText = stats.downloaded;
       }
     }
     setCurrentDownload(text, href = "") {
@@ -5601,7 +5609,7 @@ this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("con
     async updateProgress() {
       const stats = await this.db.getChapterStats();
       const percent = stats.total === 0 ? "0%" : (stats.downloaded / stats.total * 100).toFixed(2) + "%";
-      this.infoWindow.setProgress(percent);
+      this.infoWindow.setProgress(percent, stats);
       this.infoWindow.setIdleDownload(stats);
     }
     async updateSystemInfoPanel() {

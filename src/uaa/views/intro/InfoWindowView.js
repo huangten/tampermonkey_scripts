@@ -59,6 +59,21 @@ export class InfoWindowView {
                         '</div>' +
                         '  </div>' +
                         '</fieldset>' +
+                        '<div class="layui-bg-gray" style="padding: 16px;">\n' +
+                        '  <div class="layui-row layui-col-space15">\n' +
+                        '    <div class="layui-col-md6">\n' +
+                        '      <div class="layui-card">\n' +
+                        '        <div class="layui-card-header">待下载数</div>\n' +
+                        '        <div class="layui-card-body" id="pendingDownloadCount">0</div>\n' +
+                        '      </div>\n' +
+                        '    </div>\n' +
+                        '    <div class="layui-col-md6">\n' +
+                        '      <div class="layui-card">\n' +
+                        '        <div class="layui-card-header">已下载数</div>\n' +
+                        '        <div class="layui-card-body" id="downloadedCount">0</div>\n' +
+                        '      </div>\n' +
+                        '    </div>\n' +
+                        '  </div>\n' +
                         this.getSystemInfoPanelHtml() +
                         '</div>' +
                         '</div>'
@@ -132,9 +147,17 @@ export class InfoWindowView {
         return layui.tree.getChecked(this.chapterTreeId);
     }
 
-    setProgress(percent) {
+    setProgress(percent,stats) {
         if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) {
             layui.element.progress(this.progressFilter, percent);
+        }
+        const pendingDownloadCount = document.getElementById('pendingDownloadCount');
+        if (pendingDownloadCount) {
+            pendingDownloadCount.innerText = stats.pending;
+        }
+        const downloadedCount = document.getElementById('downloadedCount');
+        if (downloadedCount) {
+            downloadedCount.innerText = stats.downloaded
         }
     }
 

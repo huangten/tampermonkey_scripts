@@ -257,7 +257,7 @@ export class IntroV3Controller {
     async updateProgress() {
         const stats = await this.db.getChapterStats();
         const percent = stats.total === 0 ? '0%' : ((stats.downloaded / stats.total) * 100).toFixed(2) + '%';
-        this.infoWindow.setProgress(percent);
+        this.infoWindow.setProgress(percent, stats);
         this.infoWindow.setIdleDownload(stats);
     }
 
