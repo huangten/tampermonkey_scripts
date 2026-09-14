@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-14.22:13:17
+// @version    2026-09-15.00:02:54
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -136,13 +136,9 @@
 			f.saveAs = g.saveAs = g, "undefined" != typeof module && (module.exports = g);
 		});
 	}))();
-	var ChapterController = class {
-		constructor(doc = document) {
-			this.doc = doc;
-		}
-		run() {
-			const self = this;
-			layui.use(function() {
+	var ChapterView = class {
+		renderFixbar({ onAction }) {
+			layui.use(() => {
 				layui.util.fixbar({
 					bars: [
 						{
@@ -182,25 +178,53 @@
 							});
 						},
 						mouseleave: function(type) {
+							console.log(type);
 							layui.layer.closeAll("tips");
 						}
 					},
 					click: function(type) {
-						if (type === "复制书名") self.getBookname();
-						if (type === "复制内容") self.getPreTagContent();
-						if (type === "原样下载") self.downloadChapterContent();
-						if (type === "添加空白符下载") self.downloadChapterContent("blank");
-						if (type === "复制内容HTML") self.getPreTagContentHtml();
-						if (type === "调整排版并复制") self.copyChapterContent();
+						onAction(type);
 					}
 				});
 			});
+		}
+	};
+	var ChapterController = class {
+		constructor(doc = document) {
+			this.doc = doc;
+			this.chapterView = new ChapterView();
+		}
+		handleAction(type) {
+			switch (type) {
+				case "复制书名":
+					this.getBookname();
+					break;
+				case "复制内容":
+					this.getPreTagContent();
+					break;
+				case "原样下载":
+					this.downloadChapterContent();
+					break;
+				case "添加空白符下载":
+					this.downloadChapterContent("blank");
+					break;
+				case "复制内容HTML":
+					this.getPreTagContentHtml();
+					break;
+				case "调整排版并复制":
+					this.copyChapterContent();
+					break;
+				default: console.log(type);
+			}
+		}
+		run() {
+			this.chapterView.renderFixbar({ onAction: (type) => this.handleAction(type) });
 		}
 		getPreElement() {
 			return this.doc.getElementsByTagName("pre")[0];
 		}
 		getPreTagContent() {
-			copyContext(this.getPreElement().innerText).then();
+			copyContext(this.getPreElement().innerText.split("\n").filter(Boolean).join("\n")).then();
 		}
 		getBookname() {
 			const titleContent = this.doc.getElementsByClassName("main-title")[0].innerText.trim();
@@ -261,7 +285,6 @@
 	};
 	(function main() {
 		const url = new URL(document.URL);
-		console.log(url);
 		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") init().then(() => {
 			new ChapterController(document).run();
 		});

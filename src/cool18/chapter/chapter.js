@@ -1,77 +1,28 @@
 import {copyContext} from "../../common/common.js";
 import {saveAs} from "file-saver";
+import {ChapterView} from "../views/ChapterView.js";
 
 export class ChapterController {
     constructor(doc = document) {
         this.doc = doc;
+        this.chapterView = new ChapterView()
+    }
+
+    handleAction(type) {
+        switch (type) {
+            case "复制书名": {this.getBookname();}break;
+            case "复制内容": {this.getPreTagContent();}break;
+            case "原样下载": {this.downloadChapterContent();}break;
+            case "添加空白符下载": {this.downloadChapterContent('blank');}break;
+            case "复制内容HTML": {this.getPreTagContentHtml();}break;
+            case "调整排版并复制": {this.copyChapterContent();}break;
+            default:console.log(type);
+        }
     }
 
     run() {
-        const self = this;
-        layui.use(function () {
-            const util = layui.util;
-            util.fixbar({
-                bars: [
-                    {
-                        type: '复制书名',
-                        icon: 'layui-icon-auz'
-                    },
-                    {
-                        type: '复制内容',
-                        icon: 'layui-icon-success'
-                    }, {
-                        type: '原样下载',
-                        icon: 'layui-icon-download-circle'
-                    }
-                    , {
-                        type: '添加空白符下载',
-                        icon: 'layui-icon-release'
-                    }
-                    , {
-                        type: '复制内容HTML',
-                        icon: 'layui-icon-fonts-code'
-                    }
-                    , {
-                        type: '调整排版并复制',
-                        icon: 'layui-icon-spread-left'
-                    }
-                ],
-                default: false,
-                css: {bottom: "21%"},
-                bgcolor: '#ad2fec',
-                margin: 0,
-                on: { // 任意事件 --  v2.8.0 新增
-                    mouseenter: function (type) {
-                        layui.layer.tips(type, this, {
-                            tips: 4,
-                            fixed: true
-                        });
-                    },
-                    mouseleave: function (type) {
-                        layui.layer.closeAll('tips');
-                    }
-                },
-                click: function (type) {
-                    if (type === "复制书名") {
-                        self.getBookname();
-                    }
-                    if (type === "复制内容") {
-                        self.getPreTagContent();
-                    }
-                    if (type === "原样下载") {
-                        self.downloadChapterContent();
-                    }
-                    if (type === "添加空白符下载") {
-                        self.downloadChapterContent('blank');
-                    }
-                    if (type === "复制内容HTML") {
-                        self.getPreTagContentHtml();
-                    }
-                    if (type === "调整排版并复制") {
-                        self.copyChapterContent();
-                    }
-                }
-            });
+        this.chapterView.renderFixbar({
+            onAction:(type) => this.handleAction(type)
         });
     }
 
@@ -80,7 +31,7 @@ export class ChapterController {
     }
 
     getPreTagContent() {
-        copyContext(this.getPreElement().innerText).then();
+        copyContext(this.getPreElement().innerText.split('\n').filter(Boolean).join('\n')).then();
     }
 
 
