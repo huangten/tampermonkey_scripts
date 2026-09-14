@@ -104,7 +104,7 @@ export class ChapterController {
         // const author = titleContent.match(/(.*?)作者(.*?)/)
         // console.log(bookName)
         let title = titleContent.replace(/^【(.*?)】/, "$1");
-
+        const filename = title;
         const prentTitleElements = this.doc.getElementsByClassName('reply-info');
         if (prentTitleElements.length > 0) {
             try {
@@ -121,7 +121,7 @@ export class ChapterController {
             this.getChapterContent(tag) +
             '\n\n\n\n\n\n\n';
 
-        this.saveContentToLocationTxtFile(title, content);
+        this.saveContentToLocationTxtFile(filename, content);
     }
 
     getChapterContent(tag = '') {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-14.21:00:08
+// @version    2026-09-14.22:13:17
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -212,6 +212,7 @@
 		}
 		downloadChapterContent(tag) {
 			let title = this.doc.getElementsByClassName("main-title")[0].innerText.trim().replace(/^【(.*?)】/, "$1");
+			const filename = title;
 			const prentTitleElements = this.doc.getElementsByClassName("reply-info");
 			if (prentTitleElements.length > 0) try {
 				const pTitle = prentTitleElements[0].getElementsByTagName("a")[0].innerText.trim().replace(/^【(.*?)】/, "$1");
@@ -222,7 +223,7 @@
 				console.log(e);
 			}
 			const content = title + "\n\n" + this.getChapterContent(tag) + "\n\n\n\n\n\n\n";
-			this.saveContentToLocationTxtFile(title, content);
+			this.saveContentToLocationTxtFile(filename, content);
 		}
 		getChapterContent(tag = "") {
 			return this.getPreElement().innerText.split("\n").filter(Boolean).map((c) => {
