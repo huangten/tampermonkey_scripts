@@ -5,6 +5,32 @@ import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
+    uaa_novel: {
+        entry: 'src/uaa/router/main.js',
+        userscript: {
+            name: 'UAA 小说 增强',
+            author: 'YourName',
+            match: ['https://*.uaa.com/novel/*'],
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=uaa.com',
+            require: [
+                'https://unpkg.com/dexie/dist/dexie.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js',
+                'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+            ],
+            namespace: 'https://tampermonkey.net/',
+            version: getVersion(),
+            noframes: true,
+            connect: [
+                "githubusercontent.com",
+                "uameta.ai",
+            ],
+        },
+        build: {
+            outDir: "uaa",
+            fileName: "uaa_novel"
+        }
+    },
+
     uaa_novel_introV3: {
         entry: 'src/uaa/router/introV3.js',
         userscript: {

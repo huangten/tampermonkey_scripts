@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
 
+    "dev:uaa_novel": "cross-env TARGET_SCRIPT=uaa_novel vite --config vite.config.uaa.js",
+    "build:uaa_novel": "cross-env TARGET_SCRIPT=uaa_novel vite build --config vite.config.uaa.js",
+
+
     "dev:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite --config vite.config.uaa.js",
     "build:uaa_novel_introV3": "cross-env TARGET_SCRIPT=uaa_novel_introV3 vite build --config vite.config.uaa.js",
 
