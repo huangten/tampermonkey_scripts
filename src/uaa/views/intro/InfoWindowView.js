@@ -193,16 +193,18 @@ export class InfoWindowView {
             '  <div class="layui-row layui-col-space15" id="systemInfoPanelId">'+
 
             this.getSystemInfoItemHtml('status', '状态') +
-            this.getSystemInfoItemHtml('consumerPageLabel', '消费页') +
-            this.getSystemInfoItemHtml('consumerPageId', '消费页ID') +
-            this.getSystemInfoItemHtml('consumerHeartbeat', '心跳') +
+            this.getSystemInfoItemHtml('consumerHeartbeat', '心跳时间') +
             this.getSystemInfoItemHtml('consumerStartedAt', '消费开始') +
-            this.getSystemInfoItemHtml('currentChapterId', '当前章节ID') +
-            this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址') +
-            this.getSystemInfoItemHtml('currentBookName', '当前书名') +
             this.getSystemInfoItemHtml('lastDownloadTime', '最后下载') +
             this.getSystemInfoItemHtml('updateTime', '系统更新时间') +
             this.getSystemInfoItemHtml('displayUpdatedAt', '系统刷新时间') +
+
+
+            this.getSystemInfoItemHtml('consumerPageLabel', '消费页', 6) +
+            this.getSystemInfoItemHtml('consumerPageId', '消费页ID', 6) +
+            this.getSystemInfoItemHtml('currentChapterId', '当前章节ID', 6) +
+            this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址', 6) +
+            this.getSystemInfoItemHtml('currentBookName', '当前书名', 12) +
 
             '  </div>\n' +
             '</div>';
@@ -228,13 +230,13 @@ export class InfoWindowView {
         //     '</fieldset>';
     }
 
-    getSystemInfoItemHtml(field, label) {
+    getSystemInfoItemHtml(field, label, size = 2) {
         // return '<div style="min-width:0;">' +
         //     '<div style="color:red;font-size:12px;line-height:18px;">' + label + '</div>' +
         //     '<div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;color:blue;">-</div>' +
         //     '</div>';
 
-        return `<div class="layui-col-md3">
+        return `<div class="layui-col-md${size}">
                   <div class="layui-card">
                     <div class="layui-card-header">${label}</div>
                     <div class="layui-card-body" id="systemInfoValue-${field}">-</div>
