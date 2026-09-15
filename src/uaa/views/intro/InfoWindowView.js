@@ -190,7 +190,7 @@ export class InfoWindowView {
     getSystemInfoPanelHtml() {
 
         return '<div class="layui-bg-gray" style="padding: 16px;">\n' +
-            '  <div class="layui-row layui-col-space15">'+
+            '  <div class="layui-row layui-col-space15" id="systemInfoPanelId">'+
 
             this.getSystemInfoItemHtml('status', '状态') +
             this.getSystemInfoItemHtml('consumerPageLabel', '消费页') +

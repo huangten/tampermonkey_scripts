@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-15.12:09:14
+// @version    2026-09-15.12:18:23
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -6722,7 +6722,7 @@ ${ncxNav.join("\n")}
 			if (stats.pending === 0) this.setCurrentDownload(stats.total === 0 ? "暂无下载" : "下载结束");
 		}
 		getSystemInfoPanelHtml() {
-			return "<div class=\"layui-bg-gray\" style=\"padding: 16px;\">\n  <div class=\"layui-row layui-col-space15\">" + this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("consumerPageLabel", "消费页") + this.getSystemInfoItemHtml("consumerPageId", "消费页ID") + this.getSystemInfoItemHtml("consumerHeartbeat", "心跳") + this.getSystemInfoItemHtml("consumerStartedAt", "消费开始") + this.getSystemInfoItemHtml("currentChapterId", "当前章节ID") + this.getSystemInfoItemHtml("currentChapterHref", "当前章节地址") + this.getSystemInfoItemHtml("currentBookName", "当前书名") + this.getSystemInfoItemHtml("lastDownloadTime", "最后下载") + this.getSystemInfoItemHtml("updateTime", "系统更新时间") + this.getSystemInfoItemHtml("displayUpdatedAt", "系统刷新时间") + "  </div>\n</div>";
+			return "<div class=\"layui-bg-gray\" style=\"padding: 16px;\">\n  <div class=\"layui-row layui-col-space15\" id=\"systemInfoPanelId\">" + this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("consumerPageLabel", "消费页") + this.getSystemInfoItemHtml("consumerPageId", "消费页ID") + this.getSystemInfoItemHtml("consumerHeartbeat", "心跳") + this.getSystemInfoItemHtml("consumerStartedAt", "消费开始") + this.getSystemInfoItemHtml("currentChapterId", "当前章节ID") + this.getSystemInfoItemHtml("currentChapterHref", "当前章节地址") + this.getSystemInfoItemHtml("currentBookName", "当前书名") + this.getSystemInfoItemHtml("lastDownloadTime", "最后下载") + this.getSystemInfoItemHtml("updateTime", "系统更新时间") + this.getSystemInfoItemHtml("displayUpdatedAt", "系统刷新时间") + "  </div>\n</div>";
 		}
 		getSystemInfoItemHtml(field, label) {
 			return `<div class="layui-col-md3">
