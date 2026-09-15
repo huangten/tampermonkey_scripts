@@ -193,7 +193,11 @@ export class ChapterPageModel {
     }
     
     getBookName() {
-        return cleanText(this.doc.getElementById('readerBook')?.innerText.trim())
+        const book = this.doc.getElementById('readerBook')
+        if (!book) {
+            return '';
+        }
+        return cleanText(book.textContent.trim())
     }
     
     getAuthorInfo() {
@@ -201,7 +205,7 @@ export class ChapterPageModel {
         if (!metaBox) {
             return "";
         }
-        const meta = metaBox.innerHTML.trim();
+        const meta = metaBox.textContent.trim();
         // tttjjj_200 著 · 8448字
         const authorMatch = meta.match(/(.*?) 著 ·/);
         if (authorMatch && authorMatch[1]) {

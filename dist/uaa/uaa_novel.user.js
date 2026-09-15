@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-15.12:43:07
+// @version    2026-09-15.23:46:38
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -422,12 +422,14 @@ onmessage = function (event) {
 			return htmlLines;
 		}
 		getBookName() {
-			return cleanText(this.doc.getElementById("readerBook")?.innerText.trim());
+			const book = this.doc.getElementById("readerBook");
+			if (!book) return "";
+			return cleanText(book.textContent.trim());
 		}
 		getAuthorInfo() {
 			const metaBox = this.doc.getElementsByClassName("reader-meta")[0];
 			if (!metaBox) return "";
-			const authorMatch = metaBox.innerHTML.trim().match(/(.*?) 著 ·/);
+			const authorMatch = metaBox.textContent.trim().match(/(.*?) 著 ·/);
 			if (authorMatch && authorMatch[1]) return cleanText(authorMatch[1].trim());
 			return "";
 		}
@@ -712,13 +714,16 @@ onmessage = function (event) {
 			const bookName = this.doc.getElementsByTagName("h1")[0]?.cloneNode(true);
 			const spans = bookName?.getElementsByTagName("span");
 			if (spans) for (const span of spans) span.remove();
-			return cleanText(bookName?.innerText.trim() ?? "");
+			if (!bookName) return "";
+			return cleanText(bookName.textContent.trim());
 		}
 		getBookId() {
 			return new URL(this.location.href).searchParams.get("id") ?? "";
 		}
 		getAuthor() {
-			return this.doc.getElementsByClassName("nd-author")[0]?.getElementsByTagName("a")[0]?.innerText.trim() ?? "";
+			const author = this.doc.getElementsByClassName("nd-author")[0]?.getElementsByTagName("a")[0];
+			if (!author) return "";
+			return author.textContent.trim() ?? "";
 		}
 		getLatestChapter() {
 			return this.doc.getElementsByClassName("nd-latest")[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? "";
@@ -858,8 +863,11 @@ onmessage = function (event) {
 		});
 		else if (url?.nodeType === Node.DOCUMENT_NODE) doc = url;
 		const chapterCatalogModel = new ChapterCatalogModel(doc);
-		let bookName = escapeHtml(cleanText(chapterCatalogModel.getBookName()));
+		const bn = chapterCatalogModel.getBookName();
+		let bookName = escapeHtml(cleanText(bn));
 		let author = chapterCatalogModel.getAuthor();
+		const bookNameFile = cleanText(bn);
+		const authorFile = cleanText(author).replace(/\s+/g, " ");
 		author = escapeHtml(cleanText(author));
 		author = author.replace(/\s+/g, " ");
 		let type = chapterCatalogModel.getType();
@@ -1011,7 +1019,7 @@ ${ncxNav.join("\n")}
 </ncx>`;
 		o.file("toc.ncx", formatXML(tocNcxStr));
 		const blob = await zip.generateAsync({ type: "blob" });
-		(0, file_saver.saveAs)(blob, `${bookName} 作者：${author}.epub`);
+		(0, file_saver.saveAs)(blob, `${bookNameFile} 作者：${authorFile}.epub`);
 		console.log(bookName + " 下载完毕！");
 	}
 	function escapeHtml(unsafe) {

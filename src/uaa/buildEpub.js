@@ -33,8 +33,11 @@ export async function buildEpub(url, options = {}) {
     }
 
     const chapterCatalogModel = new ChapterCatalogModel(doc);
-    let bookName = escapeHtml(cleanText(chapterCatalogModel.getBookName()));
+    const bn = chapterCatalogModel.getBookName();
+    let bookName = escapeHtml(cleanText(bn));
     let author = chapterCatalogModel.getAuthor();
+    const bookNameFile = cleanText(bn);
+    const authorFile = cleanText(author).replace(/\s+/g, ' ');
     author = escapeHtml(cleanText(author));
     author = author.replace(/\s+/g, ' ');
     let type = chapterCatalogModel.getType();
@@ -218,7 +221,7 @@ ${ncxNav.join('\n')}
         // }
     });
     // console.log(blob);
-    saveAs(blob, `${bookName} 作者：${author}.epub`);
+    saveAs(blob, `${bookNameFile} 作者：${authorFile}.epub`);
     console.log(bookName + ' 下载完毕！');
     // GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
 

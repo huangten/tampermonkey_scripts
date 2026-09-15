@@ -14,7 +14,10 @@ export class ChapterCatalogModel {
                 span.remove();
             }
         }
-        return cleanText(bookName?.innerText.trim() ?? '');
+        if (!bookName) {
+            return '';
+        }
+        return cleanText(bookName.textContent.trim());
     }
 
     getBookId() {
@@ -22,7 +25,11 @@ export class ChapterCatalogModel {
     }
 
     getAuthor() {
-        return this.doc.getElementsByClassName('nd-author')[0]?.getElementsByTagName("a")[0]?.innerText.trim() ?? '';
+        const author = this.doc.getElementsByClassName('nd-author')[0]?.getElementsByTagName("a")[0];
+        if (!author) {
+            return '';
+        }
+        return author.textContent.trim() ?? '';
     }
     getLatestChapter() {
         return this.doc.getElementsByClassName('nd-latest')[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? '';
