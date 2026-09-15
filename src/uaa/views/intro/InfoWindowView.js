@@ -53,12 +53,12 @@ export class InfoWindowView {
                         '</fieldset>' +
                         '<fieldset class="layui-elem-field">\n' +
                         '  <legend style="color:red;">下载信息</legend>\n' +
-                        '  <div class="layui-field-box">\n' +
-                        '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '">' +
-                        ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
-                        '</div>' +
-                        '  </div>' +
-                        '<div class="layui-bg-gray" style="padding: 16px;">\n' +
+                        // '  <div class="layui-field-box">\n' +
+                        // '<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="' + this.progressFilter + '">' +
+                        // ' <div class="layui-progress-bar layui-bg-orange" lay-percent="0%"></div>' +
+                        // '</div>' +
+                        // '  </div>\n' +
+                        '<div class="layui-bg-gray" style="padding: 10px;">\n' +
                         '  <div class="layui-row layui-col-space15">\n' +
                         '    <div class="layui-col-md4">\n' +
                         '      <div class="layui-card">\n' +
@@ -78,7 +78,8 @@ export class InfoWindowView {
                         '        <div class="layui-card-body" id="allCount">0</div>\n' +
                         '      </div>\n' +
                         '    </div>'+
-                        '  </div>\n' +
+
+                        '  </div>' +
                         '</fieldset>' +
 
                         this.getSystemInfoPanelHtml() +
@@ -155,9 +156,9 @@ export class InfoWindowView {
     }
 
     setProgress(percent,stats) {
-        if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) {
-            layui.element.progress(this.progressFilter, percent);
-        }
+        // if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) {
+        //     layui.element.progress(this.progressFilter, percent);
+        // }
         const pendingDownloadCount = document.getElementById('pendingDownloadCount');
         if (pendingDownloadCount) {
             pendingDownloadCount.innerText = stats.pending;
@@ -189,7 +190,7 @@ export class InfoWindowView {
 
     getSystemInfoPanelHtml() {
 
-        return '<div class="layui-bg-gray" style="padding: 16px;">\n' +
+        return '<div class="layui-bg-gray" style="padding: 10px;">\n' +
             '  <div class="layui-row layui-col-space15" id="systemInfoPanelId">'+
 
             this.getSystemInfoItemHtml('status', '状态') +
@@ -200,42 +201,18 @@ export class InfoWindowView {
             this.getSystemInfoItemHtml('displayUpdatedAt', '系统刷新时间') +
 
 
-            this.getSystemInfoItemHtml('consumerPageLabel', '消费页', 6) +
-            this.getSystemInfoItemHtml('consumerPageId', '消费页ID', 6) +
-            this.getSystemInfoItemHtml('currentChapterId', '当前章节ID', 6) +
-            this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址', 6) +
+            this.getSystemInfoItemHtml('consumerPageLabel', '消费页', 4) +
+            this.getSystemInfoItemHtml('consumerPageId', '消费页ID', 4) +
+            this.getSystemInfoItemHtml('currentChapterId', '当前章节ID', 4) +
+            // this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址', 6) +
             this.getSystemInfoItemHtml('currentBookName', '当前书名', 12) +
 
             '  </div>\n' +
             '</div>';
 
-        // return '<fieldset class="layui-elem-field">\n' +
-        //     '  <legend style="color:red;">系统状态</legend>\n' +
-        //     '  <div class="layui-field-box">\n' +
-        //     '    <div id="systemInfoPanelId" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 12px;">' +
-        //     // this.getSystemInfoItemHtml('id', 'ID') +
-        //     this.getSystemInfoItemHtml('status', '状态') +
-        //     this.getSystemInfoItemHtml('consumerPageLabel', '消费页') +
-        //     this.getSystemInfoItemHtml('consumerPageId', '消费页ID') +
-        //     this.getSystemInfoItemHtml('consumerHeartbeat', '心跳') +
-        //     this.getSystemInfoItemHtml('consumerStartedAt', '消费开始') +
-        //     this.getSystemInfoItemHtml('currentChapterId', '当前章节ID') +
-        //     this.getSystemInfoItemHtml('currentChapterHref', '当前章节地址') +
-        //     this.getSystemInfoItemHtml('currentBookName', '当前书名') +
-        //     this.getSystemInfoItemHtml('lastDownloadTime', '最后下载') +
-        //     this.getSystemInfoItemHtml('updateTime', '系统更新时间') +
-        //     this.getSystemInfoItemHtml('displayUpdatedAt', '系统刷新时间') +
-        //     '    </div>' +
-        //     '  </div>\n' +
-        //     '</fieldset>';
     }
 
     getSystemInfoItemHtml(field, label, size = 2) {
-        // return '<div style="min-width:0;">' +
-        //     '<div style="color:red;font-size:12px;line-height:18px;">' + label + '</div>' +
-        //     '<div id="systemInfoValue-' + field + '" style="word-break:break-all;line-height:20px;color:blue;">-</div>' +
-        //     '</div>';
-
         return `<div class="layui-col-md${size}">
                   <div class="layui-card">
                     <div class="layui-card-header">${label}</div>

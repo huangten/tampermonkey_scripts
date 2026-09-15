@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-15.12:26:23
+// @version    2026-09-15.12:43:07
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -6645,7 +6645,7 @@ ${ncxNav.join("\n")}
 					},
 					{
 						title: "下载进度",
-						content: "<div style=\"height: 100%;width: 100%;padding-top: 10px;\"><div id=\"downloadWindowDivInfoId\"><fieldset class=\"layui-elem-field\">\n  <legend style=\"color:red;\">当前下载</legend>\n  <div class=\"layui-field-box\">\n      <a id=\"downloadInfoContentId\" href=\"\" style=\"color:red;\">暂无下载</a>\n  </div>\n</fieldset><fieldset class=\"layui-elem-field\">\n  <legend style=\"color:red;\">下载信息</legend>\n  <div class=\"layui-field-box\">\n<div class=\"layui-progress layui-progress-big\" lay-showPercent=\"true\" lay-filter=\"" + this.progressFilter + "\"> <div class=\"layui-progress-bar layui-bg-orange\" lay-percent=\"0%\"></div></div>  </div><div class=\"layui-bg-gray\" style=\"padding: 16px;\">\n  <div class=\"layui-row layui-col-space15\">\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">待下载数</div>\n        <div class=\"layui-card-body\" id=\"pendingDownloadCount\">0</div>\n      </div>\n    </div>\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">已下载数</div>\n        <div class=\"layui-card-body\" id=\"downloadedCount\">0</div>\n      </div>\n    </div>\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">总数（待下载数+已下载数）</div>\n        <div class=\"layui-card-body\" id=\"allCount\">0</div>\n      </div>\n    </div>  </div>\n</fieldset>" + this.getSystemInfoPanelHtml() + "</div></div>"
+						content: "<div style=\"height: 100%;width: 100%;padding-top: 10px;\"><div id=\"downloadWindowDivInfoId\"><fieldset class=\"layui-elem-field\">\n  <legend style=\"color:red;\">当前下载</legend>\n  <div class=\"layui-field-box\">\n      <a id=\"downloadInfoContentId\" href=\"\" style=\"color:red;\">暂无下载</a>\n  </div>\n</fieldset><fieldset class=\"layui-elem-field\">\n  <legend style=\"color:red;\">下载信息</legend>\n<div class=\"layui-bg-gray\" style=\"padding: 10px;\">\n  <div class=\"layui-row layui-col-space15\">\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">待下载数</div>\n        <div class=\"layui-card-body\" id=\"pendingDownloadCount\">0</div>\n      </div>\n    </div>\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">已下载数</div>\n        <div class=\"layui-card-body\" id=\"downloadedCount\">0</div>\n      </div>\n    </div>\n    <div class=\"layui-col-md4\">\n      <div class=\"layui-card\">\n        <div class=\"layui-card-header\">总数（待下载数+已下载数）</div>\n        <div class=\"layui-card-body\" id=\"allCount\">0</div>\n      </div>\n    </div>  </div></fieldset>" + this.getSystemInfoPanelHtml() + "</div></div>"
 					},
 					{
 						title: "书籍章节信息",
@@ -6704,7 +6704,6 @@ ${ncxNav.join("\n")}
 			return layui.tree.getChecked(this.chapterTreeId);
 		}
 		setProgress(percent, stats) {
-			if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) layui.element.progress(this.progressFilter, percent);
 			const pendingDownloadCount = document.getElementById("pendingDownloadCount");
 			if (pendingDownloadCount) pendingDownloadCount.innerText = stats.pending;
 			const downloadedCount = document.getElementById("downloadedCount");
@@ -6722,7 +6721,7 @@ ${ncxNav.join("\n")}
 			if (stats.pending === 0) this.setCurrentDownload(stats.total === 0 ? "暂无下载" : "下载结束");
 		}
 		getSystemInfoPanelHtml() {
-			return "<div class=\"layui-bg-gray\" style=\"padding: 16px;\">\n  <div class=\"layui-row layui-col-space15\" id=\"systemInfoPanelId\">" + this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("consumerHeartbeat", "心跳时间") + this.getSystemInfoItemHtml("consumerStartedAt", "消费开始") + this.getSystemInfoItemHtml("lastDownloadTime", "最后下载") + this.getSystemInfoItemHtml("updateTime", "系统更新时间") + this.getSystemInfoItemHtml("displayUpdatedAt", "系统刷新时间") + this.getSystemInfoItemHtml("consumerPageLabel", "消费页", 6) + this.getSystemInfoItemHtml("consumerPageId", "消费页ID", 6) + this.getSystemInfoItemHtml("currentChapterId", "当前章节ID", 6) + this.getSystemInfoItemHtml("currentChapterHref", "当前章节地址", 6) + this.getSystemInfoItemHtml("currentBookName", "当前书名", 12) + "  </div>\n</div>";
+			return "<div class=\"layui-bg-gray\" style=\"padding: 10px;\">\n  <div class=\"layui-row layui-col-space15\" id=\"systemInfoPanelId\">" + this.getSystemInfoItemHtml("status", "状态") + this.getSystemInfoItemHtml("consumerHeartbeat", "心跳时间") + this.getSystemInfoItemHtml("consumerStartedAt", "消费开始") + this.getSystemInfoItemHtml("lastDownloadTime", "最后下载") + this.getSystemInfoItemHtml("updateTime", "系统更新时间") + this.getSystemInfoItemHtml("displayUpdatedAt", "系统刷新时间") + this.getSystemInfoItemHtml("consumerPageLabel", "消费页", 4) + this.getSystemInfoItemHtml("consumerPageId", "消费页ID", 4) + this.getSystemInfoItemHtml("currentChapterId", "当前章节ID", 4) + this.getSystemInfoItemHtml("currentBookName", "当前书名", 12) + "  </div>\n</div>";
 		}
 		getSystemInfoItemHtml(field, label, size = 2) {
 			return `<div class="layui-col-md${size}">
