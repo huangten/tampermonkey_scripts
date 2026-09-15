@@ -1,16 +1,16 @@
 export class InfoWindowView {
     constructor({
-        progressFilter,
-        debugTableId,
-        chapterTreeId,
-        getChapterTreeData,
-        onChapterClick,
-        onDownloadChecked,
-        onDownloadAll,
-        onResume,
-        onRecoverStale,
-        onReady
-    }) {
+                    progressFilter,
+                    debugTableId,
+                    chapterTreeId,
+                    getChapterTreeData,
+                    onChapterClick,
+                    onDownloadChecked,
+                    onDownloadAll,
+                    onResume,
+                    onRecoverStale,
+                    onReady
+                }) {
         this.index = 0;
         this.progressFilter = progressFilter;
         this.debugTableId = debugTableId;
@@ -77,7 +77,7 @@ export class InfoWindowView {
                         '        <div class="layui-card-header">总数（待下载数+已下载数）</div>\n' +
                         '        <div class="layui-card-body" id="allCount">0</div>\n' +
                         '      </div>\n' +
-                        '    </div>'+
+                        '    </div>' +
 
                         '  </div>' +
                         '</fieldset>' +
@@ -97,11 +97,11 @@ export class InfoWindowView {
                         '  <button id="debugDeletePendingByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除未下载</button>' +
                         '  <button id="debugDeleteByBookIdBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">按书ID删除章节</button>' +
                         '  <button id="debugDeleteDownloadedChaptersBtn" type="button" class="layui-btn layui-btn-sm layui-btn-danger">删除已下载章节</button>' +
-                        '</div>' + 
+                        '</div>' +
                         '<table id="' + this.debugTableId + '" lay-filter="' + this.debugTableId + '"></table>' +
                         '</div>'
-                        
-                        
+
+
                 }],
             btn: ['添加选中章节', '添加全部章节', '继续下载', '恢复残留'],
             btn1: () => {
@@ -147,7 +147,7 @@ export class InfoWindowView {
 
     reloadChapterTree() {
         if (document.getElementById('downloadWindowDivListTreeId')) {
-            layui.tree.reload(this.chapterTreeId, { data: this.getChapterTreeData() });
+            layui.tree.reload(this.chapterTreeId, {data: this.getChapterTreeData()});
         }
     }
 
@@ -155,7 +155,7 @@ export class InfoWindowView {
         return layui.tree.getChecked(this.chapterTreeId);
     }
 
-    setProgress(percent,stats) {
+    setProgress(percent, stats) {
         // if (document.querySelector(`[lay-filter="${this.progressFilter}"]`)) {
         //     layui.element.progress(this.progressFilter, percent);
         // }
@@ -191,7 +191,7 @@ export class InfoWindowView {
     getSystemInfoPanelHtml() {
 
         return '<div class="layui-bg-gray" style="padding: 10px;">\n' +
-            '  <div class="layui-row layui-col-space15" id="systemInfoPanelId">'+
+            '  <div class="layui-row layui-col-space15" id="systemInfoPanelId">' +
 
             this.getSystemInfoItemHtml('status', '状态') +
             this.getSystemInfoItemHtml('consumerHeartbeat', '心跳时间') +
