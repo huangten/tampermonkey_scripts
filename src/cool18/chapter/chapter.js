@@ -1,11 +1,16 @@
 import {copyContext} from "../../common/common.js";
 import {saveAs} from "file-saver";
 import {ChapterView} from "../views/ChapterView.js";
+import {EditorPageView} from "../views/EditorPageView.js";
+import {EditorModel} from "../models/EditorModel.js";
 
 export class ChapterController {
     constructor(doc = document) {
         this.doc = doc;
         this.chapterView = new ChapterView()
+        this.editorPageView = null;
+        this.editorModel = null;
+        this.editor = null;
     }
 
     handleAction(type) {
@@ -16,7 +21,19 @@ export class ChapterController {
             case "添加空白符下载": {this.downloadChapterContent('blank');}break;
             case "复制内容HTML": {this.getPreTagContentHtml();}break;
             case "调整排版并复制": {this.copyChapterContent();}break;
+            case "编辑文本": {this.editorText().then(r => {});}break;
             default:console.log(type);
+        }
+    }
+
+    async editorText(){
+        if (!this.editorPageView) {
+            this.editorPageView = new EditorPageView(this.doc);
+            await this.editorPageView.ensure();
+        }
+        if (!this.editorModel) {
+            this.editorModel = new EditorModel(this.doc);
+            this.editor = this.editorModel.create(this.editorPageView.containerId, this.getChapterContent());
         }
     }
 

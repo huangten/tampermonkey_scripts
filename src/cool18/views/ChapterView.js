@@ -26,6 +26,10 @@ export class ChapterView {
                         type: '调整排版并复制',
                         icon: 'layui-icon-spread-left'
                     }
+                    , {
+                        type: '编辑文本',
+                        icon: 'layui-icon-list'
+                    }
                 ],
                 default: false,
                 css: {bottom: "21%"},

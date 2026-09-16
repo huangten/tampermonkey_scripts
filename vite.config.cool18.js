@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import monkey, {util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
 import {getVersion} from "./src/common/version.js";
+// import monacoEditorPlugin from "vite-plugin-monaco-editor";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
@@ -52,6 +53,7 @@ export default defineConfig(({mode}) => {
             AutoImport({
                 imports: [util.unimportPreset],
             }),
+            // monacoEditorPlugin({}),
             monkey(
                 {
                     entry: config.entry,
