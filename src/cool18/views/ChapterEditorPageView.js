@@ -24,7 +24,7 @@ export class ChapterEditorPageView {
                 moveOut: true,
                 maxmin: true,
                 skin: 'layui-layer-win10',
-                area: ['80%', '95%'],
+                area: ['90%', '95%'],
                 content: `<div id="${this.containerId}" style="width: 100%;height: 100%;"></div>`,
                 success: function (layero, index) {
                     layui.layer.setTop(layero);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.17:09:37
+// @version    2026-09-17.17:58:53
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -65,16 +65,14 @@
 		});
 	}
 	function init() {
-		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
+		return Promise.all([addCss("layui_css", "https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/css/layui.min.css"), addScript("layui_id", "https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/layui.min.js")]);
 	}
 	function initMonaca() {
 		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css"), loadMonaco()]);
 	}
-	var MONACO_BASE = "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs";
-	var monacoPromise;
 	function loadMonaco() {
-		if (monacoPromise) return monacoPromise;
-		monacoPromise = new Promise((resolve, reject) => {
+		const MONACO_BASE = "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs";
+		return new Promise((resolve, reject) => {
 			const script = document.createElement("script");
 			script.src = `${MONACO_BASE}/loader.js`;
 			script.onload = () => {
@@ -91,7 +89,6 @@
 			script.onerror = reject;
 			document.head.appendChild(script);
 		});
-		return monacoPromise;
 	}
 	var ChapterView = class {
 		renderFixbar({ onAction }) {
@@ -128,7 +125,10 @@
 						}
 					],
 					default: false,
-					css: { bottom: "21%" },
+					css: {
+						bottom: "20%",
+						right: 5
+					},
 					bgcolor: "#ad2fec",
 					margin: 0,
 					on: {
@@ -170,7 +170,7 @@
 					moveOut: true,
 					maxmin: true,
 					skin: "layui-layer-win10",
-					area: ["80%", "95%"],
+					area: ["90%", "95%"],
 					content: `<div id="${this.containerId}" style="width: 100%;height: 100%;"></div>`,
 					success: function(layero, index) {
 						layui.layer.setTop(layero);

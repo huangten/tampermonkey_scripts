@@ -32,7 +32,7 @@ export class ChapterView {
                     }
                 ],
                 default: false,
-                css: {bottom: "21%"},
+                css: {bottom: "20%",right: 5},
                 bgcolor: '#ad2fec',
                 margin: 0,
                 on: { // 任意事件 --  v2.8.0 新增

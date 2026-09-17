@@ -106,8 +106,8 @@ export function waitForElement(doc, selector, timeout = 10000) {
 
 export function init() {
     return Promise.all([
-        addCss('layui_css', 'https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css'),
-        addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
+        addCss('layui_css', 'https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/css/layui.min.css'),
+        addScript('layui_id', "https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/layui.min.js")
     ]);
 }
 
@@ -115,28 +115,18 @@ function initMonaca() {
     return Promise.all([
         addCss('Monaca_css', 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css'),
         // addScript('Monaca_id', "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")
-
         loadMonaco()
-
     ]);
 }
 
-const MONACO_BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs';
-let monacoPromise;
-
 function loadMonaco() {
-    // if (import.meta.env.DEV) {
-    //     return;
-    // }
-
-    if (monacoPromise) {
-        return monacoPromise;
-    }
-    monacoPromise = new Promise((resolve, reject) => {
+    const MONACO_BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs';
+    return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = `${MONACO_BASE}/loader.js`;
         script.onload = () => {
             // 注意：这里不要使用 window.require
+            /** @type{NodeJS.Require} */
             const req = unsafeWindow.require;
             if (!req) {
                 reject(new Error('Monaco AMD loader 未创建 require'));
@@ -158,7 +148,6 @@ function loadMonaco() {
         script.onerror = reject;
         document.head.appendChild(script);
     });
-    return monacoPromise;
 }
 
 export default initMonaca
