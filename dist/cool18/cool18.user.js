@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.15:36:00
+// @version    2026-09-17.15:37:55
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -354,9 +354,8 @@
 	(async function main() {
 		const url = new URL(document.URL);
 		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") {
-			await init();
+			await Promise.all([init(), initMonaca()]);
 			new ChapterController(document);
-			await initMonaca();
 		}
 	})();
 })(saveAs);
