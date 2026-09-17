@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.14:45:36
+// @version    2026-09-17.14:48:30
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -87,9 +87,6 @@
 	}
 	function init() {
 		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
-	}
-	function initMonaca() {
-		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css"), addScript("Monaca_id", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")]);
 	}
 	var ChapterView = class {
 		renderFixbar({ onAction }) {
@@ -358,7 +355,7 @@
 	(async function main() {
 		const url = new URL(document.URL);
 		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") {
-			await Promise.all([init(), initMonaca()]);
+			await Promise.all([init()]);
 			new ChapterController(document);
 		}
 	})();
