@@ -59,7 +59,9 @@ export default defineConfig(({mode}) => {
                     entry: config.entry,
                     userscript: {
                         require: [
-                            'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js'
+                            'https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js',
+                            'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js',
+                            // 'https://jsdelivr.net'
                         ],
                         grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_notification', 'GM_download'],
                         ...config.userscript
