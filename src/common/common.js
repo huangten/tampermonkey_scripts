@@ -125,6 +125,10 @@ const MONACO_BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs';
 let monacoPromise;
 
 function loadMonaco() {
+    // if (import.meta.env.DEV) {
+    //     return;
+    // }
+
     if (monacoPromise) {
         return monacoPromise;
     }

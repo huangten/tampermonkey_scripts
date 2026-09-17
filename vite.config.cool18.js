@@ -29,7 +29,6 @@ const scriptConfigs = {
 
 
 export default defineConfig(({mode}) => {
-
     console.log(mode)
     // 2. 获取当前要打包的脚本 Key
     const targetKey = process.env.TARGET_SCRIPT;
@@ -66,7 +65,6 @@ export default defineConfig(({mode}) => {
                         grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_notification', 'GM_download'],
                         ...config.userscript
                     },
-
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
                         fileName: `${config.build.fileName}.user.js`,
@@ -74,7 +72,7 @@ export default defineConfig(({mode}) => {
                             // 格式：'包名': util.cdn.jsdelivr('全局变量名', '文件名')
                             // 对于 file-saver，它的全局变量名通常是 saveAs
                             'file-saver': 'saveAs',
-                            'monaco-editor': 'monaco'
+                            // 'monaco-editor': 'monaco'
                         },
                     }
                 }),

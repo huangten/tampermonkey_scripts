@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.15:50:47
+// @version    2026-09-17.17:09:37
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -180,7 +180,7 @@
 				});
 			});
 		}
-		createEditor(containerId) {
+		async createEditor(containerId) {
 			const container = this.doc.getElementById(containerId);
 			this.editor = monaco.editor.create(container, {
 				model: null,

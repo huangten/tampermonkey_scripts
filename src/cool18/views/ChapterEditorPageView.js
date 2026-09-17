@@ -1,8 +1,6 @@
-// import * as monaco from "monaco-editor";
+/// <reference types="monaco-editor-core" />
+// 方式 A：在文件顶部加入这行，直接让全局变量 monaco 获得类型
 
-/*
-章节编辑页面
-* */
 export class ChapterEditorPageView {
     constructor(doc = document) {
         this.doc = doc;
@@ -38,9 +36,8 @@ export class ChapterEditorPageView {
         });
     }
 
-    createEditor(containerId) {
+    async createEditor(containerId) {
         const container = this.doc.getElementById(containerId);
-
         this.editor = monaco.editor.create(container,
             {
                 model: null,
