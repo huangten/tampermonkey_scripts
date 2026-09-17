@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.15:39:49
+// @version    2026-09-17.15:46:02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -77,8 +77,13 @@
 			const script = document.createElement("script");
 			script.src = `${MONACO_BASE}/loader.js`;
 			script.onload = () => {
-				window.require.config({ paths: { vs: MONACO_BASE } });
-				window.require(["vs/editor/editor.main"], (monaco) => {
+				const req = globalThis.require;
+				if (!req) {
+					reject(new Error("Monaco AMD loader 未创建 require"));
+					return;
+				}
+				req.config({ paths: { vs: MONACO_BASE } });
+				req(["vs/editor/editor.main"], (monaco) => {
 					resolve(monaco);
 				}, reject);
 			};

@@ -132,12 +132,18 @@ function loadMonaco() {
         const script = document.createElement('script');
         script.src = `${MONACO_BASE}/loader.js`;
         script.onload = () => {
-            window.require.config({
+            // 注意：这里不要使用 window.require
+            const req = globalThis.require;
+            if (!req) {
+                reject(new Error('Monaco AMD loader 未创建 require'));
+                return;
+            }
+            req.config({
                 paths: {
                     vs: MONACO_BASE,
                 },
             });
-            window.require(
+            req(
                 ['vs/editor/editor.main'],
                 (monaco) => {
                     resolve(monaco);
