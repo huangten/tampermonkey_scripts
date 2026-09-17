@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.14:48:30
+// @version    2026-09-17.14:51:45
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
-// @require    https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.js
+// @require    https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js
 // @grant      GM_addStyle
 // @grant      GM_download
 // @grant      GM_getResourceText
@@ -87,6 +87,9 @@
 	}
 	function init() {
 		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
+	}
+	function initMonaca() {
+		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css")]);
 	}
 	var ChapterView = class {
 		renderFixbar({ onAction }) {
@@ -355,7 +358,7 @@
 	(async function main() {
 		const url = new URL(document.URL);
 		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") {
-			await Promise.all([init()]);
+			await Promise.all([init(), initMonaca()]);
 			new ChapterController(document);
 		}
 	})();
