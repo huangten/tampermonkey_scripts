@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.15:46:02
+// @version    2026-09-17.15:50:00
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -16,6 +16,7 @@
 
 (function(file_saver) {
 	"use strict";
+	var _unsafeWindow = (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
 	function addCss(id, src) {
 		return new Promise((resolve, reject) => {
 			if (!document.getElementById(id)) {
@@ -77,7 +78,7 @@
 			const script = document.createElement("script");
 			script.src = `${MONACO_BASE}/loader.js`;
 			script.onload = () => {
-				const req = globalThis.require;
+				const req = _unsafeWindow.require;
 				if (!req) {
 					reject(new Error("Monaco AMD loader 未创建 require"));
 					return;
