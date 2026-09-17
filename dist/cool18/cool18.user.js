@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.15:09:58
+// @version    2026-09-17.15:13:24
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
-// @require    https://cdn.jsdelivr.net/npm/monaco-editor/+esm
 // @grant      GM_addStyle
 // @grant      GM_download
 // @grant      GM_getResourceText
@@ -15,29 +14,8 @@
 // @noframes
 // ==/UserScript==
 
-(function(monaco_editor, file_saver) {
+(function(file_saver) {
 	"use strict";
-	var __create = Object.create;
-	var __defProp = Object.defineProperty;
-	var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-	var __getOwnPropNames = Object.getOwnPropertyNames;
-	var __getProtoOf = Object.getPrototypeOf;
-	var __hasOwnProp = Object.prototype.hasOwnProperty;
-	var __copyProps = (to, from, except, desc) => {
-		if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
-			key = keys[i];
-			if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
-				get: ((k) => from[k]).bind(null, key),
-				enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
-			});
-		}
-		return to;
-	};
-	var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
-		value: mod,
-		enumerable: true
-	}) : target, mod));
-	monaco_editor = __toESM(monaco_editor);
 	function addCss(id, src) {
 		return new Promise((resolve, reject) => {
 			if (!document.getElementById(id)) {
@@ -89,7 +67,7 @@
 		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
 	}
 	function initMonaca() {
-		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css")]);
+		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css"), addScript("Monaca_id", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")]);
 	}
 	var ChapterView = class {
 		renderFixbar({ onAction }) {
@@ -180,7 +158,7 @@
 		}
 		createEditor(containerId) {
 			const container = this.doc.getElementById(containerId);
-			this.editor = monaco_editor.editor.create(container, {
+			this.editor = monaco.editor.create(container, {
 				model: null,
 				automaticLayout: true,
 				minimap: {
@@ -214,7 +192,7 @@
 			return this.editor.getModel();
 		}
 		setEditorModel(text, language = "plaintext") {
-			const model = monaco_editor.editor.createModel(text, language);
+			const model = monaco.editor.createModel(text, language);
 			this.editor.setModel(model);
 		}
 		addRightClickMenu(id, label, contextMenuOrder, callback, contextMenuGroupId = "navigation") {
@@ -362,4 +340,4 @@
 			new ChapterController(document);
 		}
 	})();
-})(monaco, saveAs);
+})(saveAs);
