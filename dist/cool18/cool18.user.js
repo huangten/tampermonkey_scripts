@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.14:25:37
+// @version    2026-09-17.14:43:59
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
 // @require    https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js
-// @require    https://jsdelivr.net
+// @require    https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js
 // @grant      GM_addStyle
 // @grant      GM_download
 // @grant      GM_getResourceText
