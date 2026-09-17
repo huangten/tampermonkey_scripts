@@ -1,15 +1,11 @@
-import {init} from '../common/common.js'
+import initMonaca, {init} from '../common/common.js'
 import {ChapterController} from './chapter/chapter.js'
 
-(function main() {
+(async function main() {
     const url = new URL(document.URL);
     // console.log(url)
     if (url.searchParams.get('act') && url.pathname === '/bbs4/index.php' && url.searchParams.get('act') === 'threadview') {
-        init().then(() => {
-            const chapterController = new ChapterController(document);
-            chapterController.run();
-        });
+        await Promise.all([init(),  initMonaca()]);
+        new ChapterController(document);
     }
-
-
 })();

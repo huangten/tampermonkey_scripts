@@ -1,140 +1,91 @@
-import {copyContext} from "../../common/common.js";
-import {saveAs} from "file-saver";
 import {ChapterView} from "../views/ChapterView.js";
-import {EditorPageView} from "../views/EditorPageView.js";
+import {ChapterEditorPageView} from "../views/ChapterEditorPageView.js";
 import {EditorModel} from "../models/EditorModel.js";
+import {ChapterModel} from "../models/ChapterModel.js";
 
 export class ChapterController {
     constructor(doc = document) {
         this.doc = doc;
+        /** @type {ChapterModel} */
+        this.chapterModel = new ChapterModel(this.doc);
+        /** @type {ChapterView} */
         this.chapterView = new ChapterView()
+        /** @type {ChapterEditorPageView} */
         this.editorPageView = null;
-        this.editorModel = null;
-        this.editor = null;
+
+        // 创建UI，显示UI，并添加相关处理事件
+        this.create();
     }
 
-    handleAction(type) {
-        switch (type) {
-            case "复制书名": {this.getBookname();}break;
-            case "复制内容": {this.getPreTagContent();}break;
-            case "原样下载": {this.downloadChapterContent();}break;
-            case "添加空白符下载": {this.downloadChapterContent('blank');}break;
-            case "复制内容HTML": {this.getPreTagContentHtml();}break;
-            case "调整排版并复制": {this.copyChapterContent();}break;
-            case "编辑文本": {this.editorText().then(r => {});}break;
-            default:console.log(type);
-        }
-    }
 
-    async editorText(){
-        if (!this.editorPageView) {
-            this.editorPageView = new EditorPageView(this.doc);
-            await this.editorPageView.ensure();
-        }
-        if (!this.editorModel) {
-            this.editorModel = new EditorModel(this.doc);
-            this.editor = this.editorModel.create(this.editorPageView.containerId, this.getChapterContent());
-        }
-    }
-
-    run() {
+    create() {
         this.chapterView.renderFixbar({
-            onAction:(type) => this.handleAction(type)
+            onAction: (type) => this.handleAction(type)
         });
     }
 
-    getPreElement() {
-        return this.doc.getElementsByTagName('pre')[0];
-    }
-
-    getPreTagContent() {
-        copyContext(this.getPreElement().innerText.split('\n').filter(Boolean).join('\n')).then();
-    }
-
-
-    getBookname() {
-        const titleElements = this.doc.getElementsByClassName('main-title');
-        const titleContent = titleElements[0].innerText.trim();
-        let bookName = titleContent.match(/^【(.*?)】/);
-        if (!bookName) {
-            bookName = titleContent;
-        } else {
-            bookName = bookName[1];
-        }
-        copyContext(bookName).then();
-        return bookName;
-    }
-
-    downloadChapterContent(tag) {
-        const titleElements = this.doc.getElementsByClassName('main-title');
-        const titleContent = titleElements[0].innerText.trim();
-        // const bookName = titleContent.match(/^【(.*?)】/)[1];
-        // const author = titleContent.match(/(.*?)作者(.*?)/)
-        // console.log(bookName)
-        let title = titleContent.replace(/^【(.*?)】/, "$1");
-        const filename = title;
-        const prentTitleElements = this.doc.getElementsByClassName('reply-info');
-        if (prentTitleElements.length > 0) {
-            try {
-                const prentTitle = prentTitleElements[0].getElementsByTagName('a')[0].innerText.trim();
-                const pTitle = prentTitle.replace(/^【(.*?)】/, "$1");
-                title = title + '\n\n' + `回复于：${pTitle}`;
-            } catch (e) {
-                console.log(e);
+    async handleAction(type) {
+        switch (type) {
+            case "复制书名": {
+                this.chapterModel.getBookname();
             }
-        }
-
-        const content = title +
-            '\n\n' +
-            this.getChapterContent(tag) +
-            '\n\n\n\n\n\n\n';
-
-        this.saveContentToLocationTxtFile(filename, content);
-    }
-
-    getChapterContent(tag = '') {
-        return this.getPreElement().innerText.split('\n')
-            .filter(Boolean).map((c) => {
-                c = c.trimEnd();
-                // const a = c.length;
-
-                // const b = c.length;
-                if (tag === 'blank') {
-                    c = c.replace(/^[ \t\r\n\f\v]+|[ \t\r\n\f\v]+$/g, '');
-                    c = `　　${c}`;
-                }
-                return c;
-            }).join('\n');
-    }
-
-    getPreTagContentHtml() {
-        copyContext(this.getPreElement().innerHTML).then();
-    }
-
-    getPreElementV2() {
-        const preElement = this.getPreElement();
-        const brs = preElement.getElementsByTagName('br');
-        if (brs) {
-            for (let i = brs.length - 1; i >= 0; i--) {
-                brs[i].remove();
+                break;
+            case "复制内容": {
+                this.chapterModel.getPreTagContent();
             }
+                break;
+            case "原样下载": {
+                this.chapterModel.downloadChapterContent();
+            }
+                break;
+            case "添加空白符下载": {
+                this.chapterModel.downloadChapterContent('blank');
+            }
+                break;
+            case "复制内容HTML": {
+                this.chapterModel.getPreTagContentHtml();
+            }
+                break;
+            case "调整排版并复制": {
+                this.chapterModel.copyChapterContent();
+            }
+                break;
+            case "编辑文本": {
+                await this.openEditorTextView();
+            }
+                break;
+            default:
+                console.log(type);
         }
-        return preElement;
     }
 
-    copyChapterContent() {
-        copyContext(this.getPreElementV2().innerText.split('\n').filter(Boolean).join('\n')).then();
+
+    async openEditorTextView() {
+        if (!this.editorPageView) {
+            this.editorPageView = new ChapterEditorPageView(this.doc);
+            await this.editorPageView.ensure();
+            this.editorPageView.setEditorModel(this.chapterModel.getChapterContent());
+            this.handleEditorRightClickMenus();
+        }
     }
 
-    saveContentToLocationTxtFile(filename, content) {
-        try {
-            !!new Blob;
-            const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
-            saveAs(blob, filename + ".txt");
-        } catch (e) {
-            console.log(e);
-            return false;
-        }
-        return true;
+    // 添加右键菜单命令
+    handleEditorRightClickMenus() {
+        this.editorPageView.addRightClickMenu('去除每行开头空白符', '去除每行开头空白符', 1, () => {
+            const text = this.editorPageView.getEditorValue();
+            const newText = text
+                .split('\n')
+                .map(line => line.replace(/^\s+/g, ''))
+                .join('\n');
+            this.editorPageView.setEditorValue(newText);
+        });
+        this.editorPageView.addRightClickMenu('每行开头添加中文空白符', '每行开头添加中文空白符', 2, () => {
+            const text = this.editorPageView.getEditorValue();
+            const newText = text
+                .split('\n')
+                .map(line => `　　${line}`)
+                .join('\n');
+            this.editorPageView.setEditorValue(newText);
+        });
     }
 }

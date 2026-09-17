@@ -56,24 +56,26 @@ export async function buildEpub(url, options = {}) {
         });
     }
 
-    zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+    zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
     zip.folder('META-INF').file('container.xml', createContainer());
 
     const o = zip.folder('OEBPS');
     const cssFolder = o.folder("Styles");
-    const imgFolder = o.folder("Images")
+    const imgFolder = o.folder("Images");
+    /** @type{CommonRes} */
+    const comm = CommonRes.getInstance();
 
     let coverUrl = chapterCatalogModel.getCover();
-    const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
+    const coverImagePromise = comm.gmFetchCoverImageBlob(coverUrl);
 
     await Promise.all([
-        CommonRes.getInstance().getMainCss().then(css => cssFolder.file('main.css', css)),
-        CommonRes.getInstance().getFontsCss().then(css => cssFolder.file('fonts.css', css)),
+        comm.getMainCss().then(css => cssFolder.file('main.css', css)),
+        comm.getFontsCss().then(css => cssFolder.file('fonts.css', css)),
 
         coverImagePromise.then(img => imgFolder.file('cover.jpg', img)),
-        CommonRes.getInstance().getLogoImg().then(img => imgFolder.file('logo.webp', img)),
-        CommonRes.getInstance().getLine1Img().then(img => imgFolder.file('line1.webp', img)),
-        CommonRes.getInstance().getGirlImg().then(img => imgFolder.file('girl.jpg', img)),
+        comm.getLogoImg().then(img => imgFolder.file('logo.webp', img)),
+        comm.getLine1Img().then(img => imgFolder.file('line1.webp', img)),
+        comm.getGirlImg().then(img => imgFolder.file('girl.jpg', img)),
     ]);
 
     if (Object.hasOwn(options, 'SaveCover') && options.SaveCover === true) {
@@ -224,8 +226,7 @@ ${ncxNav.join('\n')}
     saveAs(blob, `${bookNameFile} 作者：${authorFile}.epub`);
     console.log(bookName + ' 下载完毕！');
     // GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
-
-
+    chapterCatalogModel.dispose();
 }
 
 function escapeHtml(unsafe) {

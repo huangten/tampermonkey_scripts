@@ -47,8 +47,8 @@ export class ChapterView {
                         layui.layer.closeAll('tips');
                     }
                 },
-                click: function (type) {
-                    onAction(type);
+                click: async function (type) {
+                    await onAction(type);
                 }
             });
         });

@@ -43,7 +43,8 @@ export class ChapterDownloadService {
         }
         
         const success = chapterPageModel.saveToLocal();
-        
+
+        chapterPageModel.dispose();
         chapterPageModel = null;
         await sleep(300);
         await destroyIframeElementAsync(iframe);

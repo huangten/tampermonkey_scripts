@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-15.23:46:38
+// @version    2026-09-17.13:58:54
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -305,6 +305,9 @@ onmessage = function (event) {
 			this.titleText = "";
 			this.texts = [];
 			this.htmlLines = [];
+		}
+		dispose() {
+			this.doc = null;
 		}
 		load() {
 			this.titleText = this.getChapterTitleText();
@@ -710,6 +713,10 @@ onmessage = function (event) {
 			this.doc = doc;
 			this.location = location;
 		}
+		dispose() {
+			this.doc = null;
+			this.location = null;
+		}
 		getBookName() {
 			const bookName = this.doc.getElementsByTagName("h1")[0]?.cloneNode(true);
 			const spans = bookName?.getElementsByTagName("span");
@@ -887,15 +894,16 @@ onmessage = function (event) {
 		const o = zip.folder("OEBPS");
 		const cssFolder = o.folder("Styles");
 		const imgFolder = o.folder("Images");
+		const comm = CommonRes.getInstance();
 		let coverUrl = chapterCatalogModel.getCover();
-		const coverImagePromise = CommonRes.getInstance().gmFetchCoverImageBlob(coverUrl);
+		const coverImagePromise = comm.gmFetchCoverImageBlob(coverUrl);
 		await Promise.all([
-			CommonRes.getInstance().getMainCss().then((css) => cssFolder.file("main.css", css)),
-			CommonRes.getInstance().getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
+			comm.getMainCss().then((css) => cssFolder.file("main.css", css)),
+			comm.getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
 			coverImagePromise.then((img) => imgFolder.file("cover.jpg", img)),
-			CommonRes.getInstance().getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
-			CommonRes.getInstance().getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
-			CommonRes.getInstance().getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
+			comm.getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
+			comm.getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
+			comm.getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
 		]);
 		if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
 			const coverImage = await coverImagePromise;
@@ -1021,6 +1029,7 @@ ${ncxNav.join("\n")}
 		const blob = await zip.generateAsync({ type: "blob" });
 		(0, file_saver.saveAs)(blob, `${bookNameFile} 作者：${authorFile}.epub`);
 		console.log(bookName + " 下载完毕！");
+		chapterCatalogModel.dispose();
 	}
 	function escapeHtml(unsafe) {
 		return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -5956,6 +5965,7 @@ ${ncxNav.join("\n")}
 			let chapterPageModel = new ChapterPageModel(iframe.contentDocument);
 			if (chapterPageModel.getTexts().some((s) => s.includes("以下正文内容已隐藏"))) throw new Error("章节内容不完整，结束下载");
 			const success = chapterPageModel.saveToLocal();
+			chapterPageModel.dispose();
 			chapterPageModel = null;
 			await sleep(300);
 			await destroyIframeElementAsync(iframe);
@@ -7000,29 +7010,20 @@ ${ncxNav.join("\n")}
 			return String(err);
 		}
 	};
-	(function main() {
+	(async function main() {
 		switch (new URL(document.URL).pathname) {
 			case "/novel/intro":
-				init().then(async () => {
-					await new IntroV3Controller().init();
-				}).catch((e) => {
-					console.log(e);
-				});
+				await init();
+				await new IntroV3Controller().init();
 				break;
 			case "/novel/list":
-				init().then(() => {
-					HackTimer();
-					new ListV2Controller().init();
-				}).catch((e) => {
-					console.log(e);
-				});
+				await init();
+				HackTimer();
+				new ListV2Controller().init();
 				break;
 			case "/novel/chapter":
-				init().then(() => {
-					new ChapterController().init();
-				}).catch((e) => {
-					console.log(e);
-				});
+				await init();
+				new ChapterController().init();
 				break;
 			default: console.log("pathname 匹配失败");
 		}

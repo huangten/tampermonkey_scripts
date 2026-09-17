@@ -68,6 +68,12 @@ export default defineConfig(({mode}) => {
                     build: {
                         // 3. 关键：让生成的脚本文件名包含脚本 Key
                         fileName: `${config.build.fileName}.user.js`,
+                        externalGlobals: {
+                            // 格式：'包名': util.cdn.jsdelivr('全局变量名', '文件名')
+                            // 对于 file-saver，它的全局变量名通常是 saveAs
+                            'file-saver': 'saveAs',
+                            'monaco-editor': 'monaco-editor'
+                        },
                     }
                 }),
         ],

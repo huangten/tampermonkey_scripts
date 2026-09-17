@@ -6,6 +6,11 @@ export class ChapterCatalogModel {
         this.location = location;
     }
 
+    dispose() {
+        this.doc = null;
+        this.location = null;
+    }
+
     getBookName() {
         const bookName = this.doc.getElementsByTagName('h1')[0]?.cloneNode(true);
         const spans = bookName?.getElementsByTagName('span');

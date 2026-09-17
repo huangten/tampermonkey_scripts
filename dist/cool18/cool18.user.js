@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-15.00:02:54
+// @version    2026-09-17.14:02:30
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -14,9 +14,29 @@
 // @noframes
 // ==/UserScript==
 
-(function() {
+(function(monaco_editor, file_saver) {
 	"use strict";
-	var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+	var __create = Object.create;
+	var __defProp = Object.defineProperty;
+	var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+	var __getOwnPropNames = Object.getOwnPropertyNames;
+	var __getProtoOf = Object.getPrototypeOf;
+	var __hasOwnProp = Object.prototype.hasOwnProperty;
+	var __copyProps = (to, from, except, desc) => {
+		if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+			key = keys[i];
+			if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+				get: ((k) => from[k]).bind(null, key),
+				enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+			});
+		}
+		return to;
+	};
+	var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
+		value: mod,
+		enumerable: true
+	}) : target, mod));
+	monaco_editor = __toESM(monaco_editor);
 	function addCss(id, src) {
 		return new Promise((resolve, reject) => {
 			if (!document.getElementById(id)) {
@@ -67,75 +87,9 @@
 	function init() {
 		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
 	}
-	var import_FileSaver_min = __commonJSMin(((exports, module) => {
-		(function(a, b) {
-			if ("function" == typeof define && define.amd) define([], b);
-			else if ("undefined" != typeof exports) b();
-			else b(), a.FileSaver = { exports: {} }.exports;
-		})(exports, function() {
-			"use strict";
-			function b(a, b) {
-				return "undefined" == typeof b ? b = { autoBom: !1 } : "object" != typeof b && (console.warn("Deprecated: Expected third argument to be a object"), b = { autoBom: !b }), b.autoBom && /^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type) ? new Blob(["﻿", a], { type: a.type }) : a;
-			}
-			function c(a, b, c) {
-				var d = new XMLHttpRequest();
-				d.open("GET", a), d.responseType = "blob", d.onload = function() {
-					g(d.response, b, c);
-				}, d.onerror = function() {
-					console.error("could not download file");
-				}, d.send();
-			}
-			function d(a) {
-				var b = new XMLHttpRequest();
-				b.open("HEAD", a, !1);
-				try {
-					b.send();
-				} catch (a) {}
-				return 200 <= b.status && 299 >= b.status;
-			}
-			function e(a) {
-				try {
-					a.dispatchEvent(new MouseEvent("click"));
-				} catch (c) {
-					var b = document.createEvent("MouseEvents");
-					b.initMouseEvent("click", !0, !0, window, 0, 0, 0, 80, 20, !1, !1, !1, !1, 0, null), a.dispatchEvent(b);
-				}
-			}
-			var f = "object" == typeof window && window.window === window ? window : "object" == typeof self && self.self === self ? self : "object" == typeof global && global.global === global ? global : void 0, a = f.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent), g = f.saveAs || ("object" != typeof window || window !== f ? function() {} : "download" in HTMLAnchorElement.prototype && !a ? function(b, g, h) {
-				var i = f.URL || f.webkitURL, j = document.createElement("a");
-				g = g || b.name || "download", j.download = g, j.rel = "noopener", "string" == typeof b ? (j.href = b, j.origin === location.origin ? e(j) : d(j.href) ? c(b, g, h) : e(j, j.target = "_blank")) : (j.href = i.createObjectURL(b), setTimeout(function() {
-					i.revokeObjectURL(j.href);
-				}, 4e4), setTimeout(function() {
-					e(j);
-				}, 0));
-			} : "msSaveOrOpenBlob" in navigator ? function(f, g, h) {
-				if (g = g || f.name || "download", "string" != typeof f) navigator.msSaveOrOpenBlob(b(f, h), g);
-				else if (d(f)) c(f, g, h);
-				else {
-					var i = document.createElement("a");
-					i.href = f, i.target = "_blank", setTimeout(function() {
-						e(i);
-					});
-				}
-			} : function(b, d, e, g) {
-				if (g = g || open("", "_blank"), g && (g.document.title = g.document.body.innerText = "downloading..."), "string" == typeof b) return c(b, d, e);
-				var h = "application/octet-stream" === b.type, i = /constructor/i.test(f.HTMLElement) || f.safari, j = /CriOS\/[\d]+/.test(navigator.userAgent);
-				if ((j || h && i || a) && "undefined" != typeof FileReader) {
-					var k = new FileReader();
-					k.onloadend = function() {
-						var a = k.result;
-						a = j ? a : a.replace(/^data:[^;]*;/, "data:attachment/file;"), g ? g.location.href = a : location = a, g = null;
-					}, k.readAsDataURL(b);
-				} else {
-					var l = f.URL || f.webkitURL, m = l.createObjectURL(b);
-					g ? g.location = m : location.href = m, g = null, setTimeout(function() {
-						l.revokeObjectURL(m);
-					}, 4e4);
-				}
-			});
-			f.saveAs = g.saveAs = g, "undefined" != typeof module && (module.exports = g);
-		});
-	}))();
+	function initMonaca() {
+		return Promise.all([addCss("Monaca_css", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css"), addScript("Monaca_id", "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")]);
+	}
 	var ChapterView = class {
 		renderFixbar({ onAction }) {
 			layui.use(() => {
@@ -164,6 +118,10 @@
 						{
 							type: "调整排版并复制",
 							icon: "layui-icon-spread-left"
+						},
+						{
+							type: "编辑文本",
+							icon: "layui-icon-list"
 						}
 					],
 					default: false,
@@ -182,43 +140,100 @@
 							layui.layer.closeAll("tips");
 						}
 					},
-					click: function(type) {
-						onAction(type);
+					click: async function(type) {
+						await onAction(type);
 					}
 				});
 			});
 		}
 	};
-	var ChapterController = class {
+	var ChapterEditorPageView = class {
 		constructor(doc = document) {
 			this.doc = doc;
-			this.chapterView = new ChapterView();
+			this.index = 0;
+			this.containerId = "editorContainer";
+			this.editor = null;
 		}
-		handleAction(type) {
-			switch (type) {
-				case "复制书名":
-					this.getBookname();
-					break;
-				case "复制内容":
-					this.getPreTagContent();
-					break;
-				case "原样下载":
-					this.downloadChapterContent();
-					break;
-				case "添加空白符下载":
-					this.downloadChapterContent("blank");
-					break;
-				case "复制内容HTML":
-					this.getPreTagContentHtml();
-					break;
-				case "调整排版并复制":
-					this.copyChapterContent();
-					break;
-				default: console.log(type);
-			}
+		async ensure() {
+			return new Promise((resolve, reject) => {
+				if (this.index !== 0) return resolve();
+				const self = this;
+				this.index = layui.layer.open({
+					type: 1,
+					title: "编辑面板",
+					shadeClose: false,
+					closeBtn: 0,
+					shade: 0,
+					moveOut: true,
+					maxmin: true,
+					skin: "layui-layer-win10",
+					area: ["80%", "95%"],
+					content: `<div id="${this.containerId}" style="width: 100%;height: 100%;"></div>`,
+					success: function(layero, index) {
+						layui.layer.setTop(layero);
+						self.createEditor(self.containerId);
+						resolve();
+					}
+				});
+			});
 		}
-		run() {
-			this.chapterView.renderFixbar({ onAction: (type) => this.handleAction(type) });
+		createEditor(containerId) {
+			const container = this.doc.getElementById(containerId);
+			this.editor = monaco_editor.editor.create(container, {
+				model: null,
+				automaticLayout: true,
+				minimap: {
+					enabled: true,
+					side: "right",
+					showSlider: "mouseover",
+					renderCharacters: true,
+					size: "fill",
+					maxColumn: 120
+				},
+				unicodeHighlight: {
+					ambiguousCharacters: false,
+					invisibleCharacters: false,
+					nonBasicASCII: false
+				},
+				wordWrap: "off",
+				fontSize: 16,
+				lineNumbers: "on",
+				scrollBeyondLastLine: false,
+				renderWhitespace: "all",
+				theme: "vs"
+			});
+		}
+		setEditorValue(value) {
+			this.editor.setValue(value);
+		}
+		getEditorValue() {
+			return this.editor.getValue();
+		}
+		getEditorModel() {
+			return this.editor.getModel();
+		}
+		setEditorModel(text, language = "plaintext") {
+			const model = monaco_editor.editor.createModel(text, language);
+			this.editor.setModel(model);
+		}
+		addRightClickMenu(id, label, contextMenuOrder, callback, contextMenuGroupId = "navigation") {
+			this.editor.addAction({
+				id,
+				label,
+				contextMenuGroupId,
+				contextMenuOrder,
+				run(editor) {
+					callback?.(editor);
+				}
+			});
+		}
+	};
+	var ChapterModel = class {
+		constructor(doc = document) {
+			this.doc = doc;
+		}
+		dispose() {
+			this.doc = null;
 		}
 		getPreElement() {
 			return this.doc.getElementsByTagName("pre")[0];
@@ -275,7 +290,7 @@
 			try {
 				new Blob();
 				const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-				(0, import_FileSaver_min.saveAs)(blob, filename + ".txt");
+				(0, file_saver.saveAs)(blob, filename + ".txt");
 			} catch (e) {
 				console.log(e);
 				return false;
@@ -283,10 +298,67 @@
 			return true;
 		}
 	};
-	(function main() {
+	var ChapterController = class {
+		constructor(doc = document) {
+			this.doc = doc;
+			this.chapterModel = new ChapterModel(this.doc);
+			this.chapterView = new ChapterView();
+			this.editorPageView = null;
+			this.create();
+		}
+		create() {
+			this.chapterView.renderFixbar({ onAction: (type) => this.handleAction(type) });
+		}
+		async handleAction(type) {
+			switch (type) {
+				case "复制书名":
+					this.chapterModel.getBookname();
+					break;
+				case "复制内容":
+					this.chapterModel.getPreTagContent();
+					break;
+				case "原样下载":
+					this.chapterModel.downloadChapterContent();
+					break;
+				case "添加空白符下载":
+					this.chapterModel.downloadChapterContent("blank");
+					break;
+				case "复制内容HTML":
+					this.chapterModel.getPreTagContentHtml();
+					break;
+				case "调整排版并复制":
+					this.chapterModel.copyChapterContent();
+					break;
+				case "编辑文本":
+					await this.openEditorTextView();
+					break;
+				default: console.log(type);
+			}
+		}
+		async openEditorTextView() {
+			if (!this.editorPageView) {
+				this.editorPageView = new ChapterEditorPageView(this.doc);
+				await this.editorPageView.ensure();
+				this.editorPageView.setEditorModel(this.chapterModel.getChapterContent());
+				this.handleEditorRightClickMenus();
+			}
+		}
+		handleEditorRightClickMenus() {
+			this.editorPageView.addRightClickMenu("去除每行开头空白符", "去除每行开头空白符", 1, () => {
+				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => line.replace(/^\s+/g, "")).join("\n");
+				this.editorPageView.setEditorValue(newText);
+			});
+			this.editorPageView.addRightClickMenu("每行开头添加中文空白符", "每行开头添加中文空白符", 2, () => {
+				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => `　　${line}`).join("\n");
+				this.editorPageView.setEditorValue(newText);
+			});
+		}
+	};
+	(async function main() {
 		const url = new URL(document.URL);
-		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") init().then(() => {
-			new ChapterController(document).run();
-		});
+		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") {
+			await Promise.all([init(), initMonaca()]);
+			new ChapterController(document);
+		}
 	})();
-})();
+})(monaco - editor, saveAs);

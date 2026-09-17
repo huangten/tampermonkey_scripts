@@ -110,6 +110,14 @@ export function init() {
         addScript('layui_id', "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")
     ]);
 }
+function initMonaca() {
+    return Promise.all([
+        addCss('Monaca_css', 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css'),
+        addScript('Monaca_id', "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")
+    ]);
+}
+
+export default initMonaca
 
 export async function destroyIframeElementAsync(iframe) {
     if (iframe && iframe instanceof HTMLIFrameElement) {

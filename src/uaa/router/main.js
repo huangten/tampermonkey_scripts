@@ -5,32 +5,24 @@ import {ListV2Controller} from "../controllers/ListV2Controller.js";
 import {IntroV3Controller} from "../controllers/IntroV3Controller.js";
 
 
-(function main() {
+(async function main() {
     const url = new URL(document.URL)
     switch (url.pathname) {
         case '/novel/intro': {
-            init().then(async () => {
-                await new IntroV3Controller().init();
-            }).catch((e) => {
-                console.log(e);
-            });
+            await init();
+            await new IntroV3Controller().init();
         }
             break;
         case '/novel/list': {
-            init().then(() => {
-                HackTimer();
-                new ListV2Controller().init();
-            }).catch((e) => {
-                console.log(e);
-            });
+            await init();
+            HackTimer();
+            new ListV2Controller().init();
+
         }
             break;
         case '/novel/chapter': {
-            init().then(() => {
-                new ChapterController().init();
-            }).catch((e) => {
-                console.log(e);
-            });
+            await init()
+            new ChapterController().init();
         }
             break;
         default:

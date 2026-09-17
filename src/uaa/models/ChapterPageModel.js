@@ -1,5 +1,5 @@
-import { cleanText, getFileNameFromPath } from "../../common/common.js";
-import { saveAs } from "file-saver";
+import {cleanText, getFileNameFromPath} from "../../common/common.js";
+import {saveAs} from "file-saver";
 
 export class ChapterPageModel {
     constructor(doc = document) {
@@ -7,6 +7,11 @@ export class ChapterPageModel {
         this.titleText = '';
         this.texts = [];
         this.htmlLines = [];
+    }
+
+
+    dispose() {
+        this.doc = null;
     }
 
     load() {
@@ -92,7 +97,7 @@ export class ChapterPageModel {
             try {
                 !!new Blob;
                 saveAs(
-                    new Blob([content], { type: "text/plain;charset=utf-8" }),
+                    new Blob([content], {type: "text/plain;charset=utf-8"}),
                     [bookName, authorInfo, title].join(' ') + ".txt"
                 );
             } catch (e) {
@@ -104,7 +109,7 @@ export class ChapterPageModel {
         }
         return true;
     }
-    
+
     getChapterTitleText() {
         const titleBox = this.doc.getElementsByClassName("reader-content")[0];
         const level = titleBox.getElementsByClassName('reader-vol')[0] !== undefined
@@ -115,8 +120,8 @@ export class ChapterPageModel {
             : "";
         return cleanText(level + title);
     }
-    
-    
+
+
     getChapterLines() {
         const contentBox = this.doc.getElementsByClassName("reader-content")[0];
         if (!contentBox) {
@@ -129,7 +134,7 @@ export class ChapterPageModel {
         let lines = contentBody.getElementsByTagName("p");
         return Array.from(lines);
     }
-    
+
     getTexts() {
         const lines = this.getChapterLines();
         let texts = [];
@@ -154,13 +159,13 @@ export class ChapterPageModel {
             if (t.length === 0) {
                 continue;
             }
-    
+
             texts.push(t);
         }
-    
+
         return texts;
     }
-    
+
     getLines() {
         let lines = this.getChapterLines();
         let htmlLines = [];
@@ -178,7 +183,7 @@ export class ChapterPageModel {
                     htmlLines.push(`<img alt="${imgElement[j].src}" src="../Images/${getFileNameFromPath(imgElement[j].src)}"/>`);
                 }
             }
-    
+
             if (lines[i].innerText.indexOf("UAA地址发布页") > -1) {
                 continue;
             }
@@ -187,11 +192,11 @@ export class ChapterPageModel {
                 continue;
             }
             htmlLines.push(`<p>${t}</p>`);
-    
+
         }
         return htmlLines;
     }
-    
+
     getBookName() {
         const book = this.doc.getElementById('readerBook')
         if (!book) {
@@ -199,7 +204,7 @@ export class ChapterPageModel {
         }
         return cleanText(book.textContent.trim())
     }
-    
+
     getAuthorInfo() {
         const metaBox = this.doc.getElementsByClassName("reader-meta")[0];
         if (!metaBox) {

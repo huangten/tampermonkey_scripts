@@ -5,6 +5,10 @@ export class EditorModel {
         this.doc = doc;
     }
 
+    dispose() {
+        this.doc = null;
+    }
+
     create(containerId, value) {
         const container = this.doc.getElementById(containerId);
         if (!container) {
@@ -41,7 +45,7 @@ export class EditorModel {
         editor.addAction({
             id: 'hello-world',
             label: '去除空白符',
-            precondition: 'editorHasSelection',
+            precondition: 'editorHasSelection', // 选中才出现
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1,
             run(editor) {
