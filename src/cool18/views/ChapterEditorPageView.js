@@ -38,9 +38,9 @@ export class ChapterEditorPageView {
         });
     }
 
-
     createEditor(containerId) {
         const container = this.doc.getElementById(containerId);
+
         this.editor = monaco.editor.create(container,
             {
                 model: null,
