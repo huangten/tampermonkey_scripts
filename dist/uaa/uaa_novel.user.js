@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.13:58:54
+// @version    2026-09-17.18:40:43
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -74,6 +74,8 @@
 		value: mod,
 		enumerable: true
 	}) : target, mod));
+	var _GM_openInTab = (() => typeof GM_openInTab != "undefined" ? GM_openInTab : void 0)();
+	var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
 	function addCss(id, src) {
 		return new Promise((resolve, reject) => {
 			if (!document.getElementById(id)) {
@@ -159,7 +161,7 @@
 		});
 	}
 	function init() {
-		return Promise.all([addCss("layui_css", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/css/layui.min.css"), addScript("layui_id", "https://cdnjs.cloudflare.com/ajax/libs/layui/2.12.0/layui.min.js")]);
+		return Promise.all([addCss("layui_css", "https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/css/layui.min.css"), addScript("layui_id", "https://cdn.jsdelivr.net/npm/layui@2.13.9/dist/layui.min.js")]);
 	}
 	async function destroyIframeElementAsync(iframe) {
 		if (iframe && iframe instanceof HTMLIFrameElement) {
@@ -628,8 +630,6 @@ onmessage = function (event) {
 			this.config.onFinish(this.downloaded, this.failed);
 		}
 	};
-	var _GM_openInTab = (() => typeof GM_openInTab != "undefined" ? GM_openInTab : void 0)();
-	var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
 	var CommonRes = class CommonRes {
 		constructor() {
 			if (CommonRes.instance) return CommonRes.instance;

@@ -1,4 +1,4 @@
-/// <reference types="monaco-editor-core" />
+/// <reference types="monaco-editor" />
 // 方式 A：在文件顶部加入这行，直接让全局变量 monaco 获得类型
 
 export class ChapterEditorPageView {
