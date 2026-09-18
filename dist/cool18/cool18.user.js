@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-18.10:55:03
+// @version    2026-09-18.15:51:58
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -231,6 +231,65 @@
 			});
 		}
 	};
+	var EditorModel = class {
+		constructor(content) {
+			this.lines = content.split("\n").filter(Boolean);
+		}
+		handleLine() {
+			if (this.lines.length < 2) return "";
+			const result = [];
+			for (let index = 0; index < this.lines.length; index++) {
+				let line = this.lines[index];
+				let l = {
+					isSpecialLine: false,
+					showText: ""
+				};
+				if (index === 0) {
+					l.isSpecialLine = true;
+					l.showText = line.trim() + "\n";
+					result.push(l);
+					continue;
+				}
+				if (index === 1) {
+					l.isSpecialLine = true;
+					l.showText = line.trim() + "\n\n\n\n";
+					result.push(l);
+					continue;
+				}
+				if (/^\s*第[\d一二三四五六七八九十]+卷(.*?)$/.test(line)) {
+					l.isSpecialLine = true;
+					l.showText = `\n${line.trim()}\n`;
+					result.push(l);
+					continue;
+				}
+				if (/^\s*[（第][\d一二三四五六七八九十零百千万 　]+[章）话回集](.*?)$/.test(line)) {
+					l.isSpecialLine = true;
+					l.showText = `\n${line.trim()}\n`;
+					result.push(l);
+					continue;
+				}
+				if (/^[ 　]{2,}/.test(line)) {
+					const lls = line.replaceAll("    ", "　　").split("　　").join(`\n　　`).trimStart();
+					result.push({
+						isSpecialLine: false,
+						showText: `\n　　${lls}`
+					});
+				} else {
+					const lls = line.replaceAll("    ", "　　").split("　　").join(`\n　　`).trimStart();
+					result.push({
+						isSpecialLine: false,
+						showText: lls
+					});
+				}
+			}
+			const contents = [];
+			for (let i = 0; i < result.length; i++) contents.push(result[i].showText);
+			return contents.join("");
+		}
+		toString() {
+			return this.lines.join("\n");
+		}
+	};
 	var ChapterModel = class {
 		constructor(doc = document) {
 			this.doc = doc;
@@ -362,16 +421,8 @@
 				this.editorPageView.setEditorValue(newText);
 			});
 			this.editorPageView.addRightClickMenu("按照两个中文空格拆分段落", "按照两个中文空格拆分段落", 3, () => {
-				const texts = this.editorPageView.getEditorValue().split("\n");
-				const firstLine = texts.shift().trim();
-				if (!firstLine) return;
-				const newText = texts.join("").replaceAll("　　", "\n　　").replaceAll("    ", "\n　　").split("\n").map((line) => {
-					if (/^　+$/.test(line)) return line.trim();
-					if (/^\s*第[\d一二三四五六七八九十]+卷(.*?)$/.test(line)) return line.trim();
-					if (/^\s*[（第][\d一二三四五六七八九十零百千万]+[章）话回集](.*?)$/.test(line)) return line.trim();
-					return line;
-				}).join("\n");
-				this.editorPageView.setEditorValue(firstLine + "\n\n" + newText);
+				const text = new EditorModel(this.editorPageView.getEditorValue());
+				this.editorPageView.setEditorValue(text.handleLine());
 			});
 			this.editorPageView.addRightClickMenu("清洗英文单双引号", "清洗英文单双引号", 4, () => {
 				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => {

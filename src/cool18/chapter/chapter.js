@@ -93,35 +93,8 @@ export class ChapterController {
         });
 
         this.editorPageView.addRightClickMenu('按照两个中文空格拆分段落', '按照两个中文空格拆分段落', 3, () => {
-            const text = this.editorPageView.getEditorValue();
-            const texts = text.split('\n');
-            const firstLine = texts.shift().trim();
-            if (!firstLine) {
-                return;
-            }
-
-            const newText = texts
-                .join('')
-                .replaceAll('　　', '\n　　')
-                .replaceAll('    ', '\n　　')
-                .split('\n')
-                .map(line => {
-                    // 空白行
-                    if (/^　+$/.test(line)) {
-                        return line.trim();
-                    }
-                    if (/^\s*第[\d一二三四五六七八九十]+卷(.*?)$/.test(line)) {
-                        return line.trim()
-                    }
-
-                    if (/^\s*[（第][\d一二三四五六七八九十零百千万]+[章）话回集](.*?)$/.test(line)) {
-                        return line.trim()
-                    }
-
-                    return line;
-                }).join('\n');
-
-            this.editorPageView.setEditorValue(firstLine + '\n\n' + newText);
+            const text = new EditorModel(this.editorPageView.getEditorValue());
+            this.editorPageView.setEditorValue(text.handleLine());
         });
 
         this.editorPageView.addRightClickMenu('清洗英文单双引号', '清洗英文单双引号', 4, () => {
