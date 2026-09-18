@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.18:40:47
+// @version    2026-09-18.10:55:03
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -76,7 +76,8 @@
 			const script = document.createElement("script");
 			script.src = `${MONACO_BASE}/loader.js`;
 			script.onload = () => {
-				const req = _unsafeWindow.require;
+				let req = _unsafeWindow?.require;
+				if (!req) req = window?.require;
 				if (!req) {
 					reject(new Error("Monaco AMD loader 未创建 require"));
 					return;
@@ -139,7 +140,6 @@
 							});
 						},
 						mouseleave: function(type) {
-							console.log(type);
 							layui.layer.closeAll("tips");
 						}
 					},
@@ -252,9 +252,8 @@
 			copyContext(bookName).then();
 			return bookName;
 		}
-		downloadChapterContent(tag) {
-			let title = this.doc.getElementsByClassName("main-title")[0].innerText.trim().replace(/^【(.*?)】/, "$1");
-			const filename = title;
+		getDownloadContent(tag) {
+			let title = this.getDownloadFilename();
 			const prentTitleElements = this.doc.getElementsByClassName("reply-info");
 			if (prentTitleElements.length > 0) try {
 				const pTitle = prentTitleElements[0].getElementsByTagName("a")[0].innerText.trim().replace(/^【(.*?)】/, "$1");
@@ -264,8 +263,13 @@
 			} catch (e) {
 				console.log(e);
 			}
-			const content = title + "\n\n" + this.getChapterContent(tag) + "\n\n\n\n\n\n\n";
-			this.saveContentToLocationTxtFile(filename, content);
+			return title + "\n\n\n\n" + this.getChapterContent(tag) + "\n\n\n\n\n\n\n\n\n";
+		}
+		getDownloadFilename() {
+			return this.doc.getElementsByClassName("main-title")[0].innerText.trim().replace(/^【(.*?)】/, "$1");
+		}
+		downloadChapterContent(tag) {
+			this.saveContentToLocationTxtFile(this.getDownloadFilename(), this.getDownloadContent(tag));
 		}
 		getChapterContent(tag = "") {
 			return this.getPreElement().innerText.split("\n").filter(Boolean).map((c) => {
@@ -342,7 +346,7 @@
 			if (!this.editorPageView) {
 				this.editorPageView = new ChapterEditorPageView(this.doc);
 				await this.editorPageView.ensure();
-				this.editorPageView.setEditorModel(this.chapterModel.getChapterContent());
+				this.editorPageView.setEditorModel(this.chapterModel.getDownloadContent());
 				this.handleEditorRightClickMenus();
 			}
 		}
@@ -352,8 +356,38 @@
 				this.editorPageView.setEditorValue(newText);
 			});
 			this.editorPageView.addRightClickMenu("每行开头添加中文空白符", "每行开头添加中文空白符", 2, () => {
-				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => `　　${line}`).join("\n");
+				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => {
+					if (line.length > 0) return `　　${line}`;
+				}).join("\n");
 				this.editorPageView.setEditorValue(newText);
+			});
+			this.editorPageView.addRightClickMenu("按照两个中文空格拆分段落", "按照两个中文空格拆分段落", 3, () => {
+				const texts = this.editorPageView.getEditorValue().split("\n");
+				const firstLine = texts.shift().trim();
+				if (!firstLine) return;
+				const newText = texts.join("").replaceAll("　　", "\n　　").replaceAll("    ", "\n　　").split("\n").map((line) => {
+					if (/^　+$/.test(line)) return line.trim();
+					if (/^\s*第[\d一二三四五六七八九十]+卷(.*?)$/.test(line)) return line.trim();
+					if (/^\s*[（第][\d一二三四五六七八九十零百千万]+[章）话回集](.*?)$/.test(line)) return line.trim();
+					return line;
+				}).join("\n");
+				this.editorPageView.setEditorValue(firstLine + "\n\n" + newText);
+			});
+			this.editorPageView.addRightClickMenu("清洗英文单双引号", "清洗英文单双引号", 4, () => {
+				const newText = this.editorPageView.getEditorValue().split("\n").map((line) => {
+					return line.replaceAll(/"([^"]+)"/g, "“$1”").replaceAll(/'([^']+)'/g, "‘$1’");
+				}).join("\n");
+				this.editorPageView.setEditorValue(newText);
+			});
+			this.editorPageView.addRightClickMenu("重置文本", "重置文本", 4, () => {
+				this.editorPageView.setEditorValue(this.chapterModel.getDownloadContent());
+			});
+			this.editorPageView.addRightClickMenu("下载文件", "下载文件", 4, () => {
+				const texts = this.editorPageView.getEditorValue().split("\n");
+				if (texts.length < 2) return;
+				let filename = texts[0].trim();
+				if (!filename.includes("作者")) filename += texts[1].trim();
+				this.chapterModel.saveContentToLocationTxtFile(filename, texts.join("\n"));
 			});
 		}
 	};

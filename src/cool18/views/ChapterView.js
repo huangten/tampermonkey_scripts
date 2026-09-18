@@ -43,7 +43,7 @@ export class ChapterView {
                         });
                     },
                     mouseleave: function (type) {
-                        console.log(type);
+                        // console.log(type);
                         layui.layer.closeAll('tips');
                     }
                 },

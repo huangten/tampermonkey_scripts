@@ -1,7 +1,7 @@
 import {copyContext} from "../../common/common.js";
 import {saveAs} from "file-saver";
 
-export class ChapterModel{
+export class ChapterModel {
     constructor(doc = document) {
         this.doc = doc;
     }
@@ -32,14 +32,8 @@ export class ChapterModel{
         return bookName;
     }
 
-    downloadChapterContent(tag) {
-        const titleElements = this.doc.getElementsByClassName('main-title');
-        const titleContent = titleElements[0].innerText.trim();
-        // const bookName = titleContent.match(/^【(.*?)】/)[1];
-        // const author = titleContent.match(/(.*?)作者(.*?)/)
-        // console.log(bookName)
-        let title = titleContent.replace(/^【(.*?)】/, "$1");
-        const filename = title;
+    getDownloadContent(tag) {
+        let title = this.getDownloadFilename();
         const prentTitleElements = this.doc.getElementsByClassName('reply-info');
         if (prentTitleElements.length > 0) {
             try {
@@ -51,12 +45,20 @@ export class ChapterModel{
             }
         }
 
-        const content = title +
-            '\n\n' +
-            this.getChapterContent(tag) +
-            '\n\n\n\n\n\n\n';
+        return title + '\n\n\n\n' + this.getChapterContent(tag) + '\n\n\n\n\n\n\n\n\n';
+    }
 
-        this.saveContentToLocationTxtFile(filename, content);
+    getDownloadFilename() {
+        const titleElements = this.doc.getElementsByClassName('main-title');
+        const titleContent = titleElements[0].innerText.trim();
+        // const bookName = titleContent.match(/^【(.*?)】/)[1];
+        // const author = titleContent.match(/(.*?)作者(.*?)/)
+        // console.log(bookName)
+        return titleContent.replace(/^【(.*?)】/, "$1");
+    }
+
+    downloadChapterContent(tag) {
+        this.saveContentToLocationTxtFile(this.getDownloadFilename(), this.getDownloadContent(tag));
     }
 
     getChapterContent(tag = '') {
