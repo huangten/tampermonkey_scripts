@@ -81,7 +81,7 @@ export class ChapterEditorPageView {
         const model = monaco.editor.createModel(text, language);
         this.editor.setModel(model);
     }
-
+    
     addRightClickMenu(id, label, contextMenuOrder, callback, contextMenuGroupId = 'navigation') {
         this.editor.addAction({
             id: id,
@@ -91,21 +91,6 @@ export class ChapterEditorPageView {
             contextMenuOrder: contextMenuOrder,
             run(editor) {
                 callback?.(editor);
-                // const selection = editor.getSelection();
-                // if (!selection) {
-                //     return;
-                // }
-                // const text = editor.getModel().getValueInRange(selection);
-                // console.log('选中的内容：', text);
-
-                // const text = editor.getValue();
-                //
-                // const newText = text
-                //     .split('\n')
-                //     .map(line => line.replace(/^\s+/g, ''))
-                //     .join('\n');
-                //
-                // editor.setValue(newText);
             }
         })
 

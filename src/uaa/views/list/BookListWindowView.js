@@ -55,6 +55,7 @@ export class BookListWindowView {
                     content: this.getTaskInfoTabContent()
                 }
             ],
+            btnAlign: 'c',
             btn: ['全选', '1-12', '13-24', '25-36', '37-49', '打开选中书籍', '导出EPUB', '导出EPUB+入库','导出EPUB+入库+封面', '清除选中'],
             btn1: () => this.handleSelectRange(options, '全选'),
             btn2: () => this.handleSelectRange(options, '1-12'),

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-17.18:40:43
+// @version    2026-09-23.16:24:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -5477,6 +5477,7 @@ ${ncxNav.join("\n")}
 					title: "导出和打开新窗口信息",
 					content: this.getTaskInfoTabContent()
 				}],
+				btnAlign: "c",
 				btn: [
 					"全选",
 					"1-12",
