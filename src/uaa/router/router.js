@@ -5,7 +5,7 @@ import {ListV2Controller} from "../controllers/ListV2Controller.js";
 import {IntroV3Controller} from "../controllers/IntroV3Controller.js";
 
 
-(async function main() {
+export async function router() {
     const url = new URL(document.URL)
     switch (url.pathname) {
         case '/novel/intro': {
@@ -26,7 +26,6 @@ import {IntroV3Controller} from "../controllers/IntroV3Controller.js";
         }
             break;
         default:
-            console.log('pathname 匹配失败')
+            console.log('路由规则匹配失败');
     }
-
-})();
+}

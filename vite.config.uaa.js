@@ -6,7 +6,7 @@ import {getVersion} from "./src/common/version.js";
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
     uaa_novel: {
-        entry: 'src/uaa/router/main.js',
+        entry: 'src/uaa/main.js',
         userscript: {
             name: 'UAA 小说 增强',
             author: 'YourName',
@@ -36,7 +36,7 @@ const scriptConfigs = {
 
 export default defineConfig(({mode}) => {
 
-    console.log(mode)
+    // console.log(mode)
     // 2. 获取当前要打包的脚本 Key
     const targetKey = process.env.TARGET_SCRIPT;
     const config = scriptConfigs[targetKey];

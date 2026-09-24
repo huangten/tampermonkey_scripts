@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-23.16:24:33
+// @version    2026-09-24.10:28:37
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -30,7 +30,7 @@
 // @noframes
 // ==/UserScript==
 
-(function(file_saver, jszip) {
+(async function(file_saver, jszip) {
 	"use strict";
 	var __create$1 = Object.create;
 	var __defProp$1 = Object.defineProperty;
@@ -7011,7 +7011,7 @@ ${ncxNav.join("\n")}
 			return String(err);
 		}
 	};
-	(async function main() {
+	async function router() {
 		switch (new URL(document.URL).pathname) {
 			case "/novel/intro":
 				await init();
@@ -7026,7 +7026,8 @@ ${ncxNav.join("\n")}
 				await init();
 				new ChapterController().init();
 				break;
-			default: console.log("pathname 匹配失败");
+			default: console.log("路由规则匹配失败");
 		}
-	})();
+	}
+	await(router());
 })(saveAs, JSZip);
