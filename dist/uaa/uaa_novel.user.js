@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-24.10:28:37
+// @version    2026-10-03.21:08:38
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -5628,6 +5628,7 @@ ${ncxNav.join("\n")}
 			this.db = db;
 			this.openNewWindowScheduler = openNewWindowScheduler;
 			this.exportEpubScheduler = exportEpubScheduler;
+			this.exportEpubScheduler.setConfig({ interval: 6e3 });
 			this.currentOpenRun = {
 				total: 0,
 				completed: 0

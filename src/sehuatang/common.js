@@ -65,7 +65,7 @@ export function getInfo(el) {
     }
 
     try {
-        const isFileSaverSupported = !!new Blob;
+        !!new Blob;
         const blob = new Blob([JSON.stringify(info, null, 4)], {type: "text/plain;charset=utf-8"});
         saveAs(blob, selfFilename);
     } catch (e) {

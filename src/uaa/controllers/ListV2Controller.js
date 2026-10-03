@@ -18,6 +18,7 @@ export class ListV2Controller {
         this.db = db;
         this.openNewWindowScheduler = openNewWindowScheduler;
         this.exportEpubScheduler = exportEpubScheduler;
+        this.exportEpubScheduler.setConfig({interval: 6 * 1000});
         this.currentOpenRun = {
             total: 0,
             completed: 0

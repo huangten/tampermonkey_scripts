@@ -1,5 +1,5 @@
 import {defineConfig} from 'vite';
-import monkey, {cdn, util} from 'vite-plugin-monkey';
+import monkey, {util} from 'vite-plugin-monkey';
 import AutoImport from 'unplugin-auto-import/vite';
 import {getVersion} from "./src/common/version.js";
 
