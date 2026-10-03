@@ -18,7 +18,6 @@ export class ListV2Controller {
         this.db = db;
         this.openNewWindowScheduler = openNewWindowScheduler;
         this.exportEpubScheduler = exportEpubScheduler;
-        this.exportEpubScheduler.setConfig({interval: 6 * 1000});
         this.currentOpenRun = {
             total: 0,
             completed: 0
@@ -128,7 +127,7 @@ export class ListV2Controller {
 
     configureOpenNewWindowScheduler() {
         this.openNewWindowScheduler.setConfig({
-            interval: 2000,
+            interval: 4000,
             downloadHandler: (task) => {
                 GM_openInTab(task.href, { active: false });
                 return true;
@@ -163,7 +162,7 @@ export class ListV2Controller {
 
     configureExportEpubScheduler() {
         this.exportEpubScheduler.setConfig({
-            interval: 2000,
+            interval: 6 * 1000,
             onTaskBefore: (task) => {
                 const actionName = task.addChaptersToDb ? '开始导出并入库。。。' : '开始导出。。。';
                 this.view.setExportInfo('书籍: ' + task.title + ' ' + actionName, task.href);

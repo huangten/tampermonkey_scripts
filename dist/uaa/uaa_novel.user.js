@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-03.21:08:38
+// @version    2026-10-03.21:20:10
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -5628,7 +5628,6 @@ ${ncxNav.join("\n")}
 			this.db = db;
 			this.openNewWindowScheduler = openNewWindowScheduler;
 			this.exportEpubScheduler = exportEpubScheduler;
-			this.exportEpubScheduler.setConfig({ interval: 6e3 });
 			this.currentOpenRun = {
 				total: 0,
 				completed: 0
@@ -5723,7 +5722,7 @@ ${ncxNav.join("\n")}
 		}
 		configureOpenNewWindowScheduler() {
 			this.openNewWindowScheduler.setConfig({
-				interval: 2e3,
+				interval: 4e3,
 				downloadHandler: (task) => {
 					_GM_openInTab(task.href, { active: false });
 					return true;
@@ -5759,7 +5758,7 @@ ${ncxNav.join("\n")}
 		}
 		configureExportEpubScheduler() {
 			this.exportEpubScheduler.setConfig({
-				interval: 2e3,
+				interval: 6e3,
 				onTaskBefore: (task) => {
 					const actionName = task.addChaptersToDb ? "开始导出并入库。。。" : "开始导出。。。";
 					this.view.setExportInfo("书籍: " + task.title + " " + actionName, task.href);
