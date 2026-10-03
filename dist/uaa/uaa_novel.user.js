@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-03.22:24:52
+// @version    2026-10-03.23:51:33
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -861,21 +861,12 @@ onmessage = function (event) {
 			return menus;
 		}
 	};
-	function fetchBookIntro(url) {
-		return fetch(url).then((response) => {
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-			return response.text();
-		}).then((htmlString) => {
-			return new DOMParser().parseFromString(htmlString, "text/html");
-		});
+	async function fetchBookIntro(url) {
+		const text = await (await fetch(url)).text();
+		return new DOMParser().parseFromString(text, "text/html");
 	}
-	async function buildEpub(url, options = {}) {
+	async function buildEpub(url, doc, options = {}) {
 		const zip = new jszip.default();
-		let doc = null;
-		if (typeof url === "string") doc = await fetchBookIntro(url).catch((e) => {
-			throw new Error(e);
-		});
-		else if (url?.nodeType === Node.DOCUMENT_NODE) doc = url;
 		const chapterCatalogModel = new ChapterCatalogModel(doc);
 		const bn = chapterCatalogModel.getBookName();
 		let bookName = escapeHtml(cleanText(bn));
@@ -5772,7 +5763,8 @@ ${ncxNav.join("\n")}
 					this.view.setExportInfo("书籍: " + task.title + " " + actionName, task.href);
 				},
 				downloadHandler: async (task) => {
-					await buildEpub(task.href, {
+					const doc = await fetchBookIntro(task.href);
+					await buildEpub(task.href, doc, {
 						onIntroParsed: async ({ url, doc }) => {
 							if (!task.addChaptersToDb) return;
 							await this.addBookChaptersToDb(task, doc, url);
@@ -6850,7 +6842,7 @@ ${ncxNav.join("\n")}
 				},
 				"删除本书": () => this.deleteBookById(),
 				"复制书名": () => copyContext(this.catalog.getBookName()),
-				"导出本书EPUB文件": () => buildEpub(this.doc),
+				"导出本书EPUB文件": () => buildEpub(this.doc.URL, this.doc),
 				"启动": () => this.startWorker(),
 				"停止": () => this.stopWorker(),
 				"恢复残留": () => this.recoverStaleSystemState(),

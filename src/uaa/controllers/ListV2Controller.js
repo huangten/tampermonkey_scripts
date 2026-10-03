@@ -1,18 +1,18 @@
-import { Downloader } from "../../common/downloader.js";
-import { buildEpub } from "../buildEpub.js";
-import { DatabaseService } from "../db/DatabaseService.js";
-import { ChapterCatalogModel } from "../models/ChapterCatalogModel.js";
-import { BookListModel } from "../models/BookListModel.js";
-import { BookListWindowView } from "../views/list/BookListWindowView.js";
+import {Downloader} from "../../common/downloader.js";
+import {buildEpub, fetchBookIntro} from "../buildEpub.js";
+import {DatabaseService} from "../db/DatabaseService.js";
+import {ChapterCatalogModel} from "../models/ChapterCatalogModel.js";
+import {BookListModel} from "../models/BookListModel.js";
+import {BookListWindowView} from "../views/list/BookListWindowView.js";
 
 export class ListV2Controller {
     constructor({
-        model = new BookListModel(),
-        view = new BookListWindowView(),
-        db = new DatabaseService(),
-        openNewWindowScheduler = new Downloader(),
-        exportEpubScheduler = new Downloader()
-    } = {}) {
+                    model = new BookListModel(),
+                    view = new BookListWindowView(),
+                    db = new DatabaseService(),
+                    openNewWindowScheduler = new Downloader(),
+                    exportEpubScheduler = new Downloader()
+                } = {}) {
         this.model = model;
         this.view = view;
         this.db = db;
@@ -47,8 +47,8 @@ export class ListV2Controller {
             onSelectRange: (type) => this.selectRange(type),
             onOpenSelected: () => this.openSelectedBooks(),
             onExportSelected: () => this.exportSelectedBooks(),
-            onExportAndAddChapters: () => this.exportSelectedBooks({ addChaptersToDb: true }),
-            onExportAndAddChapterAndCover: () => this.exportSelectedBooks({ addChaptersToDb: true, SaveCover: true }),
+            onExportAndAddChapters: () => this.exportSelectedBooks({addChaptersToDb: true}),
+            onExportAndAddChapterAndCover: () => this.exportSelectedBooks({addChaptersToDb: true, SaveCover: true}),
             onClearSelected: () => this.clearSelected(),
             onBookClick: (book) => this.toggleBook(book),
             openNewWindowScheduler: this.openNewWindowScheduler,
@@ -129,7 +129,7 @@ export class ListV2Controller {
         this.openNewWindowScheduler.setConfig({
             interval: 2000,
             downloadHandler: (task) => {
-                GM_openInTab(task.href, { active: false });
+                GM_openInTab(task.href, {active: false});
                 return true;
             },
             onTaskBefore: (task) => {
@@ -146,7 +146,7 @@ export class ListV2Controller {
                 this.view.setOpenInfo('书籍打开完毕', 'javascript:void(0);');
             },
             onCatch: async (err) => {
-                this.view.alert('出现错误：' + err.message, { icon: 5, shadeClose: true });
+                this.view.alert('出现错误：' + err.message, {icon: 5, shadeClose: true});
             }
         });
     }
@@ -168,8 +168,9 @@ export class ListV2Controller {
                 this.view.setExportInfo('书籍: ' + task.title + ' ' + actionName, task.href);
             },
             downloadHandler: async (task) => {
-                await buildEpub(task.href, {
-                    onIntroParsed: async ({ url, doc }) => {
+                const doc = await fetchBookIntro(task.href);
+                await buildEpub(task.href, doc, {
+                    onIntroParsed: async ({url, doc}) => {
                         if (!task.addChaptersToDb) {
                             return;
                         }
@@ -196,10 +197,10 @@ export class ListV2Controller {
                 }
                 console.log("打开结束 ✅");
                 this.view.minimizeBookListWindow();
-                this.view.msg('书籍导出完毕', { icon: 1, shadeClose: true });
+                this.view.msg('书籍导出完毕', {icon: 1, shadeClose: true});
             },
             onCatch: async (err) => {
-                this.view.alert('导出失败：' + err.message, { icon: 5, shadeClose: true });
+                this.view.alert('导出失败：' + err.message, {icon: 5, shadeClose: true});
             }
         });
     }
@@ -217,7 +218,7 @@ export class ListV2Controller {
     }
 
     async addBookChaptersToDb(task, doc, url) {
-        const catalog = new ChapterCatalogModel(doc, { href: url });
+        const catalog = new ChapterCatalogModel(doc, {href: url});
         const chapters = catalog
             .toChapterList(catalog.getChapterListTree())
             .filter(chapter => chapter.href && chapter.href.trim().length > 0);

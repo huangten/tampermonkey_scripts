@@ -75,7 +75,7 @@ export class IntroV3Controller {
             },
             '删除本书': () => this.deleteBookById(),
             '复制书名': () => copyContext(this.catalog.getBookName()),
-            '导出本书EPUB文件': () => buildEpub(this.doc),
+            '导出本书EPUB文件': () => buildEpub(this.doc.URL, this.doc),
             '启动': () => this.startWorker(),
             '停止': () => this.stopWorker(),
             '恢复残留': () => this.recoverStaleSystemState(),

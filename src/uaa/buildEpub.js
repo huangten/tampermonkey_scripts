@@ -4,34 +4,15 @@ import JSZip from "jszip";
 import {saveAs} from "file-saver";
 import {ChapterCatalogModel} from "./models/ChapterCatalogModel.js";
 
-function fetchBookIntro(url) {
-    return fetch(url)
-        .then(response => {
-            // 确保请求成功
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            // 2. 获取 HTML 文本
-            return response.text();
-        })
-        .then(htmlString => {
-            // 3. 使用 DOMParser 解析 HTML 字符串
-            const parser = new DOMParser();
-            return parser.parseFromString(htmlString, 'text/html');
-        });
+export async function fetchBookIntro(url) {
+    const response = await fetch(url);
+    const text = await response.text();
+    const parser = new DOMParser();
+    return parser.parseFromString(text, 'text/html');
 }
 
-export async function buildEpub(url, options = {}) {
+export async function buildEpub(url,doc,options = {}) {
     const zip = new JSZip();
-    let doc = null;
-    if (typeof url === 'string') {
-        doc = await fetchBookIntro(url).catch((e) => {
-            throw new Error(e);
-        });
-    } else if (url?.nodeType === Node.DOCUMENT_NODE) {
-        doc = url;
-    }
-
     const chapterCatalogModel = new ChapterCatalogModel(doc);
     const bn = chapterCatalogModel.getBookName();
     let bookName = escapeHtml(cleanText(bn));
