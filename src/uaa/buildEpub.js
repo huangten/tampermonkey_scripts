@@ -67,7 +67,7 @@ export async function buildEpub(url, options = {}) {
 
     let coverUrl = chapterCatalogModel.getCover();
     const coverImagePromise = await comm.gmFetchCoverImageBlob(coverUrl);
-    if (!coverImagePromise) {
+    if (coverImagePromise !== null) {
         // 设置 epub 文件封面
         imgFolder.file('cover.jpg', coverImagePromise);
         // 判断是否保存书籍封面

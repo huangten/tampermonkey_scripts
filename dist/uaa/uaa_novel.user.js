@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-03.22:16:22
+// @version    2026-10-03.22:24:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -904,7 +904,7 @@ onmessage = function (event) {
 		const comm = CommonRes.getInstance();
 		let coverUrl = chapterCatalogModel.getCover();
 		const coverImagePromise = await comm.gmFetchCoverImageBlob(coverUrl);
-		if (!coverImagePromise) {
+		if (coverImagePromise !== null) {
 			imgFolder.file("cover.jpg", coverImagePromise);
 			if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
 				if (coverImagePromise.type === "application/octet-stream") {
