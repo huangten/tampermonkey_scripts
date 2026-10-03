@@ -66,26 +66,28 @@ export async function buildEpub(url, options = {}) {
     const comm = CommonRes.getInstance();
 
     let coverUrl = chapterCatalogModel.getCover();
-    const coverImagePromise = comm.gmFetchCoverImageBlob(coverUrl);
+    const coverImagePromise = await comm.gmFetchCoverImageBlob(coverUrl);
+    if (!coverImagePromise) {
+        // 设置 epub 文件封面
+        imgFolder.file('cover.jpg', coverImagePromise);
+        // 判断是否保存书籍封面
+        if (Object.hasOwn(options, 'SaveCover') && options.SaveCover === true) {
+            if (coverImagePromise.type === 'application/octet-stream') {
+                console.log('coverImage.type:', coverImagePromise.type);
+                const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split('/').pop());
+                saveAs(coverImagePromise, coverFileName);
+            }
+        }
+    }
 
     await Promise.all([
         comm.getMainCss().then(css => cssFolder.file('main.css', css)),
         comm.getFontsCss().then(css => cssFolder.file('fonts.css', css)),
-
-        coverImagePromise.then(img => imgFolder.file('cover.jpg', img)),
         comm.getLogoImg().then(img => imgFolder.file('logo.webp', img)),
         comm.getLine1Img().then(img => imgFolder.file('line1.webp', img)),
         comm.getGirlImg().then(img => imgFolder.file('girl.jpg', img)),
     ]);
 
-    if (Object.hasOwn(options, 'SaveCover') && options.SaveCover === true) {
-        const coverImage = await coverImagePromise;
-        console.log('coverImage.type:', coverImage.type);
-        if (coverImage.type === 'application/octet-stream') {
-            const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split('/').pop());
-            saveAs(coverImage, coverFileName);
-        }
-    }
 
     const manifest = [], spine = [], ncxNav = [];
     const textFolder = o.folder('Text');

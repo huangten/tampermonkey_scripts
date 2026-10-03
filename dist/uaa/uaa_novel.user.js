@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-03.21:20:10
+// @version    2026-10-03.22:16:22
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -645,7 +645,8 @@ onmessage = function (event) {
 			return CommonRes.instance;
 		}
 		async gmFetchCoverImageBlob(url) {
-			return new Promise((resolve, reject) => {
+			if (!url) return null;
+			return new Promise((resolve) => {
 				_GM_xmlhttpRequest({
 					method: "GET",
 					url,
@@ -653,9 +654,15 @@ onmessage = function (event) {
 					headers: { Referer: "https://www.uaa.com/" },
 					onload: (res) => {
 						if (res.status === 200) resolve(res.response);
-						else reject(new Error("HTTP CODE " + res.status));
+						else {
+							console.error("HTTP CODE " + res.status);
+							resolve(null);
+						}
 					},
-					onerror: (err) => reject(err)
+					onerror: (err) => {
+						console.error(err);
+						resolve(null);
+					}
 				});
 			});
 		}
@@ -896,23 +903,24 @@ onmessage = function (event) {
 		const imgFolder = o.folder("Images");
 		const comm = CommonRes.getInstance();
 		let coverUrl = chapterCatalogModel.getCover();
-		const coverImagePromise = comm.gmFetchCoverImageBlob(coverUrl);
+		const coverImagePromise = await comm.gmFetchCoverImageBlob(coverUrl);
+		if (!coverImagePromise) {
+			imgFolder.file("cover.jpg", coverImagePromise);
+			if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
+				if (coverImagePromise.type === "application/octet-stream") {
+					console.log("coverImage.type:", coverImagePromise.type);
+					const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split("/").pop());
+					(0, file_saver.saveAs)(coverImagePromise, coverFileName);
+				}
+			}
+		}
 		await Promise.all([
 			comm.getMainCss().then((css) => cssFolder.file("main.css", css)),
 			comm.getFontsCss().then((css) => cssFolder.file("fonts.css", css)),
-			coverImagePromise.then((img) => imgFolder.file("cover.jpg", img)),
 			comm.getLogoImg().then((img) => imgFolder.file("logo.webp", img)),
 			comm.getLine1Img().then((img) => imgFolder.file("line1.webp", img)),
 			comm.getGirlImg().then((img) => imgFolder.file("girl.jpg", img))
 		]);
-		if (Object.hasOwn(options, "SaveCover") && options.SaveCover === true) {
-			const coverImage = await coverImagePromise;
-			console.log("coverImage.type:", coverImage.type);
-			if (coverImage.type === "application/octet-stream") {
-				const coverFileName = decodeURIComponent(new URL(coverUrl).pathname.split("/").pop());
-				(0, file_saver.saveAs)(coverImage, coverFileName);
-			}
-		}
 		const manifest = [], spine = [], ncxNav = [];
 		const textFolder = o.folder("Text");
 		textFolder.file(`cover.xhtml`, genCoverHtmlPageV2());
@@ -5722,7 +5730,7 @@ ${ncxNav.join("\n")}
 		}
 		configureOpenNewWindowScheduler() {
 			this.openNewWindowScheduler.setConfig({
-				interval: 4e3,
+				interval: 2e3,
 				downloadHandler: (task) => {
 					_GM_openInTab(task.href, { active: false });
 					return true;
@@ -5758,7 +5766,7 @@ ${ncxNav.join("\n")}
 		}
 		configureExportEpubScheduler() {
 			this.exportEpubScheduler.setConfig({
-				interval: 6e3,
+				interval: 2e3,
 				onTaskBefore: (task) => {
 					const actionName = task.addChaptersToDb ? "开始导出并入库。。。" : "开始导出。。。";
 					this.view.setExportInfo("书籍: " + task.title + " " + actionName, task.href);

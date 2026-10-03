@@ -19,7 +19,10 @@ export class CommonRes {
     }
 
     async gmFetchCoverImageBlob(url) {
-        return new Promise((resolve, reject) => {
+        if (!url) {
+            return null;
+        }
+        return new Promise((resolve) => {
             GM_xmlhttpRequest({
                 method: 'GET', url, responseType: 'blob', headers: {
                     Referer: "https://www.uaa.com/",
@@ -27,9 +30,13 @@ export class CommonRes {
                     if (res.status === 200) {
                         resolve(res.response);
                     } else {
-                        reject(new Error('HTTP CODE ' + res.status));
+                        console.error('HTTP CODE ' + res.status);
+                        resolve(null);
                     }
-                }, onerror: err => reject(err),
+                }, onerror: err => {
+                    console.error(err);
+                    resolve(null); // 网络错误也不 reject，返回 null
+                },
             });
         });
     }

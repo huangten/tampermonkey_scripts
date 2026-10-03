@@ -127,7 +127,7 @@ export class ListV2Controller {
 
     configureOpenNewWindowScheduler() {
         this.openNewWindowScheduler.setConfig({
-            interval: 4000,
+            interval: 2000,
             downloadHandler: (task) => {
                 GM_openInTab(task.href, { active: false });
                 return true;
@@ -162,7 +162,7 @@ export class ListV2Controller {
 
     configureExportEpubScheduler() {
         this.exportEpubScheduler.setConfig({
-            interval: 6 * 1000,
+            interval: 2 * 1000,
             onTaskBefore: (task) => {
                 const actionName = task.addChaptersToDb ? '开始导出并入库。。。' : '开始导出。。。';
                 this.view.setExportInfo('书籍: ' + task.title + ' ' + actionName, task.href);
