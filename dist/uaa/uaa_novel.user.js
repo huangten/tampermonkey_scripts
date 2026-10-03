@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-03.23:51:33
+// @version    2026-10-04.01:02:17
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -865,9 +865,8 @@ onmessage = function (event) {
 		const text = await (await fetch(url)).text();
 		return new DOMParser().parseFromString(text, "text/html");
 	}
-	async function buildEpub(url, doc, options = {}) {
+	async function buildEpub(chapterCatalogModel, options = {}) {
 		const zip = new jszip.default();
-		const chapterCatalogModel = new ChapterCatalogModel(doc);
 		const bn = chapterCatalogModel.getBookName();
 		let bookName = escapeHtml(cleanText(bn));
 		let author = chapterCatalogModel.getAuthor();
@@ -882,11 +881,6 @@ onmessage = function (event) {
 		let lastUpdateTime = chapterCatalogModel.getLatestChapter();
 		let intro = chapterCatalogModel.getIntro();
 		let chapters = chapterCatalogModel.getChapterListTree();
-		if (typeof options.onIntroParsed === "function") await options.onIntroParsed({
-			url,
-			doc,
-			chapters
-		});
 		zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
 		zip.folder("META-INF").file("container.xml", createContainer());
 		const o = zip.folder("OEBPS");
@@ -5763,14 +5757,9 @@ ${ncxNav.join("\n")}
 					this.view.setExportInfo("书籍: " + task.title + " " + actionName, task.href);
 				},
 				downloadHandler: async (task) => {
-					const doc = await fetchBookIntro(task.href);
-					await buildEpub(task.href, doc, {
-						onIntroParsed: async ({ url, doc }) => {
-							if (!task.addChaptersToDb) return;
-							await this.addBookChaptersToDb(task, doc, url);
-						},
-						SaveCover: task.SaveCover
-					});
+					const catalog = new ChapterCatalogModel(await fetchBookIntro(task.href), { href: task.href });
+					if (task.addChaptersToDb) await this.addBookChaptersToDb(task, catalog);
+					await buildEpub(catalog, { SaveCover: task.SaveCover });
 					return true;
 				},
 				onTaskComplete: (task, success) => {
@@ -5811,8 +5800,7 @@ ${ncxNav.join("\n")}
 			};
 			this.configureExportEpubScheduler();
 		}
-		async addBookChaptersToDb(task, doc, url) {
-			const catalog = new ChapterCatalogModel(doc, { href: url });
+		async addBookChaptersToDb(task, catalog) {
 			const chapters = catalog.toChapterList(catalog.getChapterListTree()).filter((chapter) => chapter.href && chapter.href.trim().length > 0);
 			const result = await this.db.addChaptersIfAbsent(chapters);
 			this.currentExportRun.added += result.added;
@@ -6589,7 +6577,7 @@ ${ncxNav.join("\n")}
 						icon: "layui-icon-subtraction"
 					},
 					{
-						type: "导出本书EPUB文件",
+						type: "导出本书",
 						icon: "layui-icon-release"
 					},
 					{
@@ -6842,7 +6830,7 @@ ${ncxNav.join("\n")}
 				},
 				"删除本书": () => this.deleteBookById(),
 				"复制书名": () => copyContext(this.catalog.getBookName()),
-				"导出本书EPUB文件": () => buildEpub(this.doc.URL, this.doc),
+				"导出本书": async () => await buildEpub(this.catalog),
 				"启动": () => this.startWorker(),
 				"停止": () => this.stopWorker(),
 				"恢复残留": () => this.recoverStaleSystemState(),

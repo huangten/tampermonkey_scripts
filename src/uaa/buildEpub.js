@@ -11,9 +11,14 @@ export async function fetchBookIntro(url) {
     return parser.parseFromString(text, 'text/html');
 }
 
-export async function buildEpub(url,doc,options = {}) {
+/**
+ *
+ * @param {ChapterCatalogModel} chapterCatalogModel
+ * @param {Object} options
+ * @returns {Promise<void>}
+ */
+export async function buildEpub(chapterCatalogModel,options = {}) {
     const zip = new JSZip();
-    const chapterCatalogModel = new ChapterCatalogModel(doc);
     const bn = chapterCatalogModel.getBookName();
     let bookName = escapeHtml(cleanText(bn));
     let author = chapterCatalogModel.getAuthor();
@@ -28,14 +33,6 @@ export async function buildEpub(url,doc,options = {}) {
     let lastUpdateTime = chapterCatalogModel.getLatestChapter();
     let intro = chapterCatalogModel.getIntro();
     let chapters = chapterCatalogModel.getChapterListTree();
-
-    if (typeof options.onIntroParsed === 'function') {
-        await options.onIntroParsed({
-            url,
-            doc: doc,
-            chapters
-        });
-    }
 
     zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
     zip.folder('META-INF').file('container.xml', createContainer());

@@ -169,15 +169,12 @@ export class ListV2Controller {
             },
             downloadHandler: async (task) => {
                 const doc = await fetchBookIntro(task.href);
-                await buildEpub(task.href, doc, {
-                    onIntroParsed: async ({url, doc}) => {
-                        if (!task.addChaptersToDb) {
-                            return;
-                        }
-                        await this.addBookChaptersToDb(task, doc, url);
-                    },
-                    SaveCover: task.SaveCover
-                });
+                const catalog =  new ChapterCatalogModel(doc, {href: task.href})
+                // 是否加入数据库
+                if (task.addChaptersToDb) {
+                    await this.addBookChaptersToDb(task, catalog);
+                }
+                await buildEpub(catalog,{SaveCover: task.SaveCover});
                 return true;
             },
             onTaskComplete: (task, success) => {
@@ -217,11 +214,14 @@ export class ListV2Controller {
         this.configureExportEpubScheduler();
     }
 
-    async addBookChaptersToDb(task, doc, url) {
-        const catalog = new ChapterCatalogModel(doc, {href: url});
-        const chapters = catalog
-            .toChapterList(catalog.getChapterListTree())
-            .filter(chapter => chapter.href && chapter.href.trim().length > 0);
+    /**
+     * 加入章节到数据库中
+     * @param task
+     * @param {ChapterCatalogModel} catalog
+     * @returns {Promise<void>}
+     */
+    async addBookChaptersToDb(task, catalog) {
+        const chapters = catalog.toChapterList(catalog.getChapterListTree()).filter(chapter => chapter.href && chapter.href.trim().length > 0);
 
         const result = await this.db.addChaptersIfAbsent(chapters);
         this.currentExportRun.added += result.added;

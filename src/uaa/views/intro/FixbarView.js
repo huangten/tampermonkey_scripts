@@ -12,7 +12,7 @@ export function renderIntroFixbar(handlers) {
                     type: '删除本书',
                     icon: 'layui-icon-subtraction'
                 }, {
-                    type: '导出本书EPUB文件',
+                    type: '导出本书',
                     icon: 'layui-icon-release'
                 }, {
                     type: '启动',
