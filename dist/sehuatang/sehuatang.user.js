@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       色花堂 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.20:28:22
+// @version    2026-10-04.20:57:24
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/*

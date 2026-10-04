@@ -3,7 +3,6 @@ import {ListFixBarView} from "../view/ListFixBarView.js";
 import {Downloader} from "../../common/downloader.js";
 import {ListInfoWinView} from "../view/ListInfoWinView.js";
 import {destroyIframeElementAsync, sleep, waitForElement} from "../../common/common.js";
-import {getInfo} from "../common.js";
 import {DetailPageModel} from "../model/DetailPageModel.js";
 
 export class ListController {
