@@ -6,24 +6,6 @@ import {getVersion} from "./src/common/version.js";
 
 // 1. 定义你的脚本库配置
 const scriptConfigs = {
-    sehuatang_list: {
-        entry: 'src/sehuatang/list/list.js',
-        userscript: {
-            name: 'sehuatang 列表页 增强',
-            author: 'YourName',
-            match: ['https://*.sehuatang.org/forum*'],
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
-            namespace: 'https://tampermonkey.net/',
-            version: getVersion(),
-            noframes: true,
-
-        },
-        build: {
-            outDir: "sehuatang",
-            fileName: "sehuatang_list"
-        }
-    },
-
     sehuatang: {
         entry: 'src/sehuatang/main.js',
         userscript: {
