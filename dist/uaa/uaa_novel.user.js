@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.14:55:59
+// @version    2026-10-04.20:28:59
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -124,10 +124,10 @@
 		return new Promise((resolve, reject) => {
 			navigator.clipboard.writeText(str).then(() => {
 				console.log("Content copied to clipboard");
-				return resolve;
+				return resolve();
 			}, () => {
 				console.error("Failed to copy");
-				return reject;
+				return reject();
 			});
 		});
 	}
@@ -515,26 +515,25 @@ onmessage = function (event) {
 			this.model.load();
 			this.view.renderFixbar({ onAction: (type) => this.handleAction(type) });
 		}
-		handleAction(type) {
-			console.log(type);
+		async handleAction(type) {
 			switch (type) {
 				case "获取标题文本":
-					this.copy(this.model.getTitleText());
+					await copyContext(this.model.getTitleText());
 					break;
 				case "获取标题HTML":
-					this.copy(this.model.getTitleHtml());
+					await copyContext(this.model.getTitleHtml());
 					break;
 				case "获取内容文本":
-					this.copy(this.model.getContentText());
+					await copyContext(this.model.getContentText());
 					break;
 				case "获取内容HTML":
-					this.copy(this.model.getContentHtml());
+					await copyContext(this.model.getContentHtml());
 					break;
 				case "获取标题和内容文本":
-					this.copy(this.model.getTitleAndContentText());
+					await copyContext(this.model.getTitleAndContentText());
 					break;
 				case "获取标题和内容HTML":
-					this.copy(this.model.getTitleAndContentHtml());
+					await copyContext(this.model.getTitleAndContentHtml());
 					break;
 				case "保存内容到本地":
 					this.model.saveToLocal();
@@ -547,9 +546,6 @@ onmessage = function (event) {
 					break;
 				case "下一章": this.model.getNextChapterElement();
 			}
-		}
-		copy(content) {
-			copyContext(content).then();
 		}
 	};
 	var Downloader = class {
