@@ -7,7 +7,18 @@ export class ListInfoWinView {
         this.downloadInfoContentId = 'downloadInfoContentId';
     }
 
-    openInfoWin(options = {}) {
+    /**
+     *
+     * @param options
+     * @returns {number}
+     */
+    openInfoWin(options = {
+        data: [],
+        downloadAll: () => {},
+        downloadChecked: () => {},
+        clearNotDownload: () => {},
+        downloadScheduler: null,
+    }) {
         if (options.downloadScheduler.running || options.downloadScheduler.running) {
             return layui.layer.msg('请等待当前任务完成后再打开列表窗口', {icon: 0, time: 2000});
         }

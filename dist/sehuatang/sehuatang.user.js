@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       色花堂 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.20:57:24
+// @version    2026-10-04.23:47:36
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/*
@@ -599,7 +599,13 @@
 			this.progressId = "demo-filter-progress";
 			this.downloadInfoContentId = "downloadInfoContentId";
 		}
-		openInfoWin(options = {}) {
+		openInfoWin(options = {
+			data: [],
+			downloadAll: () => {},
+			downloadChecked: () => {},
+			clearNotDownload: () => {},
+			downloadScheduler: null
+		}) {
 			if (options.downloadScheduler.running || options.downloadScheduler.running) return layui.layer.msg("请等待当前任务完成后再打开列表窗口", {
 				icon: 0,
 				time: 2e3
@@ -767,7 +773,6 @@
 					console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
 				},
 				onFinish: (downloaded, failed) => {
-					console.log("下载结束 ✅");
 					console.log("已下载:", downloaded.map((t) => t));
 					console.log("未下载:", failed.map((t) => t));
 					layui.layer.alert("下载完毕", {

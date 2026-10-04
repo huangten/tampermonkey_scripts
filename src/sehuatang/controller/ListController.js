@@ -110,7 +110,7 @@ export class ListController {
                 console.log(`${task.title} 下载 ${success ? "成功" : "失败"}, 结束时间: ${task.endTime}`);
             },
             onFinish: (downloaded, failed) => {
-                console.log("下载结束 ✅");
+                // console.log("下载结束 ✅");
                 console.log("已下载:", downloaded.map(t => t));
                 console.log("未下载:", failed.map(t => t));
                 // ✅ 全部完成 — 销毁 iframe
