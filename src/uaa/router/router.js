@@ -6,6 +6,7 @@ import {IntroV3Controller} from "../controllers/IntroV3Controller.js";
 
 
 export async function router() {
+
     const url = new URL(document.URL)
     switch (url.pathname) {
         case '/novel/intro': {
@@ -21,7 +22,7 @@ export async function router() {
         }
             break;
         case '/novel/chapter': {
-            await init()
+            await init();
             new ChapterController().init();
         }
             break;

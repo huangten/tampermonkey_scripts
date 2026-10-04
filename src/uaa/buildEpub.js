@@ -6,6 +6,11 @@ import {ChapterCatalogModel} from "./models/ChapterCatalogModel.js";
 
 export async function fetchBookIntro(url) {
     const response = await fetch(url);
+
+    if (response.status !== 200) {
+        throw new Error('服务器错误，状态码：' + response.status);
+    }
+
     const text = await response.text();
     const parser = new DOMParser();
     return parser.parseFromString(text, 'text/html');
@@ -18,6 +23,9 @@ export async function fetchBookIntro(url) {
  * @returns {Promise<void>}
  */
 export async function buildEpub(chapterCatalogModel,options = {}) {
+    /**
+     * @type {JSZip}
+     */
     const zip = new JSZip();
     const bn = chapterCatalogModel.getBookName();
     let bookName = escapeHtml(cleanText(bn));
@@ -195,14 +203,7 @@ ${ncxNav.join('\n')}
 </ncx>`;
     o.file('toc.ncx', formatXML(tocNcxStr));
 
-    const blob = await zip.generateAsync({
-        type: 'blob',
-        // compression: "DEFLATE",
-        // compressionOptions: {
-        //     level: 9 // 压缩级别
-        // }
-    });
-    // console.log(blob);
+    const blob = await zip.generateAsync({type: 'blob'});
     saveAs(blob, `${bookNameFile} 作者：${authorFile}.epub`);
     console.log(bookName + ' 下载完毕！');
     // GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});

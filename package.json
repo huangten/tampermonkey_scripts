@@ -12,12 +12,10 @@
     "build:sshuba_chapter": "cross-env TARGET_SCRIPT=sshuba_chapter vite build --config vite.config.sshuba.js",
     "dev:sis001_chapter": "cross-env TARGET_SCRIPT=sis001_chapter vite --config vite.config.sis001.js",
     "build:sis001_chapter": "cross-env TARGET_SCRIPT=sis001_chapter vite build --config vite.config.sis001.js",
-    "dev:sehuatang_details_page": "cross-env TARGET_SCRIPT=sehuatang_details_page vite --config vite.config.sehuatang.js",
-    "build:sehuatang_details_page": "cross-env TARGET_SCRIPT=sehuatang_details_page vite build --config vite.config.sehuatang.js",
-    "dev:sehuatang_list": "cross-env TARGET_SCRIPT=sehuatang_list vite --config vite.config.sehuatang.js",
-    "build:sehuatang_list": "cross-env TARGET_SCRIPT=sehuatang_list vite build --config vite.config.sehuatang.js",
-    "dev:sehuatang_list_v2": "cross-env TARGET_SCRIPT=sehuatang_list_v2 vite --config vite.config.sehuatang.js",
-    "build:sehuatang_list_v2": "cross-env TARGET_SCRIPT=sehuatang_list_v2 vite build --config vite.config.sehuatang.js",
+
+    "dev:sehuatang": "cross-env TARGET_SCRIPT=sehuatang vite --config vite.config.sehuatang.js",
+    "build:sehuatang": "cross-env TARGET_SCRIPT=sehuatang vite build --config vite.config.sehuatang.js",
+
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

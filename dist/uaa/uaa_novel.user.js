@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.01:02:17
+// @version    2026-10-04.14:55:59
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -862,7 +862,9 @@ onmessage = function (event) {
 		}
 	};
 	async function fetchBookIntro(url) {
-		const text = await (await fetch(url)).text();
+		const response = await fetch(url);
+		if (response.status !== 200) throw new Error("服务器错误，状态码：" + response.status);
+		const text = await response.text();
 		return new DOMParser().parseFromString(text, "text/html");
 	}
 	async function buildEpub(chapterCatalogModel, options = {}) {

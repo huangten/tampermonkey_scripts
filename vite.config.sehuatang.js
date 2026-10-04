@@ -24,32 +24,14 @@ const scriptConfigs = {
         }
     },
 
-    sehuatang_list_v2: {
-        entry: 'src/sehuatang/list/list_v2.js',
+    sehuatang: {
+        entry: 'src/sehuatang/main.js',
         userscript: {
-            name: 'sehuatang 列表页 增强 V2',
-            author: 'YourName',
-            match: ['https://*.sehuatang.org/forum*'],
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
-            namespace: 'https://tampermonkey.net/',
-            version: getVersion(),
-            noframes: true,
-
-        },
-        build: {
-            outDir: "sehuatang",
-            fileName: "sehuatang_list_v2"
-        }
-    },
-
-    sehuatang_details_page: {
-        entry: 'src/sehuatang/details_page/details_page.js',
-        userscript: {
-            name: 'sehuatang 详情页 增强',
+            name: '色花堂 增强',
             author: 'YourName',
             match: [
-                'https://*.sehuatang.org/thread*',
-                'https://*.sehuatang.org/forum.php?mod=viewthread&tid=*'
+                'https://*.sehuatang.org/*',
+                'https://*.sehuatang.org'
             ],
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org',
             namespace: 'https://tampermonkey.net/',
@@ -58,9 +40,10 @@ const scriptConfigs = {
         },
         build: {
             outDir: "sehuatang",
-            fileName: "sehuatang_details_page"
+            fileName: "sehuatang"
         }
     }
+
 };
 
 
@@ -96,7 +79,17 @@ export default defineConfig(({mode}) => {
                 {
                     entry: config.entry,
                     userscript: {
-                        grant: ['GM_getResourceText', 'GM_addStyle', 'unsafeWindow', 'GM_xmlhttpRequest', 'GM_download', 'GM_notification', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand'],
+                        "run-at": "document-idle",
+                        grant: [
+                            'GM_getResourceText',
+                            'GM_addStyle',
+                            'unsafeWindow',
+                            'GM_xmlhttpRequest',
+                            'GM_download',
+                            'GM_notification',
+                            'GM_registerMenuCommand',
+                            'GM_unregisterMenuCommand'
+                        ],
                         connect: ['*'],
                         require: [
                             'https://unpkg.com/hacktimer/HackTimer.js',

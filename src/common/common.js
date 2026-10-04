@@ -59,11 +59,11 @@ export function copyContext(str) {
         navigator.clipboard.writeText(str).then(() => {
             console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
-            return resolve
+            return resolve();
         }, () => {
             console.error('Failed to copy');
             /* Rejected - 文本未被复制到剪贴板 */
-            return reject
+            return reject();
         });
     });
 }

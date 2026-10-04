@@ -1,12 +1,12 @@
-import { copyContext } from "../../common/common.js";
-import { ChapterPageModel } from "../models/ChapterPageModel.js";
-import { ChapterFixbarView } from "../views/chapter/ChapterFixbarView.js";
+import {copyContext} from "../../common/common.js";
+import {ChapterPageModel} from "../models/ChapterPageModel.js";
+import {ChapterFixbarView} from "../views/chapter/ChapterFixbarView.js";
 
 export class ChapterController {
     constructor({
-        model = new ChapterPageModel(),
-        view = new ChapterFixbarView()
-    } = {}) {
+                    model = new ChapterPageModel(),
+                    view = new ChapterFixbarView()
+                } = {}) {
         this.model = model;
         this.view = view;
     }
@@ -18,26 +18,26 @@ export class ChapterController {
         });
     }
 
-    handleAction(type) {
-        console.log(type);
+    async handleAction(type) {
+        // console.log(type);
         switch (type) {
             case "获取标题文本":
-                this.copy(this.model.getTitleText());
+                await copyContext(this.model.getTitleText());
                 break;
             case "获取标题HTML":
-                this.copy(this.model.getTitleHtml());
+                await copyContext(this.model.getTitleHtml());
                 break;
             case "获取内容文本":
-                this.copy(this.model.getContentText());
+                await copyContext(this.model.getContentText());
                 break;
             case "获取内容HTML":
-                this.copy(this.model.getContentHtml());
+                await copyContext(this.model.getContentHtml());
                 break;
             case "获取标题和内容文本":
-                this.copy(this.model.getTitleAndContentText());
+                await copyContext(this.model.getTitleAndContentText());
                 break;
             case "获取标题和内容HTML":
-                this.copy(this.model.getTitleAndContentHtml());
+                await copyContext(this.model.getTitleAndContentHtml());
                 break;
             case "保存内容到本地":
                 this.model.saveToLocal();
@@ -52,9 +52,5 @@ export class ChapterController {
                 this.model.getNextChapterElement();
                 break;
         }
-    }
-
-    copy(content) {
-        copyContext(content).then();
     }
 }
