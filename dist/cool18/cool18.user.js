@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-09-18.15:51:58
+// @version    2026-10-07.20:24:34
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -56,11 +56,10 @@
 	function copyContext(str) {
 		return new Promise((resolve, reject) => {
 			navigator.clipboard.writeText(str).then(() => {
-				console.log("Content copied to clipboard");
-				return resolve;
+				return resolve();
 			}, () => {
 				console.error("Failed to copy");
-				return reject;
+				return reject();
 			});
 		});
 	}
@@ -301,14 +300,13 @@
 			return this.doc.getElementsByTagName("pre")[0];
 		}
 		getPreTagContent() {
-			copyContext(this.getPreElement().innerText.split("\n").filter(Boolean).join("\n")).then();
+			return this.getPreElement().innerText.split("\n").filter(Boolean).join("\n");
 		}
 		getBookname() {
 			const titleContent = this.doc.getElementsByClassName("main-title")[0].innerText.trim();
 			let bookName = titleContent.match(/^【(.*?)】/);
 			if (!bookName) bookName = titleContent;
 			else bookName = bookName[1];
-			copyContext(bookName).then();
 			return bookName;
 		}
 		getDownloadContent(tag) {
@@ -353,15 +351,8 @@
 			copyContext(this.getPreElementV2().innerText.split("\n").filter(Boolean).join("\n")).then();
 		}
 		saveContentToLocationTxtFile(filename, content) {
-			try {
-				new Blob();
-				const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-				(0, file_saver.saveAs)(blob, filename + ".txt");
-			} catch (e) {
-				console.log(e);
-				return false;
-			}
-			return true;
+			const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+			(0, file_saver.saveAs)(blob, filename + ".txt");
 		}
 	};
 	var ChapterController = class {
@@ -378,10 +369,10 @@
 		async handleAction(type) {
 			switch (type) {
 				case "复制书名":
-					this.chapterModel.getBookname();
+					await copyContext(this.chapterModel.getBookname().trim());
 					break;
 				case "复制内容":
-					this.chapterModel.getPreTagContent();
+					await copyContext(this.chapterModel.getPreTagContent());
 					break;
 				case "原样下载":
 					this.chapterModel.downloadChapterContent();
