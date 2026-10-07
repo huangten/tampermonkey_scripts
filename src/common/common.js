@@ -57,7 +57,6 @@ export function getFileNameFromPath(filePath) {
 export function copyContext(str) {
     return new Promise((resolve, reject) => {
         navigator.clipboard.writeText(str).then(() => {
-            console.log('Content copied to clipboard');
             /* Resolved - 文本被成功复制到剪贴板 */
             return resolve();
         }, () => {

@@ -1,4 +1,4 @@
-import { cleanText } from "../../common/common.js";
+import {cleanText} from "../../common/common.js";
 
 export class ChapterCatalogModel {
     constructor(doc = document, location = document.location) {
@@ -36,9 +36,11 @@ export class ChapterCatalogModel {
         }
         return author.textContent.trim() ?? '';
     }
+
     getLatestChapter() {
         return this.doc.getElementsByClassName('nd-latest')[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? '';
     }
+
     getScore() {
         return this.doc.getElementsByClassName('nd-score')[0]?.getElementsByTagName("b")[0]?.innerText.trim() ?? '';
     }
@@ -46,9 +48,11 @@ export class ChapterCatalogModel {
     getType() {
         return '';
     }
+
     getRou() {
         return '';
     }
+
     getTags() {
         const tagsBox = this.doc.getElementById('ndTags').cloneNode(true);
         const tags = [];
@@ -61,6 +65,7 @@ export class ChapterCatalogModel {
         }
         return tags.join(', ');
     }
+
     getIntro() {
         return this.doc.getElementsByClassName('nd-synopsis')[0]?.innerText.replaceAll('小说简介：', "").replaceAll('\n', '').trim() ?? '';
     }
@@ -80,7 +85,8 @@ export class ChapterCatalogModel {
         for (let index = 0; index < lis.length; index++) {
             if (lis[index].nodeName.indexOf("A") > -1) {
                 let id = (index + 1) * 100000000;
-                let title = lis[index].getAttribute("title");
+                let title = lis[index].querySelectorAll('.ndc-name')[0].textContent ?? lis[index].getAttribute("title");
+                // console.log(title);
                 let chapterName = cleanText(title.trim());
                 let chapterHref = lis[index].href;
                 menus.push({
@@ -120,7 +126,9 @@ export class ChapterCatalogModel {
                 let children = [];
                 for (let j = 0; j < menulist.length; j++) {
                     let id = (index + 1) * 100000000 + j + 1;
-                    let title = menulist[j].getAttribute("title");
+                    // let title = menulist[j].getAttribute("title");
+                    let title = menulist[j].querySelectorAll('.ndc-name')[0].textContent ?? menulist[index].getAttribute("title");
+                    // console.log(title);
                     let chapterName = cleanText(title.trim());
                     let chapterHref = menulist[j].href;
                     children.push({

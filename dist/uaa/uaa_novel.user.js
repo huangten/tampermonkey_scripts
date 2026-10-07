@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.20:28:59
+// @version    2026-10-07.17:52:07
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -123,7 +123,6 @@
 	function copyContext(str) {
 		return new Promise((resolve, reject) => {
 			navigator.clipboard.writeText(str).then(() => {
-				console.log("Content copied to clipboard");
 				return resolve();
 			}, () => {
 				console.error("Failed to copy");
@@ -774,7 +773,7 @@ onmessage = function (event) {
 			for (let index = 0; index < lis.length; index++) {
 				if (lis[index].nodeName.indexOf("A") > -1) {
 					let id = (index + 1) * 1e8;
-					let chapterName = cleanText(lis[index].getAttribute("title").trim());
+					let chapterName = cleanText((lis[index].querySelectorAll(".ndc-name")[0].textContent ?? lis[index].getAttribute("title")).trim());
 					let chapterHref = lis[index].href;
 					menus.push({
 						"id": id,
@@ -803,7 +802,7 @@ onmessage = function (event) {
 					let children = [];
 					for (let j = 0; j < menulist.length; j++) {
 						let id = (index + 1) * 1e8 + j + 1;
-						let chapterName = cleanText(menulist[j].getAttribute("title").trim());
+						let chapterName = cleanText((menulist[j].querySelectorAll(".ndc-name")[0].textContent ?? menulist[index].getAttribute("title")).trim());
 						let chapterHref = menulist[j].href;
 						children.push({
 							"id": id,
