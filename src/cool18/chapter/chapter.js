@@ -2,6 +2,7 @@ import {ChapterView} from "../views/ChapterView.js";
 import {ChapterEditorPageView} from "../views/ChapterEditorPageView.js";
 import {EditorModel} from "../models/EditorModel.js";
 import {ChapterModel} from "../models/ChapterModel.js";
+import {copyContext} from "../../common/common.js";
 
 export class ChapterController {
     constructor(doc = document) {
@@ -27,11 +28,13 @@ export class ChapterController {
     async handleAction(type) {
         switch (type) {
             case "复制书名": {
-                this.chapterModel.getBookname();
+                const booName = this.chapterModel.getBookname();
+                await copyContext(booName.trim());
             }
                 break;
             case "复制内容": {
-                this.chapterModel.getPreTagContent();
+                const content = this.chapterModel.getPreTagContent();
+                await copyContext(content);
             }
                 break;
             case "原样下载": {

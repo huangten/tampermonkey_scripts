@@ -15,7 +15,7 @@ export class ChapterModel {
     }
 
     getPreTagContent() {
-        copyContext(this.getPreElement().innerText.split('\n').filter(Boolean).join('\n')).then();
+        return this.getPreElement().innerText.split('\n').filter(Boolean).join('\n');
     }
 
 
@@ -28,7 +28,6 @@ export class ChapterModel {
         } else {
             bookName = bookName[1];
         }
-        copyContext(bookName).then();
         return bookName;
     }
 
@@ -96,16 +95,7 @@ export class ChapterModel {
     }
 
     saveContentToLocationTxtFile(filename, content) {
-        try {
-            !!new Blob;
-            const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
-            saveAs(blob, filename + ".txt");
-        } catch (e) {
-            console.log(e);
-            return false;
-        }
-        return true;
+        const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        saveAs(blob, filename + ".txt");
     }
-
-
 }
