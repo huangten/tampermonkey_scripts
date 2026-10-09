@@ -124,16 +124,10 @@ function loadMonaco() {
         const script = document.createElement('script');
         script.src = `${MONACO_BASE}/loader.js`;
         script.onload = () => {
-            // 注意：这里不要使用 window.require
-
-            let req = unsafeWindow?.require;
-            if (!req) {
-                req = window?.require;
-            }
-            if (!req) {
-                reject(new Error('Monaco AMD loader 未创建 require'));
-                return;
-            }
+            const req = window?.require ?? (
+                unsafeWindow?.require ??
+                reject(new Error('Monaco AMD loader 未创建 require'))
+            );
             req.config({
                 paths: {
                     vs: MONACO_BASE,
