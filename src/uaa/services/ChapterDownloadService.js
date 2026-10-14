@@ -9,8 +9,9 @@ export class ChapterDownloadService {
     }
 
     async download(chapter, lastDownloadTime) {
-        this.downloadInfoWindow.setTitle(chapter.bookName + " : " + chapter.chapterName);
-        this.infoWindow.setCurrentDownload(chapter.chapterName, chapter.href);
+        const downloadInfoText = chapter.bookName + " : " + chapter.chapterName;
+        this.downloadInfoWindow.setTitle(downloadInfoText);
+        this.infoWindow.setCurrentDownload(downloadInfoText, chapter.href);
 
         const time = Date.now() - lastDownloadTime;
         if (time < this.downloaderInterval) {
@@ -43,7 +44,8 @@ export class ChapterDownloadService {
         }
         
         const success = chapterPageModel.saveToLocal();
-
+        this.downloadInfoWindow.setTitle("下载成功：" + downloadInfoText);
+        this.infoWindow.setCurrentDownload(downloadInfoText + '：成功下载', chapter.href);
         chapterPageModel.dispose();
         chapterPageModel = null;
         await sleep(300);
