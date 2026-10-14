@@ -1,5 +1,7 @@
 import {saveAs} from "file-saver";
-import {copyContext, sleep} from "../../common/common.js";
+import {copyContext} from "../../common/common.js";
+import bencode from "bencode";
+
 
 export class DetailPageModel {
     constructor(doc = document) {
@@ -210,16 +212,69 @@ export class DetailPageModel {
     async downloadBTFile(url, filename) {
         const blob = await this.gmFetchImageBlob(url);
         if (blob) {
-            saveAs(blob, filename);
+            try {
+                const list = await this.parseTorrentFilesFromBlob(blob);
+                console.log(list);
+                saveAs(blob, filename);
+            } catch (e) {
+                console.error(`解析错误信息：${e} `);
+                console.error(`${filename} 下载失败，请手动处理。`);
+            }
+        }
+    }
+
+
+    /**
+     * 从种子文件的 Blob 中解析文件列表
+     * @param {Blob} blob - 种子的 Blob 或 File 对象
+     * @returns {Promise<Array<{path: string, length: number}>>} 文件列表
+     */
+    async parseTorrentFilesFromBlob(blob) {
+        // 1. 将 Blob 转换为 ArrayBuffer (Uint8Array)
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+
+        // 2. 使用 bencode 解码
+        // 注意：如果通过上面 CDN 引入，全局变量通常是 bencode
+        const torrentData = bencode.decode(uint8Array);
+
+        if (!torrentData || !torrentData.info) {
+            throw new Error('无效的 BT 种子文件');
         }
 
-        // 创建 a 标签
-        // let link = document.createElement('a');
-        // link.href = url;
-        // link.innerText = filename;
-        // link.download = filename || url.substring(url.lastIndexOf('/') + 1); // 设置文件名
-        // link.click();
+        const info = torrentData.info;
+        const filesList = [];
+
+        // 辅助函数：将 Bencode 的 Buffer 转换为 UTF-8 字符串
+        const bufferToString = (buf) => {
+            if (!buf) return '';
+            return new TextDecoder('utf-8').decode(buf);
+        };
+
+        // 3. 判断是单文件种子还是多文件种子
+        if (info.files && Array.isArray(info.files)) {
+            // 多文件种子
+            info.files.forEach(file => {
+                // file.path 是一个数组，代表多级目录，例如 ['Season 1', 'Ep01.mp4']
+                const pathSegments = file.path.map(seg => bufferToString(seg));
+                const fullPath = pathSegments.join('/');
+
+                filesList.push({
+                    path: fullPath,
+                    length: file.length // 文件大小 (Bytes)
+                });
+            });
+        } else if (info.length) {
+            // 单文件种子
+            filesList.push({
+                path: bufferToString(info.name),
+                length: info.length // 文件大小 (Bytes)
+            });
+        }
+
+        return filesList;
     }
+
 
     async copyTitleAndDownload() {
         await copyContext(this.getTitleText() + "\n");

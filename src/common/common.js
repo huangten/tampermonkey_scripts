@@ -110,10 +110,9 @@ export function init() {
     ]);
 }
 
-function initMonaca() {
+export function initMonaca() {
     return Promise.all([
         addCss('Monaca_css', 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/dev/vs/editor/editor.main.min.css'),
-        // addScript('Monaca_id', "https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.min.js")
         loadMonaco()
     ]);
 }
@@ -145,8 +144,6 @@ function loadMonaco() {
         document.head.appendChild(script);
     });
 }
-
-export default initMonaca
 
 export async function destroyIframeElementAsync(iframe) {
     if (iframe && iframe instanceof HTMLIFrameElement) {

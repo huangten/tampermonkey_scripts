@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-14.08:36:15
+// @version    2026-10-14.09:54:54
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*

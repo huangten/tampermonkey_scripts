@@ -1,4 +1,4 @@
-import initMonaca, {init} from '../common/common.js'
+import {init, initMonaca} from '../common/common.js'
 import {ChapterController} from './chapter/chapter.js'
 
 (async function main() {

@@ -29,7 +29,10 @@ export async function router() {
         /forum\.php\?mod=viewthread&tid=(\d+)/
     ];
     if (detailPageRegx.some(regex => regex.test(url))) {
-        await init();
+        await Promise.all([
+            init(),
+            // initBencode(),
+        ]);
         const detailPage = new DetailPageController();
         detailPage.init();
     }

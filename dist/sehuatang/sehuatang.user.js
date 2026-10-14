@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       色花堂 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-04.23:47:36
+// @version    2026-10-14.09:54:49
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/*
@@ -64,7 +64,6 @@
 	function copyContext(str) {
 		return new Promise((resolve, reject) => {
 			navigator.clipboard.writeText(str).then(() => {
-				console.log("Content copied to clipboard");
 				return resolve();
 			}, () => {
 				console.error("Failed to copy");
@@ -123,6 +122,309 @@
 			console.log("✅ iframe 已完全清理并销毁");
 		}
 	}
+	var decoder = new TextDecoder();
+	var arr2text = (data, enc) => {
+		if (!enc) return decoder.decode(data);
+		return new TextDecoder(enc).decode(data);
+	};
+	function concat(chunks, size = 0) {
+		const length = chunks.length;
+		if (!size) for (let i = 0; i < length; i++) size += chunks[i].length;
+		const b = new Uint8Array(size);
+		let offset = 0;
+		for (let i = 0; i < length; i++) {
+			b.set(chunks[i], offset);
+			offset += chunks[i].length;
+		}
+		return b;
+	}
+	var alphabet = "0123456789abcdef";
+	var encodeLookup = [];
+	var decodeLookup = new Uint8Array(128);
+	for (let i = 0; i < 16; ++i) {
+		const i16 = i * 16;
+		for (let j = 0; j < 16; ++j) encodeLookup[i16 + j] = alphabet[i] + alphabet[j];
+		if (i < 10) decodeLookup[48 + i] = i;
+		else {
+			decodeLookup[87 + i] = i;
+			decodeLookup[55 + i] = i;
+		}
+	}
+	var arr2hex = (data) => data.toHex();
+	var encoder = new TextEncoder();
+	var text2arr = (str) => encoder.encode(str);
+	function digitCount(value) {
+		const sign = value < 0 ? 1 : 0;
+		value = Math.abs(Number(value || 1));
+		return Math.floor(Math.log10(value)) + 1 + sign;
+	}
+	function getType(value) {
+		if (ArrayBuffer.isView(value)) return "arraybufferview";
+		if (Array.isArray(value)) return "array";
+		if (value instanceof Number) return "number";
+		if (value instanceof Boolean) return "boolean";
+		if (value instanceof Set) return "set";
+		if (value instanceof Map) return "map";
+		if (value instanceof String) return "string";
+		if (value instanceof ArrayBuffer) return "arraybuffer";
+		return typeof value;
+	}
+	function encode(data, buffer, offset) {
+		const buffers = [];
+		let result = null;
+		encode._encode(buffers, data);
+		result = concat(buffers);
+		encode.bytes = result.length;
+		if (ArrayBuffer.isView(buffer)) {
+			buffer.set(result, offset);
+			return buffer;
+		}
+		return result;
+	}
+	encode.bytes = -1;
+	encode._floatConversionDetected = false;
+	encode._encode = function(buffers, data) {
+		if (data == null) return;
+		switch (getType(data)) {
+			case "object":
+				encode.dict(buffers, data);
+				break;
+			case "map":
+				encode.dictMap(buffers, data);
+				break;
+			case "array":
+				encode.list(buffers, data);
+				break;
+			case "set":
+				encode.listSet(buffers, data);
+				break;
+			case "string":
+				encode.string(buffers, data);
+				break;
+			case "number":
+				encode.number(buffers, data);
+				break;
+			case "boolean":
+				encode.number(buffers, data);
+				break;
+			case "arraybufferview":
+				encode.buffer(buffers, new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+				break;
+			case "arraybuffer": encode.buffer(buffers, new Uint8Array(data));
+		}
+	};
+	var buffE = new Uint8Array([101]);
+	var buffD = new Uint8Array([100]);
+	var buffL = new Uint8Array([108]);
+	encode.buffer = function(buffers, data) {
+		buffers.push(text2arr(data.length + ":"), data);
+	};
+	encode.string = function(buffers, data) {
+		buffers.push(text2arr(text2arr(data).byteLength + ":" + data));
+	};
+	encode.number = function(buffers, data) {
+		if (Number.isInteger(data)) return buffers.push(text2arr("i" + BigInt(data) + "e"));
+		const maxLo = 2147483648;
+		const hi = data / maxLo << 0;
+		const lo = data % maxLo << 0;
+		const val = hi * maxLo + lo;
+		buffers.push(text2arr("i" + val + "e"));
+		if (val !== data && !encode._floatConversionDetected) {
+			encode._floatConversionDetected = true;
+			console.warn("WARNING: Possible data corruption detected with value \"" + data + "\":", "Bencoding only defines support for integers, value was converted to \"" + val + "\"");
+			console.trace();
+		}
+	};
+	encode.dict = function(buffers, data) {
+		buffers.push(buffD);
+		let j = 0;
+		let k;
+		const keys = Object.keys(data).sort();
+		const kl = keys.length;
+		for (; j < kl; j++) {
+			k = keys[j];
+			if (data[k] == null) continue;
+			encode.string(buffers, k);
+			encode._encode(buffers, data[k]);
+		}
+		buffers.push(buffE);
+	};
+	encode.dictMap = function(buffers, data) {
+		buffers.push(buffD);
+		const keys = Array.from(data.keys()).sort();
+		for (const key of keys) {
+			if (data.get(key) == null) continue;
+			ArrayBuffer.isView(key) ? encode._encode(buffers, key) : encode.string(buffers, String(key));
+			encode._encode(buffers, data.get(key));
+		}
+		buffers.push(buffE);
+	};
+	encode.list = function(buffers, data) {
+		let i = 0;
+		const c = data.length;
+		buffers.push(buffL);
+		for (; i < c; i++) {
+			if (data[i] == null) continue;
+			encode._encode(buffers, data[i]);
+		}
+		buffers.push(buffE);
+	};
+	encode.listSet = function(buffers, data) {
+		buffers.push(buffL);
+		for (const item of data) {
+			if (item == null) continue;
+			encode._encode(buffers, item);
+		}
+		buffers.push(buffE);
+	};
+	var INTEGER_START = 105;
+	var STRING_DELIM = 58;
+	var DICTIONARY_START = 100;
+	var LIST_START = 108;
+	var END_OF_TYPE = 101;
+	function getIntFromBuffer(buffer, start, end) {
+		let sum = 0;
+		let sign = 1;
+		for (let i = start; i < end; i++) {
+			const num = buffer[i];
+			if (num < 58 && num >= 48) {
+				sum = sum * 10 + (num - 48);
+				continue;
+			}
+			if (i === start && num === 43) continue;
+			if (i === start && num === 45) {
+				sign = -1;
+				continue;
+			}
+			if (num === 46) break;
+			throw new Error("not a number: buffer[" + i + "] = " + num);
+		}
+		return sum * sign;
+	}
+	function decode(data, start, end, encoding) {
+		if (data == null || data.length === 0) return null;
+		if (typeof start !== "number" && encoding == null) {
+			encoding = start;
+			start = void 0;
+		}
+		if (typeof end !== "number" && encoding == null) {
+			encoding = end;
+			end = void 0;
+		}
+		decode.position = 0;
+		decode.encoding = encoding || null;
+		decode.data = !ArrayBuffer.isView(data) ? text2arr(data) : new Uint8Array(data.slice(start, end));
+		decode.bytes = decode.data.length;
+		return decode.next();
+	}
+	decode.bytes = 0;
+	decode.position = 0;
+	decode.data = null;
+	decode.encoding = null;
+	decode.next = function() {
+		switch (decode.data[decode.position]) {
+			case DICTIONARY_START: return decode.dictionary();
+			case LIST_START: return decode.list();
+			case INTEGER_START: return decode.integer();
+			default: return decode.buffer();
+		}
+	};
+	decode.find = function(chr) {
+		let i = decode.position;
+		const c = decode.data.length;
+		const d = decode.data;
+		while (i < c) {
+			if (d[i] === chr) return i;
+			i++;
+		}
+		throw new Error("Invalid data: Missing delimiter \"" + String.fromCharCode(chr) + "\" [0x" + chr.toString(16) + "]");
+	};
+	decode.dictionary = function() {
+		decode.position++;
+		const dict = {};
+		while (decode.data[decode.position] !== END_OF_TYPE) {
+			const buffer = decode.buffer();
+			let key = arr2text(buffer);
+			if (key.includes("�")) key = arr2hex(buffer);
+			dict[key] = decode.next();
+		}
+		decode.position++;
+		return dict;
+	};
+	decode.list = function() {
+		decode.position++;
+		const lst = [];
+		while (decode.data[decode.position] !== END_OF_TYPE) lst.push(decode.next());
+		decode.position++;
+		return lst;
+	};
+	decode.integer = function() {
+		const end = decode.find(END_OF_TYPE);
+		const number = getIntFromBuffer(decode.data, decode.position + 1, end);
+		decode.position += end + 1 - decode.position;
+		return number;
+	};
+	decode.buffer = function() {
+		let sep = decode.find(STRING_DELIM);
+		const length = getIntFromBuffer(decode.data, decode.position, sep);
+		const end = ++sep + length;
+		decode.position = end;
+		return decode.encoding ? arr2text(decode.data.slice(sep, end)) : decode.data.slice(sep, end);
+	};
+	function listLength(list) {
+		let length = 2;
+		for (const value of list) length += encodingLength$1(value);
+		return length;
+	}
+	function mapLength(map) {
+		let length = 2;
+		for (const [key, value] of map) {
+			const keyLength = text2arr(key).byteLength;
+			length += digitCount(keyLength) + 1 + keyLength;
+			length += encodingLength$1(value);
+		}
+		return length;
+	}
+	function objectLength(value) {
+		let length = 2;
+		const keys = Object.keys(value);
+		for (let i = 0; i < keys.length; i++) {
+			const keyLength = text2arr(keys[i]).byteLength;
+			length += digitCount(keyLength) + 1 + keyLength;
+			length += encodingLength$1(value[keys[i]]);
+		}
+		return length;
+	}
+	function stringLength(value) {
+		const length = text2arr(value).byteLength;
+		return digitCount(length) + 1 + length;
+	}
+	function arrayBufferLength(value) {
+		const length = value.byteLength - value.byteOffset;
+		return digitCount(length) + 1 + length;
+	}
+	function encodingLength$1(value) {
+		const length = 0;
+		if (value == null) return length;
+		const type = getType(value);
+		switch (type) {
+			case "arraybufferview": return arrayBufferLength(value);
+			case "string": return stringLength(value);
+			case "array":
+			case "set": return listLength(value);
+			case "number": return 1 + digitCount(Math.floor(value)) + 1;
+			case "bigint": return 1 + value.toString().length + 1;
+			case "object": return objectLength(value);
+			case "map": return mapLength(value);
+			default: throw new TypeError(`Unsupported value of type "${type}"`);
+		}
+	}
+	var bencode_default = {
+		encode,
+		decode,
+		byteLength: encodingLength$1,
+		encodingLength: encodingLength$1
+	};
 	var DetailPageModel = class {
 		constructor(doc = document) {
 			this.doc = doc;
@@ -280,7 +582,38 @@
 		}
 		async downloadBTFile(url, filename) {
 			const blob = await this.gmFetchImageBlob(url);
-			if (blob) (0, file_saver.saveAs)(blob, filename);
+			if (blob) try {
+				const list = await this.parseTorrentFilesFromBlob(blob);
+				console.log(list);
+				(0, file_saver.saveAs)(blob, filename);
+			} catch (e) {
+				console.error(`解析错误信息：${e} `);
+				console.error(`${filename} 下载失败，请手动处理。`);
+			}
+		}
+		async parseTorrentFilesFromBlob(blob) {
+			const arrayBuffer = await blob.arrayBuffer();
+			const uint8Array = new Uint8Array(arrayBuffer);
+			const torrentData = bencode_default.decode(uint8Array);
+			if (!torrentData || !torrentData.info) throw new Error("无效的 BT 种子文件");
+			const info = torrentData.info;
+			const filesList = [];
+			const bufferToString = (buf) => {
+				if (!buf) return "";
+				return new TextDecoder("utf-8").decode(buf);
+			};
+			if (info.files && Array.isArray(info.files)) info.files.forEach((file) => {
+				const fullPath = file.path.map((seg) => bufferToString(seg)).join("/");
+				filesList.push({
+					path: fullPath,
+					length: file.length
+				});
+			});
+			else if (info.length) filesList.push({
+				path: bufferToString(info.name),
+				length: info.length
+			});
+			return filesList;
 		}
 		async copyTitleAndDownload() {
 			await copyContext(this.getTitleText() + "\n");
@@ -816,7 +1149,7 @@
 			return;
 		}
 		if ([/thread-(\d+)-1-(\d+)\.html/, /forum\.php\?mod=viewthread&tid=(\d+)/].some((regex) => regex.test(url))) {
-			await init();
+			await Promise.all([init()]);
 			new DetailPageController().init();
 		}
 	}
