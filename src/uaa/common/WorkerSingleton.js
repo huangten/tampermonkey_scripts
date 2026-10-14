@@ -10,7 +10,7 @@ export class WorkerSingleton {
 
         const workerCode = `
   let timer = null;
-  let interval = 2000;
+  let interval = 1000;
 
   self.onmessage = function(e) {
     const { type, payload } = e.data;
