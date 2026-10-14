@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-09.14:50:36
+// @version    2026-10-14.08:36:15
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -299,10 +299,21 @@
 		}
 		getBookname() {
 			const titleContent = this.doc.getElementsByClassName("main-title")[0].innerText.trim();
-			let bookName = titleContent.match(/^【(.*?)】/);
-			if (!bookName) bookName = titleContent;
-			else bookName = bookName[1];
-			return bookName;
+			const rules = [
+				/^【(.*?)】/,
+				/^［(.*?)］/,
+				/^《(.*?)》/,
+				/^（(.*?)）/
+			];
+			let bookName = titleContent;
+			if (rules.some((reg) => reg.test(bookName))) for (const rule of rules) {
+				const match = bookName.match(rule);
+				if (match) {
+					bookName = match[1];
+					break;
+				}
+			}
+			return bookName.replace(/^\.+|\.+$/g, "").replace(/^…+|…+$/g, "");
 		}
 		getDownloadContent(tag) {
 			let title = this.getDownloadFilename();

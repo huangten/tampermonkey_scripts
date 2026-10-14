@@ -22,13 +22,28 @@ export class ChapterModel {
     getBookname() {
         const titleElements = this.doc.getElementsByClassName('main-title');
         const titleContent = titleElements[0].innerText.trim();
-        let bookName = titleContent.match(/^【(.*?)】/);
-        if (!bookName) {
-            bookName = titleContent;
-        } else {
-            bookName = bookName[1];
+
+        const rules = [
+            /^【(.*?)】/,
+            /^［(.*?)］/,
+            /^《(.*?)》/,
+            /^（(.*?)）/,
+        ];
+
+        let bookName = titleContent;
+        if (rules.some(reg => reg.test(bookName))) {
+            for (const rule of rules) {
+                const match = bookName.match(rule);
+                if (match) {
+                    bookName = match[1];
+                    break;
+                }
+            }
         }
-        return bookName;
+
+        return bookName
+            .replace(/^\.+|\.+$/g, "")
+            .replace(/^…+|…+$/g, "");
     }
 
     getDownloadContent(tag) {
