@@ -55,7 +55,7 @@ export class IntroV3Controller {
             downloaderInterval: DOWNLOADER_INTERVAL
         });
 
-        this.worker.updateInterval(2000);
+        this.worker.updateInterval(DOWNLOADER_INTERVAL);
         this.worker.handleCallBack = async () => {
             await this.consumeNextChapter();
         };

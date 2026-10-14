@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-15.02:06:37
+// @version    2026-10-15.02:13:05
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -6809,7 +6809,7 @@ ${ncxNav.join("\n")}
 				infoWindow: this.infoWindow,
 				downloaderInterval: DOWNLOADER_INTERVAL
 			});
-			this.worker.updateInterval(2e3);
+			this.worker.updateInterval(DOWNLOADER_INTERVAL);
 			this.worker.handleCallBack = async () => {
 				await this.consumeNextChapter();
 			};
