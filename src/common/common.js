@@ -71,17 +71,17 @@ export function copyContext(str) {
 export function sleep(ms) {
 
     let done = false;
-    let t;
+    let timer = 0;
 
     return new Promise(resolve => {
-        t = setTimeout(() => {
+        timer = setTimeout(() => {
             if (done) return;
             done = true;
             resolve();
         }, ms);
     }).finally(() => {
-        if (!done) {
-            clearTimeout(t);
+        if (!done && timer !== 0) {
+            clearTimeout(timer);
             done = true;
         }
     });

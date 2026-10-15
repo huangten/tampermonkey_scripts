@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-15.02:24:41
+// @version    2026-10-15.11:16:18
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -132,16 +132,16 @@
 	}
 	function sleep(ms) {
 		let done = false;
-		let t;
+		let timer = 0;
 		return new Promise((resolve) => {
-			t = setTimeout(() => {
+			timer = setTimeout(() => {
 				if (done) return;
 				done = true;
 				resolve();
 			}, ms);
 		}).finally(() => {
-			if (!done) {
-				clearTimeout(t);
+			if (!done && timer !== 0) {
+				clearTimeout(timer);
 				done = true;
 			}
 		});
@@ -5953,7 +5953,6 @@ ${ncxNav.join("\n")}
 			if (chapterPageModel.getTexts().some((s) => s.includes("以下正文内容已隐藏"))) throw new Error("章节内容不完整，结束下载");
 			const success = chapterPageModel.saveToLocal();
 			this.downloadInfoWindow.setTitle("下载成功：" + downloadInfoText);
-			this.infoWindow.setCurrentDownload(downloadInfoText + "：成功下载", chapter.href);
 			chapterPageModel.dispose();
 			chapterPageModel = null;
 			await sleep(300);

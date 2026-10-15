@@ -45,7 +45,6 @@ export class ChapterDownloadService {
         
         const success = chapterPageModel.saveToLocal();
         this.downloadInfoWindow.setTitle("下载成功：" + downloadInfoText);
-        this.infoWindow.setCurrentDownload(downloadInfoText + '：成功下载', chapter.href);
         chapterPageModel.dispose();
         chapterPageModel = null;
         await sleep(300);
