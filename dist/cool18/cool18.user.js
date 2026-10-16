@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       cool18 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-14.09:54:54
+// @version    2026-10-16.22:15:22
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=cool18.com
 // @match      *://*.cool18.com/*
@@ -52,6 +52,16 @@
 				document.body.appendChild(script);
 			} else return resolve();
 		});
+	}
+	function addStyleText(text = `
+        /* 未访问的链接 */
+        a:link { color: blue; } 
+        /* 已访问的链接 */
+        a:visited { color: purple; }
+        `) {
+		const style = document.createElement("style");
+		style.textContent = text;
+		document.head.append(style);
 	}
 	function copyContext(str) {
 		return new Promise((resolve, reject) => {
@@ -443,6 +453,7 @@
 		const url = new URL(document.URL);
 		if (url.searchParams.get("act") && url.pathname === "/bbs4/index.php" && url.searchParams.get("act") === "threadview") {
 			await Promise.all([init(), initMonaca()]);
+			addStyleText();
 			new ChapterController(document);
 		}
 	})();

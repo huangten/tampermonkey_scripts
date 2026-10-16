@@ -41,6 +41,18 @@ export function addScript(id, src) {
     });
 }
 
+export function addStyleText(text = `
+        /* 未访问的链接 */
+        a:link { color: blue; } 
+        /* 已访问的链接 */
+        a:visited { color: purple; }
+        `
+){
+    const style = document.createElement('style');
+        style.textContent = text;
+        document.head.append(style);
+}
+
 const INVISIBLE_RE = /[\u200B\u200C\u200D\u200E\u200F\u202A-\u202E\uFEFF]/g;
 
 export function cleanText(str) {

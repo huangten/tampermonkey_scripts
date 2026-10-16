@@ -1,4 +1,4 @@
-import {init, initMonaca} from '../common/common.js'
+import {addStyleText, init, initMonaca} from '../common/common.js'
 import {ChapterController} from './chapter/chapter.js'
 
 (async function main() {
@@ -9,6 +9,7 @@ import {ChapterController} from './chapter/chapter.js'
             init(),
             initMonaca()
         ]);
+        addStyleText();
         new ChapterController(document);
     }
 })();
