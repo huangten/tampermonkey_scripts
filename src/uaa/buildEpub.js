@@ -129,10 +129,10 @@ export async function buildEpub(chapterCatalogModel,options = {}) {
 </navPoint>`);
         } else {
             ++volumeIndex;
-            textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
+            textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(escapeHtml(cleanText(c.title)), volumeIndex));
 
             let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(c.title))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>`
 
             c.children.forEach((d, j) => {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-15.11:16:18
+// @version    2026-10-17.20:06:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -951,9 +951,9 @@ onmessage = function (event) {
 </navPoint>`);
 			} else {
 				++volumeIndex;
-				textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(c.title, volumeIndex));
+				textFolder.file(`${id}.xhtml`, genVolumeHtmlPage(escapeHtml(cleanText(c.title)), volumeIndex));
 				let volumeNcxNav = `<navPoint id="${id}" playOrder="${i + 1}">
-    <navLabel><text>${c.title}</text></navLabel>
+    <navLabel><text>${escapeHtml(cleanText(c.title))}</text></navLabel>
     <content src="Text/${id}.xhtml"/>`;
 				c.children.forEach((d, j) => {
 					const did = `vol_${String(i + 1).padStart(4, "0")}_${String(j + 1).padStart(4, "0")}`;
