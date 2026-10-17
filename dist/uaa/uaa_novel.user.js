@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-17.20:06:52
+// @version    2026-10-17.20:19:11
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -1019,7 +1019,6 @@ ${ncxNav.join("\n")}
 		const blob = await zip.generateAsync({ type: "blob" });
 		(0, file_saver.saveAs)(blob, `${bookNameFile} 作者：${authorFile}.epub`);
 		console.log(bookName + " 下载完毕！");
-		chapterCatalogModel.dispose();
 	}
 	function escapeHtml(unsafe) {
 		return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -5757,6 +5756,7 @@ ${ncxNav.join("\n")}
 					const catalog = new ChapterCatalogModel(await fetchBookIntro(task.href), { href: task.href });
 					if (task.addChaptersToDb) await this.addBookChaptersToDb(task, catalog);
 					await buildEpub(catalog, { SaveCover: task.SaveCover });
+					catalog.dispose();
 					return true;
 				},
 				onTaskComplete: (task, success) => {

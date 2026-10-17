@@ -207,7 +207,7 @@ ${ncxNav.join('\n')}
     saveAs(blob, `${bookNameFile} 作者：${authorFile}.epub`);
     console.log(bookName + ' 下载完毕！');
     // GM_notification({text: `bookName EPUB 已生成`, title: '完成', timeout: 2000});
-    chapterCatalogModel.dispose();
+    // chapterCatalogModel.dispose();
 }
 
 function escapeHtml(unsafe) {

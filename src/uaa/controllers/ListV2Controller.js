@@ -175,6 +175,7 @@ export class ListV2Controller {
                     await this.addBookChaptersToDb(task, catalog);
                 }
                 await buildEpub(catalog,{SaveCover: task.SaveCover});
+                catalog.dispose();
                 return true;
             },
             onTaskComplete: (task, success) => {
