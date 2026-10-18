@@ -309,6 +309,7 @@ function genCoverHtmlPageV2() {
   <div><img alt="cover" src="../Images/cover.jpg" /></div>
 </body>
 </html>
+
 `;
 }
 
@@ -340,7 +341,9 @@ function genFyHtmlPage(book = {
 
   <div class="author" style="margin-top: 0;"><b>${book.author}</b><span style="font-size: smaller;">/ 著</span></div>
 </body>
-</html>`;
+</html>
+
+`;
 }
 
 function genIntroHtmlPage(intro = {
@@ -375,6 +378,7 @@ function genIntroHtmlPage(intro = {
 </div>
 </body>
 </html>
+
 `;
 }
 
@@ -400,7 +404,9 @@ function genHtmlPage(title) {
      
      <p>null</p>
   </body>
-</html>`;
+</html>
+
+`;
 }
 
 
@@ -420,5 +426,7 @@ function genVolumeHtmlPage(title, i = 0) {
 <h1>${titleArray.join("<br />")}</h1>
 
 </body>
-</html>`;
+</html>
+
+`;
 }

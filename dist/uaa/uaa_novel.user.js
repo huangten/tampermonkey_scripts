@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-18.18:48:55
+// @version    2026-10-18.18:51:32
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -1067,6 +1067,7 @@ ${ncxNav.join("\n")}
   <div><img alt="cover" src="../Images/cover.jpg" /></div>
 </body>
 </html>
+
 `;
 	}
 	function genFyHtmlPage(book = {
@@ -1097,7 +1098,9 @@ ${ncxNav.join("\n")}
 
   <div class="author" style="margin-top: 0;"><b>${book.author}</b><span style="font-size: smaller;">/ 著</span></div>
 </body>
-</html>`;
+</html>
+
+`;
 	}
 	function genIntroHtmlPage(intro = {
 		bookName: "书名",
@@ -1131,6 +1134,7 @@ ${ncxNav.join("\n")}
 </div>
 </body>
 </html>
+
 `;
 	}
 	function genHtmlPage(title) {
@@ -1152,7 +1156,9 @@ ${ncxNav.join("\n")}
      
      <p>null</p>
   </body>
-</html>`;
+</html>
+
+`;
 	}
 	function genVolumeHtmlPage(title, i = 0) {
 		const titleArray = title.split(" ").map((str) => str.trim()).filter((str) => str.length > 0);
@@ -1170,7 +1176,9 @@ ${ncxNav.join("\n")}
 <h1>${titleArray.join("<br />")}</h1>
 
 </body>
-</html>`;
+</html>
+
+`;
 	}
 	var import_dexie_min = __toESM(__commonJSMin(((exports, module) => {
 		((e, t) => {
