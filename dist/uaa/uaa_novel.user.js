@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-17.20:19:11
+// @version    2026-10-18.18:48:55
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -1050,12 +1050,21 @@ ${ncxNav.join("\n")}
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
   <title>Cover</title>
+  <style>
+  div {
+    text-align: center;
+    padding: 0pt;
+    margin: 0pt;
+  }
+  
+  img {
+    width: 100%;
+  }
+  </style>
 </head>
 
 <body>
-  <div style="text-align: center;padding: 0pt;margin: 0pt;">
-    <img width="100%" src="../Images/cover.jpg" />
-  </div>
+  <div><img alt="cover" src="../Images/cover.jpg" /></div>
 </body>
 </html>
 `;
@@ -1066,23 +1075,27 @@ ${ncxNav.join("\n")}
 	}) {
 		return `<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
+
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>扉页</title>
-    <style type="text/css">
-\t\t.pic {
-\t\t\tmargin: 0% 0% 0 0%;
-\t\t\tpadding: 2px 2px;
-\t\t\tborder: 1px solid #f5f5dc;
-\t\t\tbackground-color: rgba(250,250,250, 0);
-\t\t\tborder-radius: 1px;
-\t\t}
-    </style>
+  <title>扉页</title>
+  <style type="text/css">
+  .pic {
+    margin: 0% 0% 0 0%;
+    padding: 2px 2px;
+    border: 1px solid #f5f5dc;
+    background-color: rgba(250,250,250, 0);
+    border-radius: 1px;
+  }
+  </style>
 </head>
+
 <body style="text-align: center;">
-<div class="pic"><img src="../Images/cover.jpg" style="width: 100%; height: auto;"/></div>
-<h1 style="margin-top: 5%; font-size: 110%;">${book.name}</h1>
-<div class="author" style="margin-top: 0;"><b>${book.author}</b> <span style="font-size: smaller;">/ 著</span></div>
+  <div class="pic"><img src="../Images/cover.jpg" style="width: 100%;height: auto;"/></div>
+
+  <h1 style="margin-top: 5%;font-size: 110%;">${book.name}</h1>
+
+  <div class="author" style="margin-top: 0;"><b>${book.author}</b><span style="font-size: smaller;">/ 著</span></div>
 </body>
 </html>`;
 	}
