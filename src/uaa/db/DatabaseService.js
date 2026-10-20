@@ -198,20 +198,12 @@ export class DatabaseService {
         }
 
         const now = Date.now();
-        const exist = await this.db.table('chapters')
-            .where('href')
-            .equals(chapter.href)
-            .first();
+        // const exist = await this.db.table('chapters')
+        //     .where('href')
+        //     .equals(chapter.href)
+        //     .first();
 
-        if (exist) {
-            await this.updateOne('chapters', exist.id, {
-                chapterId: chapter.chapterId ?? exist.chapterId,
-                bookId: chapter.bookId ?? exist.bookId,
-                chapterName: chapter.chapterName ?? exist.chapterName,
-                bookName: chapter.bookName ?? exist.bookName,
-                volumeName: chapter.volumeName ?? exist.volumeName,
-                updateTime: now
-            });
+        if (await this.getChapterByHrefAndChapterName(chapter.href, chapter.chapterName)) {
             return false;
         }
 
@@ -227,6 +219,21 @@ export class DatabaseService {
             updateTime: now
         });
         return true;
+    }
+
+    // 通过 href 和 章节名 来获取章节数据
+    async getChapterByHrefAndChapterName(href, chapterName) {
+        const exists = await this.db.table('chapters')
+            .where('href')
+            .equals(href)
+            .toArray();
+
+        for (const exist of exists) {
+            if (exist.href === href && exist.chapterName === chapterName) {
+                return exist;
+            }
+        }
+        return null;
     }
 
     // 批量添加章节任务，并返回新增和重复数量，方便页面提示。
@@ -263,10 +270,7 @@ export class DatabaseService {
                     continue;
                 }
 
-                const exist = await this.db.table('chapters')
-                    .where('href')
-                    .equals(data.href)
-                    .first();
+                const exist = await this.getChapterByHrefAndChapterName(data.href, data.chapterName);
 
                 if (!exist) {
                     data.status = typeof data.status === 'undefined' ? 0 : data.status;
