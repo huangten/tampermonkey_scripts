@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-20.16:26:36
+// @version    2026-10-20.23:47:01
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -2173,31 +2173,8 @@ ${ncxNav.join("\n")}
 		}
 		looksLikeErrorPage(text) {
 			if (!text) return false;
-			const normalized = text.toLowerCase();
-			return [
-				"502 bad gateway",
-				"503 service unavailable",
-				"504 gateway timeout",
-				"500 internal server error",
-				"bad gateway",
-				"gateway timeout",
-				"service unavailable",
-				"internal server error",
-				"this site can’t be reached",
-				"this page isn’t working",
-				"无法访问此网站",
-				"网页无法正常运作",
-				"连接已重置",
-				"连接超时",
-				"network error",
-				"err_connection",
-				"dns_probe"
-			].some((keyword) => {
-				if (normalized.includes(keyword)) {
-					console.warn(`检测到错误页面关键词: ${keyword}`);
-					return true;
-				}
-			});
+			text.toLowerCase();
+			return false;
 		}
 		looksLikeCfChallenge(input) {
 			if (!input) return false;
