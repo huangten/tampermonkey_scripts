@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-20.09:21:14
+// @version    2026-10-20.09:57:02
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -5141,7 +5141,7 @@ ${ncxNav.join("\n")}
 		async addChapterIfAbsent(chapter) {
 			if (!chapter?.href) return false;
 			const now = Date.now();
-			if (await this.getChapterByHrefAndChapterName(chapter.href, chapter.chapterName)) return false;
+			if (await this.getChapterByHrefAndChapterName(chapter)) return false;
 			await this.addOne("chapters", {
 				chapterId: chapter.chapterId ?? chapter.id ?? "",
 				bookId: chapter.bookId ?? "",
@@ -5155,9 +5155,9 @@ ${ncxNav.join("\n")}
 			});
 			return true;
 		}
-		async getChapterByHrefAndChapterName(href, chapterName) {
-			const exists = await this.db.table("chapters").where("href").equals(href).toArray();
-			for (const exist of exists) if (exist.href === href && exist.chapterName === chapterName) return exist;
+		async getChapterByHrefAndChapterName(chapter) {
+			const exists = await this.db.table("chapters").where("href").equals(chapter.href).toArray();
+			for (const exist of exists) if (exist.href === chapter.href && exist.chapterName === chapter.chapterName && exist.bookName === chapter.bookName && exist.bookId === chapter.bookId) return exist;
 			return null;
 		}
 		async addChaptersIfAbsent(chapters) {
@@ -5185,7 +5185,7 @@ ${ncxNav.join("\n")}
 						result.invalid++;
 						continue;
 					}
-					const exist = await this.getChapterByHrefAndChapterName(data.href, data.chapterName);
+					const exist = await this.getChapterByHrefAndChapterName(data);
 					if (!exist) {
 						data.status = typeof data.status === "undefined" ? 0 : data.status;
 						await this.db.table("chapters").add(data);

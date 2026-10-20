@@ -191,19 +191,15 @@ export class DatabaseService {
         return {recovered: true, reason: 'stale_consumer_cleared'};
     }
 
-    // 添加单个章节任务；以 href 作为去重键，已存在时只刷新章节元信息。
+    // 添加单个章节任务；以 href 和 chapterName 和 bookId 和 bookName 作为去重键，已存在时只刷新章节元信息。
     async addChapterIfAbsent(chapter) {
         if (!chapter?.href) {
             return false;
         }
 
         const now = Date.now();
-        // const exist = await this.db.table('chapters')
-        //     .where('href')
-        //     .equals(chapter.href)
-        //     .first();
 
-        if (await this.getChapterByHrefAndChapterName(chapter.href, chapter.chapterName)) {
+        if (await this.getChapterByHrefAndChapterName(chapter)) {
             return false;
         }
 
@@ -221,15 +217,19 @@ export class DatabaseService {
         return true;
     }
 
-    // 通过 href 和 章节名 来获取章节数据
-    async getChapterByHrefAndChapterName(href, chapterName) {
+    // 通过 href 和 章节名 和 书名 和 bookId 来获取章节数据
+    async getChapterByHrefAndChapterName(chapter) {
         const exists = await this.db.table('chapters')
             .where('href')
-            .equals(href)
+            .equals(chapter.href)
             .toArray();
 
         for (const exist of exists) {
-            if (exist.href === href && exist.chapterName === chapterName) {
+            if (exist.href === chapter.href
+                && exist.chapterName === chapter.chapterName
+                && exist.bookName === chapter.bookName
+                && exist.bookId === chapter.bookId
+            ) {
                 return exist;
             }
         }
@@ -270,7 +270,7 @@ export class DatabaseService {
                     continue;
                 }
 
-                const exist = await this.getChapterByHrefAndChapterName(data.href, data.chapterName);
+                const exist = await this.getChapterByHrefAndChapterName(data);
 
                 if (!exist) {
                     data.status = typeof data.status === 'undefined' ? 0 : data.status;
