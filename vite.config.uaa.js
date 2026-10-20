@@ -93,7 +93,8 @@ export default defineConfig(({mode}) => {
                             // 格式：'包名': util.cdn.jsdelivr('全局变量名', '文件名')
                             // 对于 file-saver，它的全局变量名通常是 saveAs
                             'file-saver': 'saveAs',
-                            'jszip': 'JSZip'
+                            'jszip': 'JSZip',
+                            'dexie': 'Dexie'
                         },
                     }
                 }),
