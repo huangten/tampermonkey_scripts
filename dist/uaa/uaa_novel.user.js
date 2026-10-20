@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-20.09:02:16
+// @version    2026-10-20.09:21:14
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -5353,11 +5353,6 @@ ${ncxNav.join("\n")}
 			this.doc = doc;
 			this.location = location;
 		}
-		adjustUI() {
-			const cheros = this.doc.getElementsByClassName("cn-chero");
-			if (cheros) for (const chero of [...cheros]) chero.remove();
-			this.doc.getElementById("cnEntries")?.style.setProperty("padding-top", "60px");
-		}
 		getBookTree() {
 			const menus = [];
 			const links = this.doc.getElementsByClassName("cn-lcard");
@@ -5647,7 +5642,6 @@ ${ncxNav.join("\n")}
 			this.configureExportEpubScheduler();
 		}
 		init() {
-			this.model.adjustUI();
 			this.view.renderFixbar({ onOpenBookList: () => this.openBookListWindow() });
 		}
 		openBookListWindow() {
@@ -7013,6 +7007,11 @@ ${ncxNav.join("\n")}
 			return String(err);
 		}
 	};
+	function listAdjustUI() {
+		const cheros = document.getElementsByClassName("cn-chero");
+		if (cheros) for (const chero of [...cheros]) chero.remove();
+		document.getElementById("cnEntries")?.style.setProperty("padding-top", "60px");
+	}
 	async function router() {
 		switch (new URL(document.URL).pathname) {
 			case "/novel/intro":
@@ -7020,6 +7019,7 @@ ${ncxNav.join("\n")}
 				await new IntroV3Controller().init();
 				break;
 			case "/novel/list":
+				listAdjustUI();
 				await init();
 				HackTimer();
 				new ListV2Controller().init();
