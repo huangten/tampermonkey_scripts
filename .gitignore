@@ -44,3 +44,4 @@ resources/.arch-internal-preview.css
 /backend/.idea/
 /backend/bin
 /backend/*.db
+/backend/chapters*.sql
