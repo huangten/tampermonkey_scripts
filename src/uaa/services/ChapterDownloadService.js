@@ -100,7 +100,7 @@ export class ChapterDownloadService {
         }
 
         const normalized = text.toLowerCase();
-        return false;
+        // return false;
         return [
             '502 bad gateway',
             '503 service unavailable',
