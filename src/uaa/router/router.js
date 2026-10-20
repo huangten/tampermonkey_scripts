@@ -3,7 +3,7 @@ import {HackTimer} from "../common/HackTimer.js";
 import {ChapterController} from "../controllers/ChapterController.js";
 import {ListV2Controller} from "../controllers/ListV2Controller.js";
 import {IntroV3Controller} from "../controllers/IntroV3Controller.js";
-import {listAdjustUI} from "../bootstrap/list.js";
+import {listAdjustUI} from "../preprocess/list.js";
 
 
 export async function router() {
