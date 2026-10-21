@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-21.17:01:35
+// @version    2026-10-21.23:28:52
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -339,13 +339,11 @@ onmessage = function (event) {
 				const bookName = this.getBookName();
 				const authorInfo = "作者：" + this.getAuthorInfo();
 				const texts = this.getTexts().map((s) => `　　${s}`).join("\n");
-				const htmlLines = this.getLines().join("\n");
 				const content = [
 					"book name:\n" + bookName,
 					"author:\n" + authorInfo,
 					"title:\n" + title,
-					"text:\n" + texts,
-					"html:\n" + htmlLines
+					"text:\n" + texts
 				].join("\n\n=============================================\n");
 				try {
 					new Blob();
@@ -1372,6 +1370,8 @@ ${ncxNav.join("\n")}
 					}
 					if (typeof data.status !== "undefined" && exist.status !== data.status) {
 						await this.db.table("chapters").update(exist.id, {
+							chapterName: data.chapterName,
+							bookName: data.bookName,
 							status: data.status,
 							updateTime: data.updateTime ?? Date.now()
 						});

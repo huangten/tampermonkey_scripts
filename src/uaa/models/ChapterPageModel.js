@@ -85,14 +85,14 @@ export class ChapterPageModel {
             const bookName = this.getBookName();
             const authorInfo = "作者：" + this.getAuthorInfo();
             const texts = this.getTexts().map((s) => `　　${s}`).join('\n');
-            const htmlLines = this.getLines().join('\n');
+            // const htmlLines = this.getLines().join('\n');
             const separator = "\n\n=============================================\n";
             const content = [
                 "book name:\n" + bookName,
                 "author:\n" + authorInfo,
                 "title:\n" + title,
                 "text:\n" + texts,
-                "html:\n" + htmlLines
+                // "html:\n" + htmlLines
             ].join(separator);
             try {
                 !!new Blob;
