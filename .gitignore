@@ -45,3 +45,4 @@ resources/.arch-internal-preview.css
 /backend/bin
 /backend/*.db
 /backend/chapters*.sql
+/backend/chapters*.json

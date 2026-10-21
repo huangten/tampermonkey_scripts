@@ -108,7 +108,7 @@ export class DatabaseService {
             const systemInfo = await this.db.table('system_infos').orderBy('id').first();
             const now = Date.now();
             if (!systemInfo) {
-            return {acquired: false, owner: ''};
+                return {acquired: false, owner: ''};
             }
             if (!this.canTakeConsumer(systemInfo, pageId, now)) {
                 return {acquired: false, owner: systemInfo.consumerPageId ?? ''};
@@ -283,6 +283,8 @@ export class DatabaseService {
 
                 if (typeof data.status !== 'undefined' && exist.status !== data.status) {
                     await this.db.table('chapters').update(exist.id, {
+                        chapterName: data.chapterName,
+                        bookName: data.bookName,
                         status: data.status,
                         updateTime: data.updateTime ?? Date.now()
                     });
@@ -304,7 +306,7 @@ export class DatabaseService {
 
         const now = Date.now();
         const data = {
-            id:chapter.id,
+            id: chapter.id,
             chapterId: chapter.chapterId ?? '',
             bookId: chapter.bookId ?? '',
             status: this.normalizeChapterStatus(chapter.status),

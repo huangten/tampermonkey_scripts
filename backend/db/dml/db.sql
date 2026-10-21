@@ -34,8 +34,8 @@ create table catalogs
 create table chapters
 (
     id          integer primary key autoincrement,
-    chapterId   integer,
-    bookId      integer,
+    chapterId   text,
+    bookId      text,
     status      integer          default 0,
     href        text,
     chapterName text,
