@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-20.23:53:18
+// @version    2026-10-21.17:01:35
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -1363,7 +1363,7 @@ ${ncxNav.join("\n")}
 						result.invalid++;
 						continue;
 					}
-					const exist = await this.getChapterByHrefAndChapterName(data);
+					const exist = await this.db.table("chapters").where("id").equals(data.id).first();
 					if (!exist) {
 						data.status = typeof data.status === "undefined" ? 0 : data.status;
 						await this.db.table("chapters").add(data);
@@ -1387,6 +1387,7 @@ ${ncxNav.join("\n")}
 			if (!chapter?.href) return null;
 			const now = Date.now();
 			const data = {
+				id: chapter.id,
 				chapterId: chapter.chapterId ?? "",
 				bookId: chapter.bookId ?? "",
 				status: this.normalizeChapterStatus(chapter.status),

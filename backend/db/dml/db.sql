@@ -20,13 +20,28 @@ create table catalogs
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- create table chapters
+-- (
+--     id         integer primary key autoincrement,
+--     catalog_id integer not null,
+--     content    text    NOT NULL DEFAULT '',
+--     is_chapter integer          default 0,
+--     source_href        NOT NULL DEFAULT '',
+--     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+--     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+-- );
+
 create table chapters
 (
-    id         integer primary key autoincrement,
-    catalog_id integer not null,
-    content    text    NOT NULL DEFAULT '',
-    is_chapter integer          default 0,
-    source_href        NOT NULL DEFAULT '',
-    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    id          integer primary key autoincrement,
+    chapterId   integer,
+    bookId      integer,
+    status      integer          default 0,
+    href        text,
+    chapterName text,
+    bookName    text,
+    volumeName  text,
+    createTime  INTEGER NOT NULL DEFAULT (unixepoch()),
+    updateTime  INTEGER NOT NULL DEFAULT (unixepoch())
 );
+

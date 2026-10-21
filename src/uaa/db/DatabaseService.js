@@ -270,7 +270,9 @@ export class DatabaseService {
                     continue;
                 }
 
-                const exist = await this.getChapterByHrefAndChapterName(data);
+                const exist = await this.db.table('chapters')
+                    .where('id').equals(data.id)
+                    .first();
 
                 if (!exist) {
                     data.status = typeof data.status === 'undefined' ? 0 : data.status;
@@ -302,6 +304,7 @@ export class DatabaseService {
 
         const now = Date.now();
         const data = {
+            id:chapter.id,
             chapterId: chapter.chapterId ?? '',
             bookId: chapter.bookId ?? '',
             status: this.normalizeChapterStatus(chapter.status),
