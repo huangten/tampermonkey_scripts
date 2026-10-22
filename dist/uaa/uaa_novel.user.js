@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-21.23:28:52
+// @version    2026-10-22.10:49:53
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -2097,7 +2097,7 @@ ${ncxNav.join("\n")}
 	var INFO_WINDOW_PROGRESS_FILTER = "infoWindowProgressFilter";
 	var DEBUG_TABLE_ID = "uaaIntroDebugTable";
 	var CHAPTER_TREE_ID = "titleList";
-	var DOWNLOADER_INTERVAL = 4500;
+	var DOWNLOADER_INTERVAL = 1e4;
 	function getOrCreatePageId(storage = sessionStorage) {
 		const storageKey = "__uaa_intro_v3_page_id__";
 		let storedPageId = storage.getItem(storageKey);
