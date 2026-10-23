@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       UAA 小说 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-22.10:57:07
+// @version    2026-10-23.13:31:44
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=uaa.com
 // @match      https://*.uaa.com/novel/*
@@ -30,7 +30,7 @@
 // @noframes
 // ==/UserScript==
 
-(async function(file_saver, jszip, dexie) {
+(async function(file_saver, dexie, jszip) {
 	"use strict";
 	var __create = Object.create;
 	var __defProp = Object.defineProperty;
@@ -52,8 +52,8 @@
 		value: mod,
 		enumerable: true
 	}) : target, mod));
-	jszip = __toESM(jszip);
 	dexie = __toESM(dexie);
+	jszip = __toESM(jszip);
 	var _GM_openInTab = (() => typeof GM_openInTab != "undefined" ? GM_openInTab : void 0)();
 	var _GM_xmlhttpRequest = (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
 	function addCss(id, src) {
@@ -483,6 +483,384 @@ onmessage = function (event) {
 			});
 		}
 	};
+	var DatabaseService = class DatabaseService {
+		static instance = null;
+		db;
+		consumerLeaseTtl = 15e3;
+		constructor() {
+			if (DatabaseService.instance) return DatabaseService.instance;
+			this.db = new dexie.default(this.getDBName());
+			this.db.version(1).stores({
+				chapters: "++id, chapterId, bookId, status, href, chapterName, bookName, volumeName, createTime, updateTime",
+				system_infos: "++id, status, lastDownloadTime, consumerPageId, consumerPageLabel, consumerHeartbeat, consumerStartedAt, currentChapterId, currentChapterHref, currentBookName, updateTime"
+			});
+			DatabaseService.instance = this;
+		}
+		getDBName() {
+			return "uaa_intro_db";
+		}
+		async getSystemInfo() {
+			let systemInfo = await this.getFirst("system_infos");
+			if (!systemInfo) await this.addOne("system_infos", {
+				status: 0,
+				lastDownloadTime: Date.now(),
+				consumerPageId: "",
+				consumerPageLabel: "",
+				consumerHeartbeat: 0,
+				consumerStartedAt: 0,
+				currentChapterId: 0,
+				currentChapterHref: "",
+				currentBookName: "",
+				updateTime: Date.now()
+			});
+			systemInfo = await this.getFirst("system_infos");
+			if (systemInfo && typeof systemInfo.consumerPageLabel === "undefined") {
+				await this.updateOne("system_infos", systemInfo.id, {
+					consumerPageLabel: "",
+					updateTime: Date.now()
+				});
+				systemInfo = await this.getFirst("system_infos");
+			}
+			return systemInfo;
+		}
+		async updateSystemInfoStatus(status) {
+			let id = (await this.getSystemInfo()).id;
+			await this.updateOne("system_infos", id, {
+				status,
+				updateTime: Date.now()
+			});
+		}
+		async updateSystemInfoLastDownloadTime(lastDownloadTime) {
+			let id = (await this.getSystemInfo()).id;
+			await this.updateOne("system_infos", id, {
+				lastDownloadTime,
+				updateTime: Date.now()
+			});
+		}
+		async resetSystemInfoStatus(pageId = "") {
+			const systemInfo = await this.getSystemInfo();
+			if (pageId && systemInfo.consumerPageId && systemInfo.consumerPageId !== pageId) return false;
+			await this.updateOne("system_infos", systemInfo.id, {
+				status: 0,
+				currentChapterId: 0,
+				currentChapterHref: "",
+				currentBookName: "",
+				updateTime: Date.now()
+			});
+			return true;
+		}
+		async setSystemInfoError(pageId = "") {
+			const systemInfo = await this.getSystemInfo();
+			if (pageId && systemInfo.consumerPageId && systemInfo.consumerPageId !== pageId) return false;
+			await this.updateOne("system_infos", systemInfo.id, {
+				status: 2,
+				updateTime: Date.now()
+			});
+			return true;
+		}
+		canTakeConsumer(systemInfo, pageId, now = Date.now()) {
+			return !systemInfo.consumerPageId || systemInfo.consumerPageId === pageId || now - (systemInfo.consumerHeartbeat ?? 0) > this.consumerLeaseTtl;
+		}
+		async tryBecomeConsumer(pageId, pageLabel = "") {
+			await this.getSystemInfo();
+			return await this.db.transaction("rw", this.db.table("system_infos"), async () => {
+				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
+				const now = Date.now();
+				if (!systemInfo) return {
+					acquired: false,
+					owner: ""
+				};
+				if (!this.canTakeConsumer(systemInfo, pageId, now)) return {
+					acquired: false,
+					owner: systemInfo.consumerPageId ?? ""
+				};
+				const ownerChanged = systemInfo.consumerPageId !== pageId;
+				await this.db.table("system_infos").update(systemInfo.id, {
+					consumerPageId: pageId,
+					consumerPageLabel: pageLabel,
+					consumerHeartbeat: now,
+					consumerStartedAt: ownerChanged ? now : systemInfo.consumerStartedAt ?? now,
+					updateTime: now
+				});
+				return {
+					acquired: true,
+					owner: pageId
+				};
+			});
+		}
+		async renewConsumerHeartbeat(pageId, pageLabel = "") {
+			await this.getSystemInfo();
+			return await this.db.transaction("rw", this.db.table("system_infos"), async () => {
+				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
+				const now = Date.now();
+				if (!systemInfo || !this.canTakeConsumer(systemInfo, pageId, now)) return false;
+				await this.db.table("system_infos").update(systemInfo.id, {
+					consumerPageId: pageId,
+					consumerPageLabel: pageLabel || systemInfo.consumerPageLabel || "",
+					consumerHeartbeat: now,
+					consumerStartedAt: systemInfo.consumerPageId === pageId ? systemInfo.consumerStartedAt ?? now : now,
+					updateTime: now
+				});
+				return true;
+			});
+		}
+		async releaseConsumer(pageId) {
+			const systemInfo = await this.getSystemInfo();
+			if (systemInfo.consumerPageId !== pageId) return false;
+			await this.updateOne("system_infos", systemInfo.id, {
+				consumerPageId: "",
+				consumerPageLabel: "",
+				consumerHeartbeat: 0,
+				consumerStartedAt: 0,
+				updateTime: Date.now()
+			});
+			return true;
+		}
+		async recoverStaleSystemState() {
+			const systemInfo = await this.getSystemInfo();
+			const now = Date.now();
+			if (!(!!systemInfo.consumerPageId && now - (systemInfo.consumerHeartbeat ?? 0) > this.consumerLeaseTtl)) return {
+				recovered: false,
+				reason: "active_consumer"
+			};
+			await this.updateOne("system_infos", systemInfo.id, {
+				status: 0,
+				consumerPageId: "",
+				consumerPageLabel: "",
+				consumerHeartbeat: 0,
+				consumerStartedAt: 0,
+				currentChapterId: 0,
+				currentChapterHref: "",
+				currentBookName: "",
+				updateTime: now
+			});
+			return {
+				recovered: true,
+				reason: "stale_consumer_cleared"
+			};
+		}
+		async updateChaptersDownloadedByHref(href) {
+			await this.db.transaction("rw", this.db.table("chapters"), async () => {
+				const exists = await this.db.table("chapters").where("href").equals(href).toArray();
+				for (const exist of exists) await this.db.table("chapters").update(exist.id, {
+					status: 1,
+					updateTime: Date.now()
+				});
+			});
+		}
+		async addChapterIfAbsent(chapter) {
+			if (!chapter?.href) return false;
+			const now = Date.now();
+			if (await this.getChapterByHrefAndChapterName(chapter)) return false;
+			await this.addOne("chapters", {
+				chapterId: chapter.chapterId ?? chapter.id ?? "",
+				bookId: chapter.bookId ?? "",
+				status: 0,
+				href: chapter.href,
+				chapterName: chapter.chapterName ?? chapter.title ?? "",
+				bookName: chapter.bookName ?? "",
+				volumeName: chapter.volumeName ?? "",
+				createTime: now,
+				updateTime: now
+			});
+			return true;
+		}
+		async getChapterByHrefAndChapterName(chapter) {
+			const exists = await this.db.table("chapters").where("href").equals(chapter.href).toArray();
+			for (const exist of exists) if (exist.href === chapter.href && exist.chapterName === chapter.chapterName && exist.bookName === chapter.bookName && exist.bookId === chapter.bookId) return exist;
+			return null;
+		}
+		async addChaptersIfAbsent(chapters) {
+			let added = 0;
+			let duplicated = 0;
+			for (const chapter of chapters) if (await this.addChapterIfAbsent(chapter)) added++;
+			else duplicated++;
+			return {
+				added,
+				duplicated
+			};
+		}
+		async importChapters(chapters) {
+			const result = {
+				added: 0,
+				updated: 0,
+				skipped: 0,
+				invalid: 0
+			};
+			if (!Array.isArray(chapters)) return result;
+			await this.db.transaction("rw", this.db.table("chapters"), async () => {
+				for (const chapter of chapters) {
+					const data = this.normalizeChapterForImport(chapter);
+					if (!data) {
+						result.invalid++;
+						continue;
+					}
+					const exist = await this.db.table("chapters").where("id").equals(data.id).first();
+					if (!exist) {
+						data.status = typeof data.status === "undefined" ? 0 : data.status;
+						await this.db.table("chapters").add(data);
+						result.added++;
+						continue;
+					}
+					if (typeof data.status !== "undefined" && exist.status !== data.status) {
+						await this.db.table("chapters").update(exist.id, {
+							chapterName: data.chapterName,
+							bookName: data.bookName,
+							status: data.status,
+							updateTime: data.updateTime ?? Date.now()
+						});
+						result.updated++;
+						continue;
+					}
+					result.skipped++;
+				}
+			});
+			return result;
+		}
+		normalizeChapterForImport(chapter) {
+			if (!chapter?.href) return null;
+			const now = Date.now();
+			const data = {
+				id: chapter.id,
+				chapterId: chapter.chapterId ?? "",
+				bookId: chapter.bookId ?? "",
+				status: this.normalizeChapterStatus(chapter.status),
+				href: String(chapter.href).trim(),
+				chapterName: chapter.chapterName ?? "",
+				bookName: chapter.bookName ?? "",
+				volumeName: chapter.volumeName ?? "",
+				createTime: Number(chapter.createTime) || now,
+				updateTime: Number(chapter.updateTime) || now
+			};
+			if (!data.href) return null;
+			return data;
+		}
+		normalizeChapterStatus(status) {
+			if (status === null || typeof status === "undefined") return;
+			const numberStatus = Number(status);
+			if (Number.isFinite(numberStatus)) return numberStatus;
+		}
+		async claimNextChapterForDownload(pageId) {
+			await this.getSystemInfo();
+			return await this.db.transaction("rw", this.db.table("system_infos"), this.db.table("chapters"), async () => {
+				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
+				const now = Date.now();
+				if (!systemInfo || systemInfo.status !== 0 || !this.canTakeConsumer(systemInfo, pageId, now) || systemInfo.consumerPageId !== pageId) return null;
+				const chapter = await this.db.table("chapters").where("status").equals(0).first();
+				if (!chapter) return null;
+				await this.db.table("system_infos").update(systemInfo.id, {
+					status: 1,
+					consumerHeartbeat: now,
+					currentChapterId: chapter.id,
+					currentChapterHref: chapter.href,
+					currentBookName: chapter.bookName ?? "",
+					updateTime: now
+				});
+				return chapter;
+			});
+		}
+		async markChapterDownloaded(id, pageId, lastDownloadTime = Date.now()) {
+			await this.db.transaction("rw", this.db.table("system_infos"), this.db.table("chapters"), async () => {
+				await this.db.table("chapters").update(id, {
+					status: 1,
+					updateTime: lastDownloadTime
+				});
+				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
+				if (systemInfo && systemInfo.consumerPageId === pageId) await this.db.table("system_infos").update(systemInfo.id, {
+					status: 0,
+					lastDownloadTime,
+					consumerHeartbeat: lastDownloadTime,
+					currentChapterId: 0,
+					currentChapterHref: "",
+					currentBookName: "",
+					updateTime: lastDownloadTime
+				});
+			});
+		}
+		async markDownloadError(pageId = "") {
+			return await this.setSystemInfoError(pageId);
+		}
+		async deletePendingChapters() {
+			return await this.db.table("chapters").where("status").equals(0).delete();
+		}
+		async deletePendingChaptersByBookId(bookId) {
+			const normalizedBookId = String(bookId ?? "").trim();
+			if (!normalizedBookId) return 0;
+			const bookIds = [normalizedBookId];
+			const numberBookId = Number(normalizedBookId);
+			if (Number.isFinite(numberBookId)) bookIds.push(numberBookId);
+			return await this.db.table("chapters").where("bookId").anyOf(bookIds).and((chapter) => chapter.status === 0).delete();
+		}
+		async deleteChaptersByBookId(bookId) {
+			const normalizedBookId = String(bookId ?? "").trim();
+			if (!normalizedBookId) return 0;
+			const bookIds = [normalizedBookId];
+			const numberBookId = Number(normalizedBookId);
+			if (Number.isFinite(numberBookId)) bookIds.push(numberBookId);
+			return await this.db.table("chapters").where("bookId").anyOf(bookIds).delete();
+		}
+		async deleteDownloadedChapters() {
+			return await this.db.table("chapters").where("status").equals(1).delete();
+		}
+		async getChapterStats() {
+			const pending = await this.db.table("chapters").where("status").equals(0).count();
+			const downloaded = await this.db.table("chapters").where("status").equals(1).count();
+			return {
+				pending,
+				downloaded,
+				total: pending + downloaded
+			};
+		}
+		async getDebugRows(tableName, pageNum, pageSize) {
+			if (!this.db.tables.map((table) => table.name).includes(tableName)) return [];
+			const table = this.db.table(tableName);
+			if (!pageNum || !pageSize) return await table.toArray();
+			const normalizedPageNum = Math.max(Number(pageNum) || 1, 1);
+			const normalizedPageSize = Math.max(Number(pageSize) || 10, 1);
+			const offset = (normalizedPageNum - 1) * normalizedPageSize;
+			return await table.orderBy("id").offset(offset).limit(normalizedPageSize).toArray();
+		}
+		async countDebugRows(tableName) {
+			if (!this.db.tables.map((table) => table.name).includes(tableName)) return 0;
+			return await this.db.table(tableName).count();
+		}
+		async deleteDebugRows(tableName, ids) {
+			if (!Array.isArray(ids) || ids.length === 0) return 0;
+			await this.db.table(tableName).bulkDelete(ids);
+			return ids.length;
+		}
+		async addOne(tableName, data) {
+			return await this.db.table(tableName).add(data);
+		}
+		async addBulk(tableName, dataArray) {
+			return this.db.table(tableName).bulkAdd(dataArray);
+		}
+		async deleteOne(tableName, id) {
+			return await this.db.table(tableName).delete(id);
+		}
+		async deleteBulk(tableName, idArray) {
+			return this.db.table(tableName).bulkDelete(idArray);
+		}
+		async updateOne(tableName, id, changes) {
+			return await this.db.table(tableName).update(id, changes);
+		}
+		async exists(tableName, id) {
+			return !!await this.db.table(tableName).get(id);
+		}
+		async existsBulk(tableName, idArray) {
+			return (await this.db.table(tableName).where(":id").anyOf(idArray).toArray()).map((item) => item.id);
+		}
+		async getFirst(tableName) {
+			return this.db.table(tableName).orderBy("id").first();
+		}
+		async getOne(tableName, id) {
+			return await this.db.table(tableName).get(id);
+		}
+		async getPaged(tableName, pageNum = 1, pageSize = 10) {
+			const offset = (pageNum - 1) * pageSize;
+			return await this.db.table(tableName).offset(offset).limit(pageSize).toArray();
+		}
+	};
 	var ChapterController = class {
 		constructor({ model = new ChapterPageModel(), view = new ChapterFixbarView() } = {}) {
 			this.model = model;
@@ -513,7 +891,10 @@ onmessage = function (event) {
 					await copyContext(this.model.getTitleAndContentHtml());
 					break;
 				case "保存内容到本地":
-					this.model.saveToLocal();
+					if (this.model.saveToLocal()) {
+						const href = this.model.doc.location.href;
+						await new DatabaseService().updateChaptersDownloadedByHref(href);
+					}
 					break;
 				case "上一章":
 					this.model.getPrevChapterElement();
@@ -1158,375 +1539,6 @@ ${ncxNav.join("\n")}
 
 `;
 	}
-	var DatabaseService = class DatabaseService {
-		static instance = null;
-		db;
-		consumerLeaseTtl = 15e3;
-		constructor() {
-			if (DatabaseService.instance) return DatabaseService.instance;
-			this.db = new dexie.default(this.getDBName());
-			this.db.version(1).stores({
-				chapters: "++id, chapterId, bookId, status, href, chapterName, bookName, volumeName, createTime, updateTime",
-				system_infos: "++id, status, lastDownloadTime, consumerPageId, consumerPageLabel, consumerHeartbeat, consumerStartedAt, currentChapterId, currentChapterHref, currentBookName, updateTime"
-			});
-			DatabaseService.instance = this;
-		}
-		getDBName() {
-			return "uaa_intro_db";
-		}
-		async getSystemInfo() {
-			let systemInfo = await this.getFirst("system_infos");
-			if (!systemInfo) await this.addOne("system_infos", {
-				status: 0,
-				lastDownloadTime: Date.now(),
-				consumerPageId: "",
-				consumerPageLabel: "",
-				consumerHeartbeat: 0,
-				consumerStartedAt: 0,
-				currentChapterId: 0,
-				currentChapterHref: "",
-				currentBookName: "",
-				updateTime: Date.now()
-			});
-			systemInfo = await this.getFirst("system_infos");
-			if (systemInfo && typeof systemInfo.consumerPageLabel === "undefined") {
-				await this.updateOne("system_infos", systemInfo.id, {
-					consumerPageLabel: "",
-					updateTime: Date.now()
-				});
-				systemInfo = await this.getFirst("system_infos");
-			}
-			return systemInfo;
-		}
-		async updateSystemInfoStatus(status) {
-			let id = (await this.getSystemInfo()).id;
-			await this.updateOne("system_infos", id, {
-				status,
-				updateTime: Date.now()
-			});
-		}
-		async updateSystemInfoLastDownloadTime(lastDownloadTime) {
-			let id = (await this.getSystemInfo()).id;
-			await this.updateOne("system_infos", id, {
-				lastDownloadTime,
-				updateTime: Date.now()
-			});
-		}
-		async resetSystemInfoStatus(pageId = "") {
-			const systemInfo = await this.getSystemInfo();
-			if (pageId && systemInfo.consumerPageId && systemInfo.consumerPageId !== pageId) return false;
-			await this.updateOne("system_infos", systemInfo.id, {
-				status: 0,
-				currentChapterId: 0,
-				currentChapterHref: "",
-				currentBookName: "",
-				updateTime: Date.now()
-			});
-			return true;
-		}
-		async setSystemInfoError(pageId = "") {
-			const systemInfo = await this.getSystemInfo();
-			if (pageId && systemInfo.consumerPageId && systemInfo.consumerPageId !== pageId) return false;
-			await this.updateOne("system_infos", systemInfo.id, {
-				status: 2,
-				updateTime: Date.now()
-			});
-			return true;
-		}
-		canTakeConsumer(systemInfo, pageId, now = Date.now()) {
-			return !systemInfo.consumerPageId || systemInfo.consumerPageId === pageId || now - (systemInfo.consumerHeartbeat ?? 0) > this.consumerLeaseTtl;
-		}
-		async tryBecomeConsumer(pageId, pageLabel = "") {
-			await this.getSystemInfo();
-			return await this.db.transaction("rw", this.db.table("system_infos"), async () => {
-				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
-				const now = Date.now();
-				if (!systemInfo) return {
-					acquired: false,
-					owner: ""
-				};
-				if (!this.canTakeConsumer(systemInfo, pageId, now)) return {
-					acquired: false,
-					owner: systemInfo.consumerPageId ?? ""
-				};
-				const ownerChanged = systemInfo.consumerPageId !== pageId;
-				await this.db.table("system_infos").update(systemInfo.id, {
-					consumerPageId: pageId,
-					consumerPageLabel: pageLabel,
-					consumerHeartbeat: now,
-					consumerStartedAt: ownerChanged ? now : systemInfo.consumerStartedAt ?? now,
-					updateTime: now
-				});
-				return {
-					acquired: true,
-					owner: pageId
-				};
-			});
-		}
-		async renewConsumerHeartbeat(pageId, pageLabel = "") {
-			await this.getSystemInfo();
-			return await this.db.transaction("rw", this.db.table("system_infos"), async () => {
-				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
-				const now = Date.now();
-				if (!systemInfo || !this.canTakeConsumer(systemInfo, pageId, now)) return false;
-				await this.db.table("system_infos").update(systemInfo.id, {
-					consumerPageId: pageId,
-					consumerPageLabel: pageLabel || systemInfo.consumerPageLabel || "",
-					consumerHeartbeat: now,
-					consumerStartedAt: systemInfo.consumerPageId === pageId ? systemInfo.consumerStartedAt ?? now : now,
-					updateTime: now
-				});
-				return true;
-			});
-		}
-		async releaseConsumer(pageId) {
-			const systemInfo = await this.getSystemInfo();
-			if (systemInfo.consumerPageId !== pageId) return false;
-			await this.updateOne("system_infos", systemInfo.id, {
-				consumerPageId: "",
-				consumerPageLabel: "",
-				consumerHeartbeat: 0,
-				consumerStartedAt: 0,
-				updateTime: Date.now()
-			});
-			return true;
-		}
-		async recoverStaleSystemState() {
-			const systemInfo = await this.getSystemInfo();
-			const now = Date.now();
-			if (!(!!systemInfo.consumerPageId && now - (systemInfo.consumerHeartbeat ?? 0) > this.consumerLeaseTtl)) return {
-				recovered: false,
-				reason: "active_consumer"
-			};
-			await this.updateOne("system_infos", systemInfo.id, {
-				status: 0,
-				consumerPageId: "",
-				consumerPageLabel: "",
-				consumerHeartbeat: 0,
-				consumerStartedAt: 0,
-				currentChapterId: 0,
-				currentChapterHref: "",
-				currentBookName: "",
-				updateTime: now
-			});
-			return {
-				recovered: true,
-				reason: "stale_consumer_cleared"
-			};
-		}
-		async addChapterIfAbsent(chapter) {
-			if (!chapter?.href) return false;
-			const now = Date.now();
-			if (await this.getChapterByHrefAndChapterName(chapter)) return false;
-			await this.addOne("chapters", {
-				chapterId: chapter.chapterId ?? chapter.id ?? "",
-				bookId: chapter.bookId ?? "",
-				status: 0,
-				href: chapter.href,
-				chapterName: chapter.chapterName ?? chapter.title ?? "",
-				bookName: chapter.bookName ?? "",
-				volumeName: chapter.volumeName ?? "",
-				createTime: now,
-				updateTime: now
-			});
-			return true;
-		}
-		async getChapterByHrefAndChapterName(chapter) {
-			const exists = await this.db.table("chapters").where("href").equals(chapter.href).toArray();
-			for (const exist of exists) if (exist.href === chapter.href && exist.chapterName === chapter.chapterName && exist.bookName === chapter.bookName && exist.bookId === chapter.bookId) return exist;
-			return null;
-		}
-		async addChaptersIfAbsent(chapters) {
-			let added = 0;
-			let duplicated = 0;
-			for (const chapter of chapters) if (await this.addChapterIfAbsent(chapter)) added++;
-			else duplicated++;
-			return {
-				added,
-				duplicated
-			};
-		}
-		async importChapters(chapters) {
-			const result = {
-				added: 0,
-				updated: 0,
-				skipped: 0,
-				invalid: 0
-			};
-			if (!Array.isArray(chapters)) return result;
-			await this.db.transaction("rw", this.db.table("chapters"), async () => {
-				for (const chapter of chapters) {
-					const data = this.normalizeChapterForImport(chapter);
-					if (!data) {
-						result.invalid++;
-						continue;
-					}
-					const exist = await this.db.table("chapters").where("id").equals(data.id).first();
-					if (!exist) {
-						data.status = typeof data.status === "undefined" ? 0 : data.status;
-						await this.db.table("chapters").add(data);
-						result.added++;
-						continue;
-					}
-					if (typeof data.status !== "undefined" && exist.status !== data.status) {
-						await this.db.table("chapters").update(exist.id, {
-							chapterName: data.chapterName,
-							bookName: data.bookName,
-							status: data.status,
-							updateTime: data.updateTime ?? Date.now()
-						});
-						result.updated++;
-						continue;
-					}
-					result.skipped++;
-				}
-			});
-			return result;
-		}
-		normalizeChapterForImport(chapter) {
-			if (!chapter?.href) return null;
-			const now = Date.now();
-			const data = {
-				id: chapter.id,
-				chapterId: chapter.chapterId ?? "",
-				bookId: chapter.bookId ?? "",
-				status: this.normalizeChapterStatus(chapter.status),
-				href: String(chapter.href).trim(),
-				chapterName: chapter.chapterName ?? "",
-				bookName: chapter.bookName ?? "",
-				volumeName: chapter.volumeName ?? "",
-				createTime: Number(chapter.createTime) || now,
-				updateTime: Number(chapter.updateTime) || now
-			};
-			if (!data.href) return null;
-			return data;
-		}
-		normalizeChapterStatus(status) {
-			if (status === null || typeof status === "undefined") return;
-			const numberStatus = Number(status);
-			if (Number.isFinite(numberStatus)) return numberStatus;
-		}
-		async claimNextChapterForDownload(pageId) {
-			await this.getSystemInfo();
-			return await this.db.transaction("rw", this.db.table("system_infos"), this.db.table("chapters"), async () => {
-				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
-				const now = Date.now();
-				if (!systemInfo || systemInfo.status !== 0 || !this.canTakeConsumer(systemInfo, pageId, now) || systemInfo.consumerPageId !== pageId) return null;
-				const chapter = await this.db.table("chapters").where("status").equals(0).first();
-				if (!chapter) return null;
-				await this.db.table("system_infos").update(systemInfo.id, {
-					status: 1,
-					consumerHeartbeat: now,
-					currentChapterId: chapter.id,
-					currentChapterHref: chapter.href,
-					currentBookName: chapter.bookName ?? "",
-					updateTime: now
-				});
-				return chapter;
-			});
-		}
-		async markChapterDownloaded(id, pageId, lastDownloadTime = Date.now()) {
-			await this.db.transaction("rw", this.db.table("system_infos"), this.db.table("chapters"), async () => {
-				await this.db.table("chapters").update(id, {
-					status: 1,
-					updateTime: lastDownloadTime
-				});
-				const systemInfo = await this.db.table("system_infos").orderBy("id").first();
-				if (systemInfo && systemInfo.consumerPageId === pageId) await this.db.table("system_infos").update(systemInfo.id, {
-					status: 0,
-					lastDownloadTime,
-					consumerHeartbeat: lastDownloadTime,
-					currentChapterId: 0,
-					currentChapterHref: "",
-					currentBookName: "",
-					updateTime: lastDownloadTime
-				});
-			});
-		}
-		async markDownloadError(pageId = "") {
-			return await this.setSystemInfoError(pageId);
-		}
-		async deletePendingChapters() {
-			return await this.db.table("chapters").where("status").equals(0).delete();
-		}
-		async deletePendingChaptersByBookId(bookId) {
-			const normalizedBookId = String(bookId ?? "").trim();
-			if (!normalizedBookId) return 0;
-			const bookIds = [normalizedBookId];
-			const numberBookId = Number(normalizedBookId);
-			if (Number.isFinite(numberBookId)) bookIds.push(numberBookId);
-			return await this.db.table("chapters").where("bookId").anyOf(bookIds).and((chapter) => chapter.status === 0).delete();
-		}
-		async deleteChaptersByBookId(bookId) {
-			const normalizedBookId = String(bookId ?? "").trim();
-			if (!normalizedBookId) return 0;
-			const bookIds = [normalizedBookId];
-			const numberBookId = Number(normalizedBookId);
-			if (Number.isFinite(numberBookId)) bookIds.push(numberBookId);
-			return await this.db.table("chapters").where("bookId").anyOf(bookIds).delete();
-		}
-		async deleteDownloadedChapters() {
-			return await this.db.table("chapters").where("status").equals(1).delete();
-		}
-		async getChapterStats() {
-			const pending = await this.db.table("chapters").where("status").equals(0).count();
-			const downloaded = await this.db.table("chapters").where("status").equals(1).count();
-			return {
-				pending,
-				downloaded,
-				total: pending + downloaded
-			};
-		}
-		async getDebugRows(tableName, pageNum, pageSize) {
-			if (!this.db.tables.map((table) => table.name).includes(tableName)) return [];
-			const table = this.db.table(tableName);
-			if (!pageNum || !pageSize) return await table.toArray();
-			const normalizedPageNum = Math.max(Number(pageNum) || 1, 1);
-			const normalizedPageSize = Math.max(Number(pageSize) || 10, 1);
-			const offset = (normalizedPageNum - 1) * normalizedPageSize;
-			return await table.orderBy("id").offset(offset).limit(normalizedPageSize).toArray();
-		}
-		async countDebugRows(tableName) {
-			if (!this.db.tables.map((table) => table.name).includes(tableName)) return 0;
-			return await this.db.table(tableName).count();
-		}
-		async deleteDebugRows(tableName, ids) {
-			if (!Array.isArray(ids) || ids.length === 0) return 0;
-			await this.db.table(tableName).bulkDelete(ids);
-			return ids.length;
-		}
-		async addOne(tableName, data) {
-			return await this.db.table(tableName).add(data);
-		}
-		async addBulk(tableName, dataArray) {
-			return this.db.table(tableName).bulkAdd(dataArray);
-		}
-		async deleteOne(tableName, id) {
-			return await this.db.table(tableName).delete(id);
-		}
-		async deleteBulk(tableName, idArray) {
-			return this.db.table(tableName).bulkDelete(idArray);
-		}
-		async updateOne(tableName, id, changes) {
-			return await this.db.table(tableName).update(id, changes);
-		}
-		async exists(tableName, id) {
-			return !!await this.db.table(tableName).get(id);
-		}
-		async existsBulk(tableName, idArray) {
-			return (await this.db.table(tableName).where(":id").anyOf(idArray).toArray()).map((item) => item.id);
-		}
-		async getFirst(tableName) {
-			return this.db.table(tableName).orderBy("id").first();
-		}
-		async getOne(tableName, id) {
-			return await this.db.table(tableName).get(id);
-		}
-		async getPaged(tableName, pageNum = 1, pageSize = 10) {
-			const offset = (pageNum - 1) * pageSize;
-			return await this.db.table(tableName).offset(offset).limit(pageSize).toArray();
-		}
-	};
 	var BookListModel = class {
 		constructor(doc = document, location = document.location) {
 			this.doc = doc;
@@ -3211,4 +3223,4 @@ ${ncxNav.join("\n")}
 		}
 	}
 	await(router());
-})(saveAs, JSZip, Dexie);
+})(saveAs, Dexie, JSZip);

@@ -191,6 +191,24 @@ export class DatabaseService {
         return {recovered: true, reason: 'stale_consumer_cleared'};
     }
 
+    // 导入 chapters 备份数据；id 使用当前库自增值，已存在章节只按需同步状态。
+    async updateChaptersDownloadedByHref(href) {
+        await this.db.transaction('rw', this.db.table('chapters'), async () => {
+            const exists = await this.db.table('chapters')
+                .where('href')
+                .equals(href)
+                .toArray();
+            // console.log(exists);
+            for (const exist of exists) {
+                await this.db.table('chapters').update(exist.id, {
+                    status: 1,
+                    updateTime: Date.now()
+                });
+            }
+        });
+    }
+
+
     // 添加单个章节任务；以 href 和 chapterName 和 bookId 和 bookName 作为去重键，已存在时只刷新章节元信息。
     async addChapterIfAbsent(chapter) {
         if (!chapter?.href) {

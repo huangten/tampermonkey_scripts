@@ -1,6 +1,7 @@
 import {copyContext} from "../../common/common.js";
 import {ChapterPageModel} from "../models/ChapterPageModel.js";
 import {ChapterFixbarView} from "../views/chapter/ChapterFixbarView.js";
+import {DatabaseService} from "../db/DatabaseService.js";
 
 export class ChapterController {
     constructor({
@@ -39,8 +40,13 @@ export class ChapterController {
             case "获取标题和内容HTML":
                 await copyContext(this.model.getTitleAndContentHtml());
                 break;
-            case "保存内容到本地":
-                this.model.saveToLocal();
+            case "保存内容到本地": {
+                if (this.model.saveToLocal()) {
+                    const href = this.model.doc.location.href
+                    const dbServer = new DatabaseService();
+                    await dbServer.updateChaptersDownloadedByHref(href)
+                }
+            }
                 break;
             case "上一章":
                 this.model.getPrevChapterElement();

@@ -61,3 +61,19 @@ func NewGormDB() *gorm.DB {
 	}
 	return db
 }
+
+func NewTestGormDB() *gorm.DB {
+	workDir, _ := os.Getwd()
+	// 核心改动：利用 gorm.Open 传入显式配置，强制声明底层驱动名为 "sqlite"
+	// 这样可以彻底斩断 gorm.io/driver/sqlite 对 CGO 驱动 的默认依赖
+	dialector := sqlite.Dialector{
+		DriverName: "sqlite",
+		DSN:        filepath.Join(workDir, "chapter_content.db"),
+	}
+	db, _ := gorm.Open(dialector, &gorm.Config{
+		Logger: sqllog.New(500 * time.Millisecond),
+	})
+	sqlDB, _ := db.DB()
+	_ = sqlDB.Ping()
+	return db
+}
