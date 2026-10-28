@@ -13,6 +13,8 @@ export class ChapterController {
     }
 
     init() {
+        // console.log(document.cookie);
+        // console.log(unsafeWindow)
         this.model.load();
         this.view.renderFixbar({
             onAction: (type) => this.handleAction(type)

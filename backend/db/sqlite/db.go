@@ -14,7 +14,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-var DBName = "mydatabase.db"
+const DBName = "mydatabase.db"
 
 // getAbsoluteDBPath 获取统一的数据库绝对路径，避免由于工作目录切换导致找不到数据库
 func getAbsoluteDBPath() string {
@@ -63,12 +63,13 @@ func NewGormDB() *gorm.DB {
 }
 
 func NewTestGormDB() *gorm.DB {
+	const dbName = "chapter_content.db"
 	workDir, _ := os.Getwd()
 	// 核心改动：利用 gorm.Open 传入显式配置，强制声明底层驱动名为 "sqlite"
 	// 这样可以彻底斩断 gorm.io/driver/sqlite 对 CGO 驱动 的默认依赖
 	dialector := sqlite.Dialector{
 		DriverName: "sqlite",
-		DSN:        filepath.Join(workDir, "chapter_content.db"),
+		DSN:        filepath.Join(workDir, dbName),
 	}
 	db, _ := gorm.Open(dialector, &gorm.Config{
 		Logger: sqllog.New(500 * time.Millisecond),
