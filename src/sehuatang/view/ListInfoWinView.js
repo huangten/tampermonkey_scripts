@@ -14,9 +14,12 @@ export class ListInfoWinView {
      */
     openInfoWin(options = {
         data: [],
-        downloadAll: () => {},
-        downloadChecked: () => {},
-        clearNotDownload: () => {},
+        downloadAll: () => {
+        },
+        downloadChecked: () => {
+        },
+        clearNotDownload: () => {
+        },
         downloadScheduler: null,
     }) {
         if (options.downloadScheduler.running || options.downloadScheduler.running) {
@@ -47,7 +50,7 @@ export class ListInfoWinView {
                 return false;
             },
             btn2: function (index, layero, that) {
-                self.treeCheckedDownload()
+                self.treeCheckedDownload(options)
                 return false;
             },
             btn3: function (index, layero, that) {
@@ -134,10 +137,11 @@ export class ListInfoWinView {
 
     treeCheckedDownload(options) {
         let checkedData = layui.tree.getChecked('titleList'); // 获取选中节点的数据
-        console.log(checkedData[0]);
+        // console.log(checkedData);
         if (checkedData.length === 0) {
             return;
         }
+        // return;
         options.downloadChecked(checkedData);
     }
 

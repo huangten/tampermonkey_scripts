@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       色花堂 增强
 // @namespace  https://tampermonkey.net/
-// @version    2026-10-14.09:54:49
+// @version    2026-10-30.20:42:24
 // @author     YourName
 // @icon       https://www.google.com/s2/favicons?sz=64&domain=sehuatang.org
 // @match      https://*.sehuatang.org/*
@@ -73,16 +73,16 @@
 	}
 	function sleep(ms) {
 		let done = false;
-		let t;
+		let timer = 0;
 		return new Promise((resolve) => {
-			t = setTimeout(() => {
+			timer = setTimeout(() => {
 				if (done) return;
 				done = true;
 				resolve();
 			}, ms);
 		}).finally(() => {
-			if (!done) {
-				clearTimeout(t);
+			if (!done && timer !== 0) {
+				clearTimeout(timer);
 				done = true;
 			}
 		});
@@ -969,7 +969,7 @@
 					return false;
 				},
 				btn2: function(index, layero, that) {
-					self.treeCheckedDownload();
+					self.treeCheckedDownload(options);
 					return false;
 				},
 				btn3: function(index, layero, that) {
@@ -1028,7 +1028,6 @@
 		}
 		treeCheckedDownload(options) {
 			let checkedData = layui.tree.getChecked("titleList");
-			console.log(checkedData[0]);
 			if (checkedData.length === 0) return;
 			options.downloadChecked(checkedData);
 		}
